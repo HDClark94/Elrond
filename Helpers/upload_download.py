@@ -86,6 +86,18 @@ def get_recordings_to_sort(recording_path, local_path, **kwargs):
                 assert os.path.exists(matched_working_recording_path)
     return recordings_to_sort
 
+def get_recording_types(recording_paths):
+    recording_types = []
+    for i in range(len(recording_paths)):
+        if os.path.exists(recording_paths[i]+"/params.yml"):
+            params = load_dict_from_file(recording_paths[i]+"/params.yml")
+            if 'recording_type' in params:
+                recording_types.append(params['recording_type'])
+        else:
+            print("I couldn't find a params.yml file for ", recording_paths[i])
+            print("I can't assign a recording type without input")
+            recording_types.append("NOT A A VALID RECORDING TYPE")
+    return recording_types
 
 def get_recording_formats(recording_paths):
     recording_formats = []
