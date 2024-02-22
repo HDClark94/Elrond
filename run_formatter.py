@@ -1,7 +1,6 @@
 import os
 import sys
 import traceback
-import shutil
 
 from Helpers.upload_download import copy_from_local, copy_to_local, empty_recording_folder_from_local
 from P0_Format.format import format
