@@ -1,79 +1,59 @@
-#This file contains the parameters for analysis
-
-
+"""
+Set paths, flags and parameters for the pipeline
+"""
 ##########
 # Folder locations
-mountainsort_tmp_folder ='/tmp/mountainlab/'
-sorting_folder = '/home/ubuntu/to_sort/recordings/'
-to_sort_folder = '/home/ubuntu/to_sort/'
-server_path_first_half = '/mnt/datastore/'
-downtime_lists_path = '/home/ubuntu/to_sort/sort_downtime/'
-param_file = '/parameters.txt'
+processed_folder = "/processed"
 dead_channel_file_name = "/dead_channels.txt"
-tetrode_geom_path = '/home/ubuntu/to_sort/sorting_files/geom_all_tetrodes_original.csv'
 temp_storage_path = '/home/ubuntu/to_sort/recordings/tmp'
 
 ##########
 # Recording setting
 sampling_rate = 30000
 down_sampled_rate = 1000
-num_tetrodes = 4
-movement_ch_suffix = f'ADC2' #channel that contains the movement data
-opto_ch_suffix = f'ADC3'
-data_file_prefix = f'_CH' #prefix of data files
-data_file_suffix = ''
-wave_form_size = 40
-tetrodeNum = 4 #how many channel in one tetrode
-waveform_length = 1 # in milliseconds
 
 #########
-# sorter configuration
+# Sorter Configuration
 sorterName = 'mountainsort4'
-is_tetrode_by_tetrode = False #set to True if you want the spike sorting to be done tetrode by tetrode
-all_tetrode_together = True #set to True if you want the spike sorting done on all tetrodes combined
-list_of_named_sorters = ['MountainSort', 'mountainsort4','klusta','tridesclous','hdsort','ironclust','kilosort','kilosort2', 'spykingcircus','herdingspikes','waveclus']
-skip_sorting = False
+list_of_named_sorters = ['MountainSort', 'mountainsort4','klusta','tridesclous','hdsort','ironclust',
+                         'kilosort','kilosort2', 'spykingcircus','herdingspikes','waveclus']
+whiten = True
+bandpass_filter = True
+bandpass_filter_min = 300 # Hz
+bandpass_filter_max = 6000 # Hz
+n_sorting_workers = 3
 
 ############
-# Analysis
-spike_bin_size = 20 #the bin size to group spike together to calculate spike count, in ms
-location_bin_num = 200 #number of location bin
-stop_threshold = 4.7 #threshold for detecting stop
-location_ds_rate = 1000 #the sampleing frequency in Hz to downsample the location signal to
+# Automatic Curation
+list_of_quality_metrics = ['snr','isi_violation','firing_rate', 'presence_ratio', 'amplitude_cutoff',\
+                          'isolation_distance', 'l_ratio', 'd_prime', 'nearest_neighbor', 'nn_isolation', 'nn_noise_overlap']
+
+# assign the quality metric name, sign of threshold ("<", ">") and value in a tuple
+auto_curation_thresholds = [('isolation_distance', '>', 0.9),
+                            ('nn_noise_overlap', '<', 0.05),
+                            ('snr', '>', 1),
+                            ('firing_rate', '>', 0.0)]
 
 ##########
 # VR
-track_length = 200 # cm
+movement_channel =      '100_ADC2.continuous'
+ttl_pulse_channel =     '100_ADC3.continuous'
+first_trial_channel =   '100_ADC4.continuous'
+second_trial_channel =  '100_ADC5.continuous'
+
 vr_bin_size_cm = 1
-first_trial_channel_suffix = f'ADC4' #channel for the start of trial
-second_trial_channel_suffix = f'ADC5' #channel for the stp of trial
-reward_start = 88 # default position for the reward
-reward_end = 110 # default position for the reward
-movement_threshold = 3
-time_bin_size = 0.1 #seconds
-guassian_std_for_smoothing_in_time_seconds = 0.2
-guassian_std_for_smoothing_in_space_cm = 2
-movement_channel='100_ADC2.continuous'
-first_trial_channel='100_ADC4.continuous'
-second_trial_channel='100_ADC5.continuous'
-goal_location_chennl='100_ADC7.continuous'
-vr_grid_analysis_bin_size=8
+time_bin_size = 0.1 # seconds
+guassian_std_for_smoothing_in_time_seconds = 0.2 # seconds
+guassian_std_for_smoothing_in_space_cm = 2 # cm
+hit_try_run_speed_threshold = 10 # cm/seconds
 
 ##########
-# Experiment
-session_type = 'vr'
-allow_paired_recordings = True
-
-##########
-# open field
-opto_tagging_start_index = None
+# Open Field
 pixel_ratio = 440
-sync_channel_suffix = 'ADC1' #channel for the sync pulse
-bonsai_sampling_rate = 30
+ttl_pulse_channel = '100_ADC1.continuous'
 gauss_sd_for_speed_score = 250
-open_field_bin_size_cm = 2.5
+open_field_bin_size_cm = 2.5 # cm
 
-# useful for a shuffled analysis run on eddie
 use_vectorised_rate_map_function = True
 impose_num_cores = False
 fixed_num_cores = 1

@@ -1,1 +1,0 @@
-Matlab crashed while_inital variables
