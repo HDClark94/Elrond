@@ -20,5 +20,7 @@ def extract_waveforms(recording, sorting, recording_path, processed_folder_name)
     _  = si.compute_spike_amplitudes(we)
     _  = si.compute_principal_components(we, n_components=3, mode='by_channel_global')
     _  = si.compute_correlograms(we)
+    _  = si.compute_unit_locations(we)
     qm = si.compute_quality_metrics(we, metric_names=settings.list_of_quality_metrics)
+
     return we, qm

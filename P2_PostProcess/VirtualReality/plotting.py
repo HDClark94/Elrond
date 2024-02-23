@@ -7,9 +7,11 @@ import settings
 from Helpers import plot_utility
 from Helpers.array_utility import pandas_collumn_to_numpy_array, pandas_collumn_to_2d_numpy_array
 
+from P2_PostProcess.Shared.plot_spike_properties import *
 
-def plot_speed_heat_map(processed_position_data, save_path="", track_length=200):
-    # TODO test this
+
+def plot_speed_heat_map(processed_position_data, output_path="", track_length=200):
+    save_path = output_path+'/Figures/behaviour'
     if os.path.exists(save_path) is False:
         os.makedirs(save_path)
 
@@ -135,7 +137,7 @@ def plot_stops_on_track(processed_position_data, output_path, track_length=200):
     x_max = n_trials+0.5
     plot_utility.style_vr_plot(ax, x_max)
     plt.subplots_adjust(hspace = .35, wspace = .35,  bottom = 0.2, left = 0.12, right = 0.87, top = 0.92)
-    plt.savefig(output_path + '/Figures/behaviour/stop_raster' + '.png', dpi=200)
+    plt.savefig(save_path + '/stop_raster.png', dpi=200)
     plt.close()
 
 def plot_variables(position_data, save_path): # can be raw or downsampled
@@ -147,9 +149,10 @@ def plot_variables(position_data, save_path): # can be raw or downsampled
         plt.savefig(save_path + '/' + column + '.png')
         plt.close()
 
-def plot_stop_histogram(processed_position_data, save_path="", track_length=200):
+def plot_stop_histogram(processed_position_data, output_path="", track_length=200):
     # TODO test this
     print('plotting stop histogram...')
+    save_path = output_path+'/Figures/behaviour'
     if os.path.exists(save_path) is False:
         os.makedirs(save_path)
     stop_histogram = plt.figure(figsize=(6,4))
@@ -189,8 +192,9 @@ def min_max_normalize(x):
     return x
 
 
-def plot_speed_histogram(processed_position_data, save_path="", track_length=200):
+def plot_speed_histogram(processed_position_data, output_path="", track_length=200):
     # TODO test this
+    save_path = output_path + '/Figures/behaviour'
     if os.path.exists(save_path) is False:
         os.makedirs(save_path)
 
@@ -325,23 +329,17 @@ def plot_firing_rate_maps(spike_data, processed_position_data, output_path, trac
     return spike_data
 
 
-def make_plots(processed_position_data, spike_data, output_path, track_length=settings.track_length):
-    # Create plots for the VR experiments
-    
+def plot_behaviour(processed_position_data, output_path, track_length):
     plot_stops_on_track(processed_position_data, output_path, track_length=track_length)
     plot_stop_histogram(processed_position_data, output_path, track_length=track_length)
     plot_speed_histogram(processed_position_data, output_path, track_length=track_length)
     plot_speed_heat_map(processed_position_data, output_path, track_length=track_length)
 
-    if spike_data is not None:
-        PostSorting.make_plots.plot_waveforms(spike_data, output_path)
-        PostSorting.make_plots.plot_spike_histogram(spike_data, output_path)
-        PostSorting.make_plots.plot_autocorrelograms(spike_data, output_path)
-        gc.collect()
-        plot_firing_rate_maps(spike_data, processed_position_data, output_path, track_length=track_length)
-        plot_spikes_on_track(spike_data, processed_position_data, output_path, track_length=track_length,
-                             plot_trials=["beaconed", "non_beaconed", "probe"])
 
+def plot_track_firing(spike_data, processed_position_data, output_path, track_length):
+    plot_firing_rate_maps(spike_data, processed_position_data, output_path, track_length=track_length)
+    plot_spikes_on_track(spike_data, processed_position_data, output_path, track_length=track_length,
+                         plot_trials=["beaconed", "non_beaconed", "probe"])
 
 
 #  this is here for testing

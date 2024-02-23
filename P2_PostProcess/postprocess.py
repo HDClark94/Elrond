@@ -1,25 +1,27 @@
 from Helpers.upload_download import *
 
-def postprocess(working_recording_path, local_path, **kwargs):
+from P2_PostProcess.VirtualReality import vr as vr
+from P2_PostProcess.OpenField import of as of
+from P2_PostProcess.Opto import opto as opto
+from P2_PostProcess.Sleep import sleep as sleep
+
+def postprocess(working_recording_path, local_path, processed_folder_name, **kwargs):
+    # process behaviour and spike data based on the recording type
+
     recording_paths = get_recordings_to_postprocess(working_recording_path, local_path, **kwargs)
     recording_types = get_recording_types(recording_paths)
 
     for recording_path, type in zip(recording_paths, recording_types):
         if type == "vr":
-            print("do something")
-            # do stuff to do with vr recordings
+            vr.process(recording_path, processed_folder_name, **kwargs)
         elif type == "openfield":
-            print("do something")
-            # do stuff to do with open field recordings
+            of.process(recording_path, processed_folder_name, **kwargs)
         elif type == "opto":
-            print("do something")
-            # do stuff to do with opto recordings
+            opto.process(recording_path, processed_folder_name, **kwargs)
         elif type == "sleep":
-            print("do something")
-            # do stuff to do with sleep recordings
+            sleep.process(recording_path, processed_folder_name, **kwargs)
         else:
             print(type, " isn't a recognised recording "
                         "type in postprocessing ")
 
-    # then do stuff
-    return
+    print("Finished post-processing...")

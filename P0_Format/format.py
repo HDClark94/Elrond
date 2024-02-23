@@ -1,7 +1,8 @@
 import yaml
 import os
 from P0_Format.NWB_Formatter.OpenEphys import ConvertOpenEphys2NWB
-from P0_Format.vr_extract_behaviour_from_ADC_channels import generate_CSV_from_ADC_behaviour
+from P0_Format.vr_extract_behaviour_from_ADC_channels import generate_position_data_from_ADC_channels, \
+    run_checks_for_position_data
 from P0_Format.re_format_parameter_file import create_param_yml
 
 # Preprocessing performs checks on the shape of the data so spike interface can load the data without any problems
@@ -40,7 +41,8 @@ def format(recording_path, processed_folder_name, **kwargs):
     if "convert_ADC_to_VRbehaviour" in kwargs:
         if kwargs["convert_ADC_to_VRbehaviour"] == True:
             print("I will attempt to convert this position data encoded within ADC channels into csv format")
-            generate_CSV_from_ADC_behaviour(recording_path, processed_folder_name, **kwargs)
+            position_data = generate_position_data_from_ADC_channels(recording_path, processed_folder_name)
+            run_checks_for_position_data(position_data, recording_path, processed_folder_name)
 
     if "create_param_yml" in kwargs:
         if kwargs["create_param_yml"] == True:

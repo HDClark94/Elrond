@@ -1,14 +1,14 @@
 import os
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
 from scipy import stats
 import settings
 import Helpers.open_ephys_IO as open_ephys_IO
 from astropy.convolution import convolve, Gaussian1DKernel
-from P2_PostProcess.vr_spatial_data import process_position_data, get_stop_threshold, get_track_length
-from P2_PostProcess.vr_make_plots import plot_variables, plot_speed_histogram, \
-                                         plot_stop_histogram, plot_speed_heat_map
+from Helpers.upload_download import *
+
+from P2_PostProcess.VirtualReality.spatial_data import process_position_data, get_stop_threshold, get_track_length
+from P2_PostProcess.VirtualReality.plotting import plot_variables, plot_behaviour
 
 # Behavioural variables in VR recordings created between 2016-2023
 # are stored within the ADC*.continuous open ephys legacy files
@@ -21,6 +21,7 @@ from P2_PostProcess.vr_make_plots import plot_variables, plot_speed_histogram, \
 
 # This script will convert these ADC "behavioural" .continous files into
 # a behavioural dataframe using .csv or .pkl file formats.
+
 
 def correct_for_restart(location):
     cummulative_minimums = np.minimum.accumulate(location)
@@ -84,6 +85,7 @@ def recalculate_track_location(position_data, track_length):
     position_data['x_position_cm'] = np.asarray(location_in_cm, dtype=np.float16) # fill in dataframe
     return position_data
 
+
 def fix_around_teleports(raw_position_data, new_trial_indices, track_length):
     x_position_cm = np.array(raw_position_data["x_position_cm"])
     trial_numbers = np.array(raw_position_data["trial_number"])
@@ -113,21 +115,6 @@ def fix_around_teleports(raw_position_data, new_trial_indices, track_length):
 
     x_position_cm = distance_travelled % track_length
     trial_numbers = np.array(distance_travelled//track_length, dtype=np.int64)+1
-    """
-    for debugging purposes
-    change_in_distance_travelled = np.concatenate([np.zeros(1), np.diff(distance_travelled)], axis=0)
-    plt.plot(np.concatenate([np.zeros(1), np.diff(distance_travelled)], axis=0))
-    plt.savefig('/mnt/datastore/Harry/' + '1' + '.png')
-    plt.close()
-
-    plt.plot(x_position_cm[np.isin(trial_numbers, np.array([218, 219, 220]))], color="blue")
-    plt.plot(trial_numbers[np.isin(trial_numbers, np.array([218, 219, 220]))] * 1.5, color="red")
-    plt.savefig('/mnt/datastore/Harry/' + '2' + '.png')
-    plt.close()
-
-    plt.plot(distance_travelled[np.isin(trial_numbers, np.array([218, 219, 220]))], color="blue")
-    plt.savefig('/mnt/datastore/Harry/' + '3' + '.png')
-    plt.close()"""
 
     # trial numbers should never go down
     assert np.all(np.diff(trial_numbers) >= 0)
@@ -135,6 +122,7 @@ def fix_around_teleports(raw_position_data, new_trial_indices, track_length):
     raw_position_data["x_position_cm"] = x_position_cm
     raw_position_data["trial_number"] = trial_numbers
     return raw_position_data
+
 
 def smoothen_track_location(raw_position_data, track_length):
     x_position_cm = np.asarray(raw_position_data["x_position_cm"])
@@ -158,6 +146,7 @@ def moving_sum(array, window):
     ret[window:] = ret[window:] - ret[:-window]
     return ret[window:]
 
+
 def calculate_trial_numbers(position_data):
     print('Calculating trial numbers...')
     trials = np.zeros((position_data.shape[0]))
@@ -167,6 +156,7 @@ def calculate_trial_numbers(position_data):
     position_data['trial_number'] = np.asarray(trials, dtype=np.uint16)
     print('This mouse did ', int(max(trials)), ' trials')
     return position_data, new_trial_indices
+
 
 def get_new_trial_indices(position_data):
     location_diff = position_data['x_position_cm'].diff()  # Get the raw location from the movement channel
@@ -244,7 +234,7 @@ def calculate_time(position_data, sampling_rate):
 
 def downsample_position_data(raw_position_data,
                              sampling_rate = settings.sampling_rate,
-                             down_sampled_rate = settings.location_ds_rate):
+                             down_sampled_rate = settings.down_sampled_rate):
     position_data = pd.DataFrame()
     downsample_factor = int(sampling_rate/ down_sampled_rate)
     for column in list(raw_position_data):
@@ -264,6 +254,7 @@ def calculate_track_location(position_data, recording_folder, track_length):
     position_data['x_position_cm'] = np.asarray(location_in_cm, dtype=np.float16) # fill in dataframe
     return position_data
 
+
 def extract_position_data(recording_path, track_length):
     raw_position_data = pd.DataFrame()
     raw_position_data = calculate_track_location(raw_position_data, recording_path, track_length)
@@ -276,27 +267,31 @@ def extract_position_data(recording_path, track_length):
     down_sampled_position_data = downsample_position_data(raw_position_data)
     return raw_position_data, down_sampled_position_data
 
-def generate_CSV_from_ADC_behaviour(recording_path, processed_folder_name, **kwargs):
-    # TODO add and assertion for the recording session type is vr
+
+def generate_position_data_from_ADC_channels(recording_path, processed_folder_name):
+    # recording type needs to be vr
+    assert get_recording_types([recording_path])[0] == "vr"
 
     track_length = get_track_length(recording_path)
     stop_threshold = get_stop_threshold(recording_path)
 
     # extract and process position data
     raw_position_data, downsampled_position_data = extract_position_data(recording_path, track_length)
-    processed_position_data = process_position_data(downsampled_position_data, track_length, stop_threshold)
-
-    # save position data
     save_path = recording_path+"/"+processed_folder_name+"/position_data.csv"
     downsampled_position_data.to_csv(save_path)
     print("downsampled position data has been extracted from ADC channels and saved at ", save_path)
+    return downsampled_position_data
+
+
+def run_checks_for_position_data(position_data, recording_path, processed_folder_name):
+    track_length = get_track_length(recording_path)
+    stop_threshold = get_stop_threshold(recording_path)
+    processed_position_data = process_position_data(position_data, track_length, stop_threshold)
 
     # make some plots with the positioned
     output_path = recording_path+"/"+processed_folder_name
-    plot_variables(raw_position_data, save_path=output_path+"/Figures/Behaviour")
-    plot_stop_histogram(processed_position_data, save_path=output_path+"/Figures/Behaviour", track_length=track_length)
-    plot_speed_histogram(processed_position_data, save_path=output_path+"/Figures/Behaviour", track_length=track_length)
-    plot_speed_heat_map(processed_position_data, save_path=output_path+"/Figures/Behaviour", track_length=track_length)
+    plot_variables(position_data, save_path=output_path+"/Figures/Behaviour")
+    plot_behaviour(processed_position_data, output_path, track_length)
     print("some plots have been saved at ", output_path, "")
 
 

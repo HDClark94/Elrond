@@ -52,7 +52,7 @@ def process_recordings(recording_paths, local_path="", processed_folder_name="",
 
             if run_postprocessing:
                 print("I will now try to postprocess")
-                postprocess(working_recording_path, local_path, **kwargs)
+                postprocess(working_recording_path, local_path, processed_folder_name, **kwargs)
 
             if copy_locally:
                 print("I will copy the recordingfrom local and remove the recording from local")

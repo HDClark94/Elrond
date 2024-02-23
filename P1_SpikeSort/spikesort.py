@@ -20,6 +20,7 @@ def save_spikes_to_dataframe(sorters, waveforms, quality_metrics, recording_path
             cluster_df['firing_times'] = [sorter.get_unit_spike_train(i)]    # np.array(n_spikes)
             cluster_df['waveforms'] = [waveform[i]]                          # np.array(n_spikes, n_samples, n_channels)
 
+
             spike_data = pd.concat([spike_data, cluster_df], ignore_index=True)
 
         # add quality metrics, these are shared across all recordings
@@ -84,5 +85,5 @@ def spikesort(recording_path, local_path, processed_folder_name, **kwargs):
     # Optionally
     if "save2phy" in kwargs:
         if kwargs["save2phy"] == True:
-            si.export_to_phy(we, output_folder=recording_path + "/" + processed_folder_name + "/" + settings.sorterName + "/phy")
-            si.export_report(we, output_folder=recording_path + "/" + processed_folder_name + "/" + settings.sorterName + "/report")
+            si.export_to_phy(we, output_folder=recording_path + "/" + processed_folder_name + "/" + settings.sorterName + "/phy", remove_if_exists=True)
+            si.export_report(we, output_folder=recording_path + "/" + processed_folder_name + "/" + settings.sorterName + "/report", remove_if_exists=True)

@@ -281,3 +281,5 @@ def plot_speed_vs_firing_rate(position: pd.DataFrame, spatial_firing: pd.DataFra
         plt.savefig(save_path + '/' + cell.session_id + '_' + str(cell.cluster_id) + '_speed_vs_firing_rate.png', dpi=300, bbox_inches='tight', pad_inches=0)
         plt.close()
 
+def plot_firing_properties(spike_data, output_path):
+    return

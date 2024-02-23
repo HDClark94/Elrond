@@ -40,6 +40,7 @@ def add_speed_per_100ms(position_data, track_length):
 
 
 def add_stopped_in_rz(position_data, track_length, stop_threshold):
+    # TODO track features should be inherited from a parameter file
     reward_zone_start = track_length-60-30-20
     reward_zone_end = track_length-60-30
     track_start = 30
@@ -279,32 +280,9 @@ def process_position_data(position_data, track_length, stop_threshold):
     return processed_position_data
 
 
-def process_recordings(vr_recording_path_list):
-    vr_recording_path_list.sort()
-
-    for recording in vr_recording_path_list:
-        print("processing ", recording)
-        try:
-            print("")
-
-        except Exception as ex:
-            print('This is what Python says happened:')
-            print(ex)
-            exc_type, exc_value, exc_traceback = sys.exc_info()
-            traceback.print_tb(exc_traceback)
-            print("couldn't process vr_grid analysis on "+recording)
-
-
 #  for testing
 def main():
     print('-------------------------------------------------------------')
-    vr_path_list = []
-    #vr_path_list.extend([f.path for f in os.scandir("/mnt/datastore/Harry/Cohort6_july2020/vr") if f.is_dir()])
-    #vr_path_list.extend([f.path for f in os.scandir("/mnt/datastore/Harry/Cohort7_october2020/vr") if f.is_dir()])
-    #vr_path_list.extend([f.path for f in os.scandir("/mnt/datastore/Harry/Cohort8_may2021/vr") if f.is_dir()])
-    process_recordings(vr_path_list)
-
-    print("processed_position_data dataframes have been remade")
 
 if __name__ == '__main__':
     main()
