@@ -1,7 +1,7 @@
 import settings
 import pandas as pd
 from Helpers.upload_download import *
-from P1_SpikeSort.preprocess import ammend_preprocessing_parameters
+from P1_SpikeSort.preprocess import preprocess, ammend_preprocessing_parameters
 from P1_SpikeSort.probe import add_probe
 from P1_SpikeSort.waveforms import extract_waveforms, get_waveforms
 from P1_SpikeSort.auto_curate import auto_curate
@@ -48,11 +48,14 @@ def spikesort(recording_path, local_path, processed_folder_name, **kwargs):
     # concatenate recordings if necessary
     recording_mono = si.concatenate_recordings(recordings)
 
-    # set probe information
-    recording_mono = add_probe(recording_mono, recording_path)
+    #recording_mono = recording_mono.frame_slice(start_frame=0, end_frame=int(60*30000)) # debugging purposes
 
-    # set up preprocessing parameters
+    # set probe information
+    recording_mono, probe = add_probe(recording_mono, recording_path)
+
+    # preprocess and ammend preprocessing parameters for presorting
     default_params = si.get_default_sorter_params(settings.sorterName)
+    recording_mono = preprocess(recording_mono)
     params = ammend_preprocessing_parameters(default_params)
 
     # Run spike sorting
@@ -85,5 +88,5 @@ def spikesort(recording_path, local_path, processed_folder_name, **kwargs):
     # Optionally
     if "save2phy" in kwargs:
         if kwargs["save2phy"] == True:
-            si.export_to_phy(we, output_folder=recording_path + "/" + processed_folder_name + "/" + settings.sorterName + "/phy", remove_if_exists=True)
+            si.export_to_phy(we, output_folder=recording_path + "/" + processed_folder_name + "/" + settings.sorterName + "/phy", remove_if_exists=True, copy_binary=False)
             si.export_report(we, output_folder=recording_path + "/" + processed_folder_name + "/" + settings.sorterName + "/report", remove_if_exists=True)

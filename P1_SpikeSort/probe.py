@@ -65,13 +65,14 @@ def test_probe_interface(save_path):
 def get_recording_probe(recording_path):
     if os.path.exists(recording_path + "/params.yml"):
         params = load_dict_from_file(recording_path + "/params.yml")
-        if 'recording_probe' in params:
-            print("I found the name of the recording probe: ", params['recording_probe'])
-            return params['recording_probe']
+        if ('probe_manufacturer' in params) and ('probe_name' in params)\
+                and ('n_probes' in params):
+            print("I found the name of the recording probe: ", params['probe_name'])
+            return params["probe_manufacturer"], params['probe_name'], params['n_probes']
 
     print("I couldn't find the name of the recording probe in a params.yml, "
           "I will presume its a tetrode recording")
-    return "tetrode"
+    return "tetrode", "tetrode", 1
 
 def add_tetrode_geometry(recording):
     geometry = np.array([[   0,  0], [  25,  0], [  25, 25], [  0,  25],
@@ -84,16 +85,32 @@ def add_tetrode_geometry(recording):
     probe.set_device_channel_indices(np.arange(len(geometry)))
 
     recording.set_probe(probe, group_mode="by_shank", in_place=True)
-    return recording
+    return recording, probe
 
-def add_probe_geometry(recording, recording_device, recording_probe):
-    return recording
+def add_probe_geometry(recording, probe_manufacturer, probe_name, n_probes):
+    probegroup = ProbeGroup()
+    for i in range(n_probes):
+        probe = get_probe(manufacturer=probe_manufacturer, probe_name=probe_name)
+
+        if (probe_manufacturer == "cambridgeneurotech") and (probe_name == "ASSY-236-P-1"):
+            probe.wiring_to_device('cambridgeneurotech_mini-amp-64', channel_offset=int(i * 64))
+            probe.move([i * 2000, 0])
+            probe.set_contact_ids(np.array(probe.to_dataframe()["contact_ids"].values, dtype=np.int64) + int(64 * i))
+            probe.set_device_channel_indices(np.arange(64) + int(64 * i))
+            probegroup.add_probe(probe)
+        else:
+            print("I don't know how to handle this probe yet!")
+
+    probe_df = probegroup.to_dataframe()
+
+    recording.set_probegroup(probegroup, group_mode="by_shank", in_place=True)
+    return recording, probegroup
 
 def add_probe(recording, recording_path):
-    recording_probe = get_recording_probe(recording_path)
+    probe_manufacturer, probe_name, n_probes = get_recording_probe(recording_path)
 
-    if recording_probe == "tetrode":
-        recording = add_tetrode_geometry(recording)
+    if probe_name == "tetrode":
+        recording, probe = add_tetrode_geometry(recording)
     else:
-        recording = add_probe_geometry(recording, recording_probe)
-    return recording
+        recording, probe = add_probe_geometry(recording, probe_manufacturer, probe_name, n_probes)
+    return recording, probe

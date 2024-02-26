@@ -144,19 +144,6 @@ def bin_fr_in_space(spike_data, position_data, track_length, smoothen=True):
     return spike_data
 
 
-def add_location_and_task_variables(spike_data, position_data, processed_position_data, track_length):
-    spike_data = add_speed(spike_data, position_data)
-    spike_data = add_position_x(spike_data, position_data)
-    spike_data = add_trial_number(spike_data, position_data)
-    spike_data = add_trial_type(spike_data, position_data)
-    spike_data = add_stops(spike_data, processed_position_data, track_length)
-    spike_data = bin_fr_in_time(spike_data, position_data, smoothen=True)
-    spike_data = bin_fr_in_time(spike_data, position_data, smoothen=False)
-    spike_data = bin_fr_in_space(spike_data, position_data, track_length, smoothen=True)
-    spike_data = bin_fr_in_space(spike_data, position_data, track_length, smoothen=False)
-    return spike_data
-
-
 def add_stops(spike_data, processed_position_data, track_length):
     trial_numbers = []
     stop_locations = []
@@ -179,6 +166,18 @@ def add_stops(spike_data, processed_position_data, track_length):
 
     return spike_data
 
+
+def add_location_and_task_variables(spike_data, position_data, processed_position_data, track_length):
+    spike_data = add_speed(spike_data, position_data)
+    spike_data = add_position_x(spike_data, position_data)
+    spike_data = add_trial_number(spike_data, position_data)
+    spike_data = add_trial_type(spike_data, position_data)
+    spike_data = add_stops(spike_data, processed_position_data, track_length)
+    spike_data = bin_fr_in_time(spike_data, position_data, smoothen=True)
+    spike_data = bin_fr_in_time(spike_data, position_data, smoothen=False)
+    spike_data = bin_fr_in_space(spike_data, position_data, track_length, smoothen=True)
+    spike_data = bin_fr_in_space(spike_data, position_data, track_length, smoothen=False)
+    return spike_data
 
 #  for testing
 def main():

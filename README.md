@@ -15,3 +15,6 @@ Please see more detailed documentation in the /documentation folder.
 
 ## How to contribute
 Please submit an issue to discuss.
+
+## FAQ
+Spike sorting crashed with a "too many files open" error: Look in additional_files/fix_file_open_limit_linux for instructions for a workaround

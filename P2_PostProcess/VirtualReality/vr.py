@@ -1,5 +1,6 @@
 from P0_Format.vr_extract_behaviour_from_ADC_channels import *
 
+from P2_PostProcess.Shared.time_sync import *
 from P2_PostProcess.VirtualReality.spatial_data import *
 from P2_PostProcess.VirtualReality.spatial_firing import *
 from P2_PostProcess.VirtualReality.video import *
@@ -16,6 +17,9 @@ def process(recording_path, processed_folder_name, **kwargs):
         print("I couldn't find a position_data.csv file, "
               "I will attempt to use ADC channel information")
         position_data = generate_position_data_from_ADC_channels(recording_path, processed_folder_name)
+
+    # add a step for syncing data if necesssary
+    # TODO position_data = sync_posi...
 
     # process and save position data
     processed_position_data = process_position_data(position_data, track_length, stop_threshold)

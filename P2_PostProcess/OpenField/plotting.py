@@ -5,17 +5,12 @@ import os
 from Helpers import plot_utility
 import math
 import numpy as np
-import PostSorting.parameters
-import PostSorting.open_field_head_direction
-
 import pandas as pd
-import PostSorting.open_field_firing_fields
-
+from P2_PostProcess.Shared.plot_spike_properties import *
 
 def plot_position(position_data):
     plt.plot(position_data['position_x'], position_data['position_y'], color='black', linewidth=5)
     plt.close()
-
 
 def plot_spikes_on_trajectory(position_data, spike_data, prm):
     print('I will make scatter plots of spikes on the trajectory of the animal.')
@@ -50,7 +45,6 @@ def plot_spikes_on_trajectory(position_data, spike_data, prm):
         plt.savefig(save_path + '/' + cluster_df['session_id'].iloc[0] + '_' + str(cluster_id) + '_spikes_on_trajectory.png', dpi=300, bbox_inches='tight', pad_inches=0)
         # plt.savefig(save_path + '/' + spike_data.session_id[cluster_id] + '_' + str(cluster_id + 1) + '_spikes_on_trajectory.pdf', bbox_inches='tight')
         plt.close()
-
 
 def plot_coverage(position_heat_map, prm):
     print('I will plot a heat map of the position of the animal to show coverage.')
@@ -547,21 +541,3 @@ def make_combined_field_analysis_figures(prm, spatial_firing):
         plt.close()
 
 
-def main():
-    prm = PostSorting.parameters.Parameters()
-    prm.set_pixel_ratio(440)
-    prm.set_sampling_rate(30000)
-    prm.set_local_recording_folder_path('C:/Users/s1466507/Documents/Ephys/test_overall_analysis/M5_2018-03-06_15-34-44_of/DataFrames')
-    prm.set_output_path('C:/Users/s1466507/Documents/Ephys/test_overall_analysis/M5_2018-03-06_15-34-44_of/')
-    firing_rate_maps = np.load('C:/Users/s1466507/Documents/Ephys/test_overall_analysis/M5_2018-03-06_15-34-44_of/M5_2018-03-06_15-34-44_of.npy')
-    spatial_firing = pd.read_pickle(prm.get_local_recording_folder_path() + '/spatial_firing.pkl')
-    spatial_data = pd.read_pickle(prm.get_local_recording_folder_path() + '/position.pkl')
-    # make_combined_figure(prm, spatial_firing)
-    make_combined_field_analysis_figures(prm, spatial_firing)
-    # plot_spikes_on_trajectory(spatial_data, spatial_firing, prm)
-    #spatial_firing['firing_maps'] = list(firing_rate_maps)
-    # spatial_firing = P3_PostProcess.open_field_firing_fields.analyze_firing_fields(spatial_firing)
-    #plot_spikes_on_firing_fields(spatial_firing, prm)
-    #plot_hd_for_firing_fields(spatial_firing, spatial_data, prm)
-if __name__ == '__main__':
-    main()

@@ -12,7 +12,6 @@ def get_waveforms(we, sorters):
 
 
 def extract_waveforms(recording, sorting, recording_path, processed_folder_name):
-    recording.annotate(is_filtered=settings.bandpass_filter)
     we = si.extract_waveforms(recording, sorting, folder=recording_path +
                               "/" + processed_folder_name + "/" + settings.sorterName + "/waveforms",
                               ms_before=1, ms_after=2, load_if_exists=False,
@@ -23,4 +22,6 @@ def extract_waveforms(recording, sorting, recording_path, processed_folder_name)
     _  = si.compute_unit_locations(we)
     qm = si.compute_quality_metrics(we, metric_names=settings.list_of_quality_metrics)
 
+    ####https://github.com/SpikeInterface/spikeinterface/issues/572
+    # sparsity_dict=dict(method="by_property", by_property="group")
     return we, qm

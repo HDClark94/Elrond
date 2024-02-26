@@ -5,9 +5,7 @@ import numpy as np
 import pandas as pd
 import matplotlib.pylab as plt
 from Helpers import OpenEphys, open_ephys_IO
-
 import settings
-
 
 def load_sync_data_ephys(recording_to_process, prm):
     is_found = False
@@ -49,10 +47,10 @@ def get_video_sync_on_and_off_times(spatial_data):
     return spatial_data
 
 
-def get_ephys_sync_on_and_off_times(sync_data_ephys, prm):
+def get_ephys_sync_on_and_off_times(sync_data_ephys):
     sync_data_ephys['on_index'] = sync_data_ephys['sync_pulse'] > 0.5
     sync_data_ephys['on_index_diff'] = np.append([None], np.diff(sync_data_ephys['on_index'].values))  # true when light turns on
-    sync_data_ephys['time'] = sync_data_ephys.index / prm.get_sampling_rate()
+    sync_data_ephys['time'] = sync_data_ephys.index / settings.sampling_rate
     return sync_data_ephys
 
 
@@ -77,7 +75,7 @@ def pad_shorter_array_with_0s(array1, array2):
     return array1, array2
 
 
-def downsample_ephys_data(sync_data_ephys, spatial_data, prm):
+def downsample_ephys_data(sync_data_ephys, spatial_data):
     avg_sampling_rate_bonsai = float(1 / spatial_data['time_seconds'].diff().mean())
     avg_sampling_rate_open_ephys = float(1 / sync_data_ephys['time'].diff().mean())
     sampling_rate_rate = avg_sampling_rate_open_ephys/avg_sampling_rate_bonsai
@@ -144,7 +142,7 @@ def save_plot(prm, data, name, plot_color='black'):
     plt.close()
 
 
-def get_synchronized_spatial_data(sync_data_ephys, spatial_data, prm):
+def get_synchronized_spatial_data(sync_data_ephys, spatial_data):
     """
     The ephys and spatial data is synchronized based on sync pulses sent both to the open ephys and bonsai systems.
     The open ephys GUI receives TTL pulses. Bonsai detects intensity from an LED that lights up whenever the TTL is
@@ -168,22 +166,17 @@ def get_synchronized_spatial_data(sync_data_ephys, spatial_data, prm):
     Eventually, the shifted 'synced' times are added to the spatial dataframe.
 
     #Note: the syncLED column must have stable sampling frequency/FPS, otherwise there will be error
-
     """
 
     print('I will synchronize the position and ephys data by shifting the position to match the ephys.')
-    sync_data_ephys_downsampled = downsample_ephys_data(sync_data_ephys, spatial_data, prm)
+    sync_data_ephys_downsampled = downsample_ephys_data(sync_data_ephys, spatial_data)
     bonsai = spatial_data['syncLED'].values
-    save_plot(prm, bonsai, 'bonsai', plot_color='black')
     bonsai = np.append(0, np.diff(spatial_data['syncLED'].values)) # step to remove human error-caused light intensity jumps
     oe = sync_data_ephys_downsampled.sync_pulse.values
-    save_plot(prm, oe, 'open_ephys', plot_color='red')
-    # save_plots_of_pulses(bonsai, oe, prm, name='pulses_before_processing')
     bonsai = reduce_noise(bonsai, np.median(bonsai) + 6 * np.std(bonsai))
     oe = reduce_noise(oe, 2)
     bonsai, oe = pad_shorter_array_with_0s(bonsai, oe)
     corr = np.correlate(bonsai, oe, "full")  # this is the correlation array between the sync pulse series
-
     avg_sampling_rate_bonsai = float(1 / spatial_data['time_seconds'].diff().mean())
     lag = (np.argmax(corr) - (corr.size + 1)/2)/avg_sampling_rate_bonsai  # lag between sync pulses is based on max correlation
     spatial_data['synced_time_estimate'] = spatial_data.time_seconds - lag  # at this point the lag is about 100 ms
@@ -202,18 +195,9 @@ def get_synchronized_spatial_data(sync_data_ephys, spatial_data, prm):
     bonsai_rising_edge_time = trimmed_bonsai_time[bonsai_rising_edge_index]
 
     lag2 = oe_rising_edge_time - bonsai_rising_edge_time
-    save_plots_of_pulses(trimmed_bonsai_pulses, trimmed_ephys_pulses, prm.get_output_path(), lag2)
+    print(f'Rising edge lag is {lag2}')
 
-    if abs(lag2) < 100000000:
-        # after correlation sync, the difference in lag should very small, if not it may indicate error
-
-        print(f'Rising edge lag is {lag2}')
-        spatial_data['synced_time'] = spatial_data.synced_time_estimate + lag2
-    else:
-        # time difference between riring edge is too large, potential bug
-        print('Lag is:' + str(lag2))
-        raise ValueError('Potential sync error.')
-
+    spatial_data['synced_time'] = spatial_data.synced_time_estimate + lag2
     return spatial_data
 
 
@@ -227,19 +211,64 @@ def remove_opto_tagging_from_spatial_data(start_of_opto_tagging, spatial_data):
     return spatial_data
 
 
-def process_sync_data(recording_to_process, prm, spatial_data, opto_start=None):
-    sync_data, is_found = load_sync_data_ephys(recording_to_process, prm)
+def process_sync_data(recording_to_process, spatial_data):
+
+
+    sync_data, is_found = load_sync_data_ephys(recording_to_process)
     sync_data_ephys = pd.DataFrame(sync_data)
     sync_data_ephys.columns = ['sync_pulse']
-    sync_data_ephys = get_ephys_sync_on_and_off_times(sync_data_ephys, prm)
+    sync_data_ephys = get_ephys_sync_on_and_off_times(sync_data_ephys)
     spatial_data = get_video_sync_on_and_off_times(spatial_data)
-    spatial_data = get_synchronized_spatial_data(sync_data_ephys, spatial_data, prm)
+    spatial_data = get_synchronized_spatial_data(sync_data_ephys, spatial_data)
     # synced time in seconds, x and y in cm, hd in degrees
-    synced_spatial_data = spatial_data[['synced_time', 'position_x', 'position_x_pixels', 'position_y', 'position_y_pixels', 'hd', 'speed']].copy()
+    synced_spatial_data = spatial_data[['synced_time', 'position_x', 'position_x_pixels',
+                                        'position_y', 'position_y_pixels', 'hd', 'speed']].copy()
     # remove negative time points
     synced_spatial_data = synced_spatial_data.drop(synced_spatial_data[synced_spatial_data.synced_time < 0].index)
     synced_spatial_data = synced_spatial_data.reset_index(drop=True)
-    total_length_sampling_points = synced_spatial_data.synced_time.values[-1]
-    synced_spatial_data = remove_opto_tagging_from_spatial_data(opto_start, synced_spatial_data)
+    return synced_spatial_data
 
-    return synced_spatial_data, total_length_sampling_points, is_found
+def search_for_file(folder_to_search_in, string_to_find):
+    matches = []
+    for file in glob.glob(folder_to_search_in):
+        if string_to_find in file:
+            matches.append(file)
+    if len(matches) == 0:
+        return matches[0]
+    else:
+        print("I found multiple files that match the file being searched for")
+        return matches
+
+
+def get_ttl_pulse_array(recording_path):
+    # first look in the paramfile
+    # TODO
+
+    # if still not found, use what is in the settings
+    ttl_pulse_channel_path = search_for_file(recording_path, settings.ttl_pulse_channel)
+
+    if ttl_pulse_channel_path.endswith(".continuous"):
+        ttl_pulses = open_ephys_IO.get_data_continuous(ttl_pulse_channel_path)
+        return ttl_pulses
+    else:
+        print("I don't know how to handle this ttl pulse file")
+        return ""
+
+def synchronise_position_data_via_ttl_pulses(position_data, recording_path):
+    # get array for the ttl pulses in the ephys data
+    sync_data = get_ttl_pulse_array(recording_path)
+    sync_data_ephys = pd.DataFrame(sync_data)
+    sync_data_ephys.columns = ['sync_pulse']
+    sync_data_ephys = get_ephys_sync_on_and_off_times(sync_data_ephys)
+
+    position_data = get_video_sync_on_and_off_times(position_data)
+    position_data = get_synchronized_spatial_data(sync_data_ephys, position_data)
+    # synced time in seconds, x and y in cm, hd in degrees
+    synced_position_data = position_data[['synced_time', 'position_x', 'position_x_pixels',
+                                        'position_y', 'position_y_pixels', 'hd', 'speed']].copy()
+    # remove negative time points
+    synced_position_data = synced_position_data.drop(synced_position_data[synced_position_data.synced_time < 0].index)
+    synced_position_data = synced_position_data.reset_index(drop=True)
+
+    return synced_position_data
+

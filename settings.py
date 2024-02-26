@@ -17,11 +17,13 @@ down_sampled_rate = 1000
 sorterName = 'mountainsort4'
 list_of_named_sorters = ['MountainSort', 'mountainsort4','klusta','tridesclous','hdsort','ironclust',
                          'kilosort','kilosort2', 'spykingcircus','herdingspikes','waveclus']
+
 whiten = True
+common_reference = True
 bandpass_filter = True
 bandpass_filter_min = 300 # Hz
 bandpass_filter_max = 6000 # Hz
-n_sorting_workers = 3
+n_sorting_workers = 17
 
 ############
 # Automatic Curation
@@ -36,10 +38,6 @@ auto_curation_thresholds = [('isolation_distance', '>', 0.9),
 
 ##########
 # VR
-movement_channel =      '100_ADC2.continuous'
-ttl_pulse_channel =     '100_ADC3.continuous'
-first_trial_channel =   '100_ADC4.continuous'
-second_trial_channel =  '100_ADC5.continuous'
 
 vr_bin_size_cm = 1
 time_bin_size = 0.1 # seconds
@@ -50,11 +48,17 @@ hit_try_run_speed_threshold = 10 # cm/seconds
 ##########
 # Open Field
 pixel_ratio = 440
-ttl_pulse_channel = '100_ADC1.continuous'
 gauss_sd_for_speed_score = 250
 open_field_bin_size_cm = 2.5 # cm
 
 use_vectorised_rate_map_function = True
 impose_num_cores = False
 fixed_num_cores = 1
+
+##################
+# Specific to OpenEphys legacy formats
+ttl_pulse_channel =     '100_ADC1.continuous' # all session types
+movement_channel =      '100_ADC2.continuous' # vr
+first_trial_channel =   '100_ADC4.continuous' # vr
+second_trial_channel =  '100_ADC5.continuous' # vr
 

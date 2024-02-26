@@ -158,8 +158,8 @@ def copy_to_local(recording_path, local_path, **kwargs):
         recording_name = os.path.basename(recording_to_download)
         if os.path.exists(recording_to_download) and not os.path.exists(local_path+recording_name):
             # results are saved specific to named sorter
-            shutil.copytree(recording_to_download, local_path+recording_name,
-                            copy_function=copy2_verbose, dirs_exist_ok=True)
+            shutil.copytree(recording_to_download, local_path+recording_name, dirs_exist_ok=True)
+            print("copid " + recording_to_download + " to " + local_path+recording_name)
         else:
             print("Oh no! Either the recording path or local path couldn't be found")
     return
@@ -172,8 +172,10 @@ def copy_from_local(working_recording_path, recording_path, processed_folder_nam
     # copy the processed_folder_name from local to server
     if os.path.exists(working_recording_path + "/" + processed_folder_name):
         shutil.copytree(working_recording_path + "/" + processed_folder_name,
-                        recording_path + "/" + processed_folder_name,
-                        copy_function=copy2_verbose, dirs_exist_ok=True)
+                        recording_path + "/" + processed_folder_name, dirs_exist_ok=True)
+        print("copid "+working_recording_path+"/"+processed_folder_name+" to "
+              +recording_path + "/" + processed_folder_name)
+
     return
 
 

@@ -63,4 +63,3 @@ def process_spatial_firing(spike_data, spatial_data):
     if 'position_x' in spike_data:
         return spike_data
     spatial_spike_data = find_firing_location_indices(spike_data, spatial_data)
-    return spatial_spike_data

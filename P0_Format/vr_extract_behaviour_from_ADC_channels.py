@@ -288,7 +288,7 @@ def run_checks_for_position_data(position_data, recording_path, processed_folder
     stop_threshold = get_stop_threshold(recording_path)
     processed_position_data = process_position_data(position_data, track_length, stop_threshold)
 
-    # make some plots with the positioned
+    # make some plots
     output_path = recording_path+"/"+processed_folder_name
     plot_variables(position_data, save_path=output_path+"/Figures/Behaviour")
     plot_behaviour(processed_position_data, output_path, track_length)
