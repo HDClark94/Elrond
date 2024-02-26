@@ -30,7 +30,7 @@ def test_calculate_firing_rate_for_cluster_parallel():
     cluster_id = 1
 
     time_0 = time.time()
-    firing_rate_map_old = calculate_firing_rate_for_cluster_parallel_old(cluster_id, smooth,
+    firing_rate_map_old, _ = calculate_firing_rate_for_cluster_parallel_old(cluster_id, smooth,
                                                                      firing_data_spatial,
                                                                      positions_x, positions_y,
                                                                      number_of_bins_x, number_of_bins_y,
@@ -41,7 +41,7 @@ def test_calculate_firing_rate_for_cluster_parallel():
     print("Non vectorized rate map took ", str(time.time()-time_0), " seconds")
     time_0 = time.time()
 
-    firing_rate_map_new = calculate_firing_rate_for_cluster_parallel(cluster_id, smooth,
+    firing_rate_map_new, _ = calculate_firing_rate_for_cluster_parallel(cluster_id, smooth,
                                                                      firing_data_spatial,
                                                                      positions_x, positions_y,
                                                                      number_of_bins_x, number_of_bins_y,

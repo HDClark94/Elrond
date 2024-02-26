@@ -1,4 +1,0 @@
-/home/nolanlab/to_sort/recordings/M14_2018-04-27_11-04-43_of,
-/run/user/1001/gvfs/smb-share:server=cmvm.datastore.ed.ac.uk,share=cmvm/sbms/groups/mnolan_NolanLab/ActiveProjects/Klara/Open_field_opto_tagging_p038/M14_2018-04-27_11-04-43_of,
-1,
-1
