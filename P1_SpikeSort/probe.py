@@ -95,8 +95,6 @@ def add_probe_geometry(recording, probe_manufacturer, probe_name, n_probes):
         if (probe_manufacturer == "cambridgeneurotech") and (probe_name == "ASSY-236-P-1"):
             probe.wiring_to_device('cambridgeneurotech_mini-amp-64', channel_offset=int(i * 64))
             probe.move([i * 2000, 0])
-            probe.set_contact_ids(np.array(probe.to_dataframe()["contact_ids"].values, dtype=np.int64) + int(64 * i))
-            probe.set_device_channel_indices(np.arange(64) + int(64 * i))
             probegroup.add_probe(probe)
         else:
             print("I don't know how to handle this probe yet!")
