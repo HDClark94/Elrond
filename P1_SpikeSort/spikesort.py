@@ -88,5 +88,5 @@ def spikesort(recording_path, local_path, processed_folder_name, **kwargs):
     # Optionally
     if "save2phy" in kwargs:
         if kwargs["save2phy"] == True:
-            si.export_to_phy(we, output_folder=recording_path + "/" + processed_folder_name + "/" + settings.sorterName + "/phy", remove_if_exists=True, copy_binary=False)
+            si.export_to_phy(we, output_folder=recording_path + "/" + processed_folder_name + "/" + settings.sorterName + "/phy", remove_if_exists=True, copy_binary=True)
             si.export_report(we, output_folder=recording_path + "/" + processed_folder_name + "/" + settings.sorterName + "/report", remove_if_exists=True)
