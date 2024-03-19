@@ -1,6 +1,8 @@
 """
 Set paths, flags and parameters for the pipeline
 """
+suppress_warnings = True
+
 ##########
 # Folder locations
 processed_folder = "/processed"
@@ -23,7 +25,7 @@ common_reference = True
 bandpass_filter = True
 bandpass_filter_min = 300 # Hz
 bandpass_filter_max = 6000 # Hz
-n_sorting_workers = 17
+n_sorting_workers = 8
 
 ############
 # Automatic Curation

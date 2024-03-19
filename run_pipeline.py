@@ -1,13 +1,20 @@
 import os
 import sys
 import traceback
+import warnings
+import settings
 
 from Helpers.upload_download import copy_from_local, copy_to_local, empty_recording_folder_from_local
-from P1_SpikeSort.spikesort import spikesort
+from P1_SpikeSort.spikesort import spikesort, update_from_phy
 from P2_PostProcess.postprocess import postprocess
 
+
 def process_recordings(recording_paths, local_path="", processed_folder_name="", copy_locally=False,
-                       run_spikesorting=False, run_postprocessing=False, **kwargs):
+                       run_spikesorting=False, update_results_from_phy=False, run_postprocessing=False, **kwargs):
+
+    #empty_recording_folder_from_local(local_path)# debugging purposes
+
+    # TODO add checks that the requested flags make sense?
     """
     :param recording_paths: list of paths to recordings from which to process
     :param local_path: if copy_locally is true, copy to and from this local path
@@ -15,6 +22,7 @@ def process_recordings(recording_paths, local_path="", processed_folder_name="",
     :param copy_locally: flag whether to download results to the local device before processing further,
     results will be uploaded to origin after processing
     :param run_spikesorting: flag whether to spikesort
+    :param update_results_from_phy: flag whether to check if a phy folder exists and load it as a sorting extractor
     :param run_postprocessing: flag whether to postprocess (requires spike sorted results)
     # flag false if manually curating
     :param **kwargs:
@@ -46,17 +54,22 @@ def process_recordings(recording_paths, local_path="", processed_folder_name="",
                 copy_to_local(recording_path, local_path, **kwargs)
                 working_recording_path = local_path+recording_name
 
+            #========== spike sorting==============#
             if run_spikesorting:
                 print("I will now try to spike sort")
                 spikesort(working_recording_path, local_path, processed_folder_name, **kwargs)
+            if update_results_from_phy:
+                update_from_phy(working_recording_path, local_path, processed_folder_name, **kwargs)
+                print("I will try to update the sorted results using the phy folder if it exists")
+            #======================================#
 
             if run_postprocessing:
                 print("I will now try to postprocess")
                 postprocess(working_recording_path, local_path, processed_folder_name, **kwargs)
 
             if copy_locally:
-                print("I will copy the recordingfrom local and remove the recording from local")
-                copy_from_local(working_recording_path, recording_path, processed_folder_name)
+                print("I will copy the recording from local and remove the recording from local")
+                copy_from_local(recording_path, local_path, processed_folder_name, **kwargs)
                 empty_recording_folder_from_local(local_path) # clear folder from local
 
         except Exception as ex:
@@ -64,10 +77,14 @@ def process_recordings(recording_paths, local_path="", processed_folder_name="",
             print(ex)
             exc_type, exc_value, exc_traceback = sys.exc_info()
             traceback.print_tb(exc_traceback)
+            print("")
     return
 
 
 def main():
+    if settings.suppress_warnings:
+        warnings.filterwarnings("ignore")
+
     # take a list of recordings to process
     # e.g. recording_paths = ["/mnt/datastore/Harry/test_recording/vr/M11_D36_2021-06-28_12-04-36"] or
     #      recording_paths = []
@@ -75,22 +92,35 @@ def main():
     # to grab a whole directory of recordings
 
     recording_paths = []
-    recording_paths.extend([f.path for f in os.scandir("/mnt/datastore/Harry/test_recording/vr") if f.is_dir()]) # to grab a whole directory of recordings
+    #recording_paths.extend([f.path for f in os.scandir("/mnt/datastore/Harry/cohort8_may2021/vr") if f.is_dir()])
+    #recording_paths.extend([f.path for f in os.scandir("/mnt/datastore/Harry/cohort7_october2020/vr") if f.is_dir()])
+    #recording_paths.extend([f.path for f in os.scandir("/mnt/datastore/Harry/cohort6_july2020/vr") if f.is_dir()])
+    #recording_paths.extend([f.path for f in os.scandir("/mnt/datastore/Harry/cohort8_may2021/of") if f.is_dir()])
+    #recording_paths.extend([f.path for f in os.scandir("/mnt/datastore/Harry/cohort7_october2020/of") if f.is_dir()])
+    #recording_paths.extend([f.path for f in os.scandir("/mnt/datastore/Harry/cohort6_july2020/of") if f.is_dir()])
     recording_paths = ["/mnt/datastore/Harry/test_recording/vr/M11_D36_2021-06-28_12-04-36"] # example vr tetrode session with a linked of session
-    recording_paths = ["/mnt/datastore/Harry/test_recording/vr/M18_D1_2023-10-30_12-38-29"] # example vr cambridge p1 probe session with a linked of session (2 x 64 channels)
-
-    recording_paths = ["/mnt/datastore/Harry/test_recording/vr/M11_D36_2021-06-28_12-04-36",
-                       "/mnt/datastore/Harry/Cohort9_february2023/vr/M16_D1_2023-02-28_17-42-27",
-                       "/mnt/datastore/Harry/Cohort9_february2023/vr/M17_D1_2023-05-22_15-59-50"]
-
+    #recording_paths = ["/mnt/datastore/Harry/test_recording/vr/M18_D1_2023-10-30_12-38-29"] # example vr cambridge p1 probe session with a linked of session (2 x 64 channels)
+    #recording_paths = ["/mnt/datastore/Harry/test_recording/vr/M18_D1_2023-10-30_12-38-29",
+    #                   "/mnt/datastore/Harry/test_recording/vr/M11_D36_2021-06-28_12-04-36",
+    #                   "/mnt/datastore/Harry/Cohort9_february2023/vr/M16_D1_2023-02-28_17-42-27",
+    #                   "/mnt/datastore/Harry/Cohort9_february2023/vr/M17_D1_2023-05-22_15-59-50"]
+    #recording_paths = ["/mnt/datastore/Harry/test_recording/of/M11_D36_2021-06-28_11-19-21"]
+    #recording_paths = ["/mnt/datastore/Harry/test_recording/vr/M18_D1_2023-10-30_12-38-29"]
+    #recording_paths = ["/mnt/datastore/Harry/cohort8_may2021/vr/M14_D7_2021-05-18_11-44-56"]
+    #recording_paths=["/mnt/datastore/Harry/cohort8_may2021/vr/M14_D38_2021-06-30_12-35-11"]
+    #recording_paths = ["/mnt/datastore/Harry/Cohort9_february2023/vr/M16_D1_2023-02-28_17-42-27",
+    #                   "/mnt/datastore/Harry/test_recording/vr/M18_D1_2023-10-30_12-38-29"]
+    #recording_paths = ["/mnt/datastore/Harry/Cohort9_february2023/of/M16_D1_2023-02-28_18-42-28"]
+    #recording_paths= ["/mnt/datastore/Harry/cohort6_july2020/of/M2_D6_2020-08-10_15-58-12"]
     process_recordings(recording_paths,
                        local_path="/home/ubuntu/to_sort/recordings/",
                        processed_folder_name="processed",
                        copy_locally=True,
                        run_spikesorting=True,
-                       run_postprocessing=False,
+                       update_results_from_phy=False,
+                       run_postprocessing=True,
                        concat_sort=True,
-                       postprocess_based_on_concat_sort=True,
+                       postprocess_based_on_concat_sort=False,
                        save2phy=True,
                        sorterName="mountainsort4")
 

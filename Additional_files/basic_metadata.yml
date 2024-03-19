@@ -1,0 +1,72 @@
+NWBFile:
+  keywords:  # Terms to search over
+    - "vr"
+    - "of"
+    - "virtual reality"
+    - "open field"
+    - "mice"
+  experiment_description:  "Extracellular recording of mice medial entorhinal cortex during free exploration in a 100 x 100 cm open field and a virtual reality location memory task" # general description of the experiment
+  session_id: "inherited" # lab-specific ID for the session
+  experimenter:  # Name of person/people who performed experiment
+    - "Harry"
+  identifier:  # A unique text identifier for the file. If one is not provided it will be randomly assigned
+  institution: "University of Edinburgh" # Institution(s) where experiment is performed
+  lab: "Nolan Lab" # Lab where experiment was performed
+  session_description: "inherited" # A description of the session where this data was generated
+  session_start_time: "1906-01-01T08:15:30-05:00" # The start date and time of the recording session
+  surgery:  "Headpost and tetrode implant surgery into the MEC, surgeries performed by Harry Clark" # Narrative description about surgery/surgeries, including date(s) and who performed surgery.
+  pharmacology: "Isoflurane used during surgery. Vetergesic jelly given post surgery. No further drugs given" # Description of drugs used, including how and when they were administered. Anesthesia(s), painkiller(s), etc., plus dosage, concentration, etc.
+  protocol: "see https://doi.org/10.7554/eLife.89356.2" # Experimental protocol, if applicable. E.g., include IACUC protocol
+  related_publications:  # No description given
+    - "https://doi.org/10.7554/eLife.89356.2"
+    - "https://datashare.ed.ac.uk/handle/10283/8723"
+    - "https://github.com/MattNolanLab/eLife_Grid_anchoring_2024"
+  slices: "see https://doi.org/10.7554/eLife.89356.2" # Description of slices, including information about preparation thickness, orientation, temperature and bath solution.
+  source_script:  "None" # Script file used to create this NWB file.
+  source_script_file_name: "None" # Script file used to create this NWB file.
+  notes: "Experimental days involved recording from mice in the open arena and then in the virtual location memory task. On a few days this order was reversed without apparent effects on the results obtained. Mice were collected from the holding room 30 - 60 minutes before recording, were handled for 5 - 10 minutes, weighed and placed for 10 - 20 minutes in a cage containing objects and a running wheel. Between recording sessions mice were placed back in the object-filled playground for 30 minutes. Tetrodes were typically lowered by 50 - 100 µm after each session. The open arena consisted of a metal box with a square floor area, removable metal walls, metal frame (Frame parts from Kanya UK, C01-1, C20-10, A33-12, B49-75, B48-75, A39-31, ALU3), and an A4-sized cue card in the middle of one of the metal walls. For the open field exploration session, mice were placed in the open arena while tethered via an ultrathin SPI cable and custom-build commutator and left unprompted for 30 minutes to freely move around. For the location memory task mice were trained to obtain rewards at a location on the virtual linear track. Mice were head-fixed using a RIVETS clamp (Ronal Tool Company, Inc) and ran on a cylindrical treadmill fitted with a rotary encoder (Pewatron). Virtual tracks, generated using Blender3D (blender.com) had length 200 cm, with a 60 cm track zone, a 20 cm reward zone, a second 60 cm track zone and a 60 cm black box to separate successive trials. The distance visible ahead of the mouse was 50 cm. The reward zone was either marked by distinct vertical green and black bars on beaconed trials, or was not marked by a visual cue at all on non-beaconed or probe trials. A feeding tube placed in front of the animal dispensed soy milk rewards (5 - 10 µl per reward) if the mouse stopped in the reward zone, however was not dispensed on probe trials. A stop was registered in Blender3D if the speed of the mouse dropped below 4.7 cm/s. Speed was calculated on a rolling basis from the previous 100 ms at a rate of 60 Hz.
+Trials were delivered in repeating blocks throughout a recording session. For example, 3 beaconed trials (B) followed by 2 non-beaconed trials (N) with the order repeating until the end of the session. To encourage learning and engagement in both beaconed and non-beaconed trials, the first day of training typically used a trial type ratio of 3 beaconed trials to 1 non-beaconed trials. As training progressed we then increased the proportion of non-beaconed trials up to a ratio of 1 beaconed trial to 4 non-beaconed trials. Examples of trial blocks include BBBBN, BBBN, BBN, BN, BNN, BNNN, BBNNN and BBNNNNNNN where each character indicates the trial type of each trial within a block. In some sessions we replaced single non-beaconed trials in trial blocks with a probe trial (P). Examples of trial blocks with probe trials include BBBBNBBBBP, BBBNBBBP, BBNBBP and BBNNNNNNNP. For more details, see https://doi.org/10.7554/eLife.89356.2" # Notes about the experiment.
+  virus: "none"  # Information about virus(es) used in experiments, including virus ID, source, date made, injection location, volume, etc.
+  data_collection: "Electrophysiological signals were acquired using an Intan headstage connected via an SPI cable (Intan Technologies, RHD2000 6-ft (1.8 m) standard SPI interface cable) attached to an Open Ephys acquisition board. For the location memory task, behavioural variables including position, trial number and trial type were calculated in Blender3D at 60 Hz and sent via a data acquisition (DAQ) microcontroller (Arduino Due) to the OpenEphys acquisition board and was subsequently processed to provide downsampled behavioural data. In the open arena, motion and head-direction tracking used a camera (Logitech B525, 1280 x 720 pixels Webcam, RS components 795-0876) attached to the frame. Red and green polystyrene balls were attached to the sides of the headstage and were tracked using a custom script written in Bonsai (Lopes and Monteiro, 2021). Synchronisation of position and electrophysiology data used an LED attached to the side of the open arena in the field of view of the camera, with randomly timed trigger pulses sent to the LED via an Arduino board (Arduino Uno) and to the Open Ephys acquisition board via the I/O board" # Notes about data collection and analysis.
+  stimulus_notes: "see notes" # Notes about stimuli, such as how and where presented.
+Subject:
+  age: "P60" # The age of the subject. The ISO 8601 Duration format is recommended, e.g., 'P90D' for 90 days old, 'P2W' for 2 weeks old, 'P18Y' for 18 years old.
+  age__reference: "birth" # Age is with reference to this event. Can be 'birth' or 'gestational'.
+  description: "bred by Charles River" # Description of subject and where subject came from (e.g., breeder, if animal).
+  genotype: "WT"  # Genetic strain. If absent, assume Wild Type (WT)
+  sex: "M" # No description given
+  species: "Mus musculus" # Species of subject. Use latin name.
+  subject_id: "inherited" # ID of animal/person used/participating in experiment (lab convention)
+  weight: "30g" # Weight at time of experiment, at time of surgery and at other important times.
+  date_of_birth: "1905-01-01T08:15:30-05:00" # Date of birth of subject. Can be supplied instead of 'age'.
+  strain: "C57BL/6J" # The strain of the subject, e.g., 'C57BL/6J'
+Ecephys:
+  Device: 
+    - {
+    name: "Tetrode microdrive", # the name of this device
+    description: "Microdrives containing 4 tetrodes were built by threading 90% platinum, 10% iridium tetrode wires (18 µm HML-coated, Neuralynx) to an EIB-16 board (Neuralynx) via an inner cannula (21 gauge 9 mm long). The board was covered in epoxy and a poor lady frame (Axona) cemented to the side. An outer cannula (17 gauge 7 mm), placed around the inner cannula, was secured temporarily using vaseline, allowing it to be lowered during the surgery. Tetrodes were trimmed to ~3 mm using ceramic scissors (Science Tools, Germany) and gold plated (Non-cyanide gold plating solution, Neuralynx) to give an impedance between 150 and 200 kΩ at 1kHz. ", # Description of the device (e.g., model, firmware version, processing software version, etc.)
+    manufacturer: "custom", # the name of the manufacturer of this device
+}
+  ElectrodeGroup: 
+    - {
+    name: "tetrode", # the name of this electrode group
+    description: "Tetrodes lowered 1.2 - 1.4 mm into the right hemisphere of the brain, beginning at 3.4 mm lateral from Bregma and along the lambdoid suture, and at an angle of -15° in the posterior direction", # description of this electrode group
+    location: "targetting medial entorhinal cortex", # description of location of this electrode group
+    device: "Tetrode microdrive", # the device that was used to record from this electrode group
+    position: [-3.4, -1, -1.4], # stereotaxic position of this electrode group insertion into the brain (x, y, z) relative to lambda in mm
+}
+  Electrodes: 
+    - {name: "tetrode",  # name of this electrodes column
+    description: "16 channels comprised of 4 x tetrode bundles made from platinum-iridium wire"}  # description of this electrodes column
+  ElectricalSeries: 
+    name: ElectricalSeries # The name of this TimeSeries dataset
+    filtering: "No filtering" # Filtering applied to all channels of the data. For example, if this ElectricalSeries represents high-pass-filtered data (also known as AP Band), then this value could be 'High-pass 4-pole Bessel filter at 500 Hz'. If this ElectricalSeries represents low-pass-filtered LFP data and the type of filter is unknown, then this value could be 'Low-pass filter at 300 Hz'. If a non-standard filter type is used, provide as much detail about the filter properties as possible.
+    resolution:  -1.0 # The smallest meaningful difference (in specified unit) between values in data
+    conversion: 1.0  # Scalar to multiply each element in data to convert it to the specified unit
+    starting_time: "1906-01-01T08:15:30-05:00" # The timestamp of the first sample
+    rate: 30000 # Sampling rate in Hz
+    comments: "n/a" # Human-readable comments about this TimeSeries dataset
+    description: "see data collection" # Description of this TimeSeries dataset
+    control: [] # Numerical labels that apply to each element in data
+    control_description: [] # Description of each control value
+    offset: 0 # Scalar to add to each element in the data scaled by 'conversion' to finish converting it to the specified unit.

@@ -1,7 +1,14 @@
 import pandas as pd
+import settings
+from P2_PostProcess.OpenField.rate_map import calculate_rate_map
+from P2_PostProcess.OpenField.Scores.spatial_information import calculate_spatial_information_score
+from P2_PostProcess.OpenField.Scores.half_session import calculate_half_session_stability_score
+from P2_PostProcess.OpenField.Scores.border import calculate_border_score
+from P2_PostProcess.OpenField.Scores.grid import calculate_grid_score
+from P2_PostProcess.OpenField.Scores.head_direction import calculate_head_direction_score
+from P2_PostProcess.OpenField.Scores.speed import calculate_speed_score
 
-
-def calculate_corresponding_indices(spike_data, spatial_data, sampling_rate_ephys=30000):
+def calculate_corresponding_indices(spike_data, spatial_data, sampling_rate_ephys = settings.sampling_rate):
     avg_sampling_rate_bonsai = float(1 / spatial_data['synced_time'].diff().mean())
     sampling_rate_rate = sampling_rate_ephys / avg_sampling_rate_bonsai
 
@@ -51,15 +58,21 @@ def find_firing_location_indices(spike_data, spatial_data):
     return spike_data
 
 
-def process_spatial_firing(spike_data, spatial_data):
+def add_spatial_variables(spike_data, spatial_data):
     """
-    :param paired_order: number of recording in series of recordings sorted together
-    :param stitch_point: list of points where recordings sorted together were combined
     :param spike_data: data frame containing firing times where each row is a neuron
     :param spatial_data: data frame containing position of animal (x, y, hd, time)
-    :return: combined data frame containing firing times and corresponding positions as lists
-    firing_times = [,,,,] x = [,,,,] y = [,,,,] ... in each row for each cell
+    :return: spike_data: updated dataframe containing firing times where each row is a neuron
+    with rate maps, classic open field scores and metrics
     """
-    if 'position_x' in spike_data:
-        return spike_data
-    spatial_spike_data = find_firing_location_indices(spike_data, spatial_data)
+
+    spike_data = find_firing_location_indices(spike_data, spatial_data)
+    spike_data = calculate_rate_map(spike_data, spatial_data)
+    spike_data = calculate_spatial_information_score(spike_data, spatial_data)
+    spike_data = calculate_head_direction_score(spike_data, spatial_data)
+    spike_data = calculate_border_score(spike_data, spatial_data)
+    spike_data = calculate_grid_score(spike_data, spatial_data)
+    spike_data = calculate_half_session_stability_score(spike_data, spatial_data)
+    spike_data = calculate_speed_score(spike_data, spatial_data)
+
+    return spike_data

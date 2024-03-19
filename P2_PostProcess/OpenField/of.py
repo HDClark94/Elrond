@@ -7,21 +7,22 @@ def process(recording_path, processed_folder_name, **kwargs):
 
     # process and save position data
     position_data = process_position_data(recording_path)
-    # add a step for syncing data if necesssary
-    # TODO position_data = sync_posi...
     position_data = synchronise_position_data_via_ttl_pulses(position_data, recording_path)
 
-    position_data.to_pickle(recording_path+"/"+processed_folder_name+"/position_data.pkl")
+    # save position data
+    if not os.path.exists(recording_path + "/" + processed_folder_name):
+        os.mkdir(recording_path + "/" + processed_folder_name)
+    position_data.to_csv(recording_path + "/" + processed_folder_name + "/position_data.csv")
 
     # process and save spatial spike data
     spike_data_path = recording_path+"/"+processed_folder_name+"/"+settings.sorterName+"/firing.pkl"
     if os.path.exists(spike_data_path):
         spike_data = pd.read_pickle(spike_data_path)
-        #spike_data = # add spatial variables?
+        spike_data = add_spatial_variables(spike_data, position_data)
         spike_data.to_pickle(spike_data_path)
+
+        # make plots
+        plot_firing_properties(spike_data, output_path=recording_path + "/" + processed_folder_name)
     else:
         print("I couldn't find spike data at ", spike_data_path)
-
-    # make plots
-    plot_firing_properties(spike_data, output_path=recording_path+"/"+processed_folder_name)
     return

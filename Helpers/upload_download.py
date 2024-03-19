@@ -56,8 +56,9 @@ def get_recordings_to_postprocess(recording_path, local_path, **kwargs):
     This is influenced by concat_sort which is a flag for concatenating recordings before sorting
     """
     recordings_to_sort = [recording_path]
-    if 'concat_sort' in kwargs:
-        if kwargs["concat_sort"] == True:
+    if ('concat_sort' in kwargs) and ('postprocess_based_on_concat_sort' in kwargs):
+        if (kwargs["concat_sort"] == True) and \
+                (kwargs["postprocess_based_on_concat_sort"] == True):
             matched_recording_paths = get_matched_recording_paths(recording_path)
             for matched_recording_path in matched_recording_paths:
                 matched_recording_name = os.path.basename(matched_recording_path)
@@ -129,7 +130,6 @@ def copy_folder(src_folder, dest_folder, ignore_items=[]):
                                                      copy_function=copy2_verbose, dirs_exist_ok=True)
     print("")
 
-
 def copy2_verbose(src, dst):
     print('Copying {0}'.format(src))
     shutil.copy2(src,dst)
@@ -158,26 +158,44 @@ def copy_to_local(recording_path, local_path, **kwargs):
         recording_name = os.path.basename(recording_to_download)
         if os.path.exists(recording_to_download) and not os.path.exists(local_path+recording_name):
             # results are saved specific to named sorter
-            shutil.copytree(recording_to_download, local_path+recording_name, dirs_exist_ok=True)
-            print("copid " + recording_to_download + " to " + local_path+recording_name)
+            shutil.copytree(recording_to_download,
+                            local_path+recording_name, dirs_exist_ok=True)
+            print("copied " + recording_to_download + " to " + local_path+recording_name)
         else:
             print("Oh no! Either the recording path or local path couldn't be found")
     return
 
-def copy_from_local(working_recording_path, recording_path, processed_folder_name):
-    # remove /processed_folder_name from recording on server
-    if os.path.exists(recording_path + "/" + processed_folder_name):
-        shutil.rmtree(recording_path + "/" + processed_folder_name)
+def copy_from_local(recording_path, local_path, processed_folder_name, **kwargs):
+    recordings_to_upload = [recording_path]
 
-    # copy the processed_folder_name from local to server
-    if os.path.exists(working_recording_path + "/" + processed_folder_name):
-        shutil.copytree(working_recording_path + "/" + processed_folder_name,
-                        recording_path + "/" + processed_folder_name, dirs_exist_ok=True)
-        print("copid "+working_recording_path+"/"+processed_folder_name+" to "
-              +recording_path + "/" + processed_folder_name)
+    # check whether there are more recordings to download locally
+    if 'concat_sort' in kwargs:
+        if kwargs["concat_sort"] == True:
+            matched_recording_paths = get_matched_recording_paths(recording_path)
+            recordings_to_upload.extend(matched_recording_paths)
 
+    # copy recordings
+    for recording_to_upload in recordings_to_upload:
+        recording_name = os.path.basename(recording_to_upload)
+        local_recording_path = local_path + recording_name
+
+        # remove /processed_folder_name from recording on server
+        if os.path.exists(recording_path + "/" + processed_folder_name):
+            shutil.rmtree(recording_path + "/" + processed_folder_name)
+
+        # copy the processed_folder_name from local to server
+        if os.path.exists(local_recording_path + "/" + processed_folder_name):
+            shutil.copytree(local_recording_path + "/" + processed_folder_name,
+                            recording_to_upload  + "/" + processed_folder_name,
+                            copy_function=copy2_verbose, dirs_exist_ok=True)
+            print("copied "+local_recording_path+  "/" + processed_folder_name+" to "
+                           +recording_to_upload +  "/" + processed_folder_name)
     return
 
+import logging
+def _logpath(path, names):
+    logging.info('Working in %s' % path)
+    return []   # nothing will be ignored
 
 def empty_recording_folder_from_local(local_path):
     for folder_path in os.listdir(local_path):

@@ -1,6 +1,8 @@
 import os
 import sys
 import traceback
+import warnings
+import settings
 
 from Helpers.upload_download import copy_from_local, copy_to_local, empty_recording_folder_from_local
 from P0_Format.format import format
@@ -42,7 +44,7 @@ def process_recordings(recording_paths, local_path="", processed_folder_name= ""
 
             if copy_locally:
                 print("I will copy the recordingfrom local and remove the recording from local")
-                copy_from_local(working_recording_path, recording_path, processed_folder_name)
+                copy_from_local(recording_path, local_path, processed_folder_name, **kwargs)
                 empty_recording_folder_from_local(local_path) # clear folder from local
 
         except Exception as ex:
@@ -54,22 +56,32 @@ def process_recordings(recording_paths, local_path="", processed_folder_name= ""
 
 
 def main():
+    if settings.suppress_warnings:
+        warnings.filterwarnings("ignore")
+
     # take a list of recordings to process
     # e.g. recording_paths = ["/mnt/datastore/Harry/test_recording/vr/M11_D36_2021-06-28_12-04-36"] or
     #      recording_paths = []
     #      recording_paths.extend([f.path for f in os.scandir("/mnt/datastore/Harry/test_recording/vr") if f.is_dir()])
     # to grab a whole directory of recordings
 
-    recording_paths = ["/mnt/datastore/Harry/test_recording/vr/M11_D36_2021-06-28_12-04-36"]
     #recording_paths = ["/mnt/datastore/Harry/test_recording/M18_D1_2023-10-30_12-38-29"]
+
+    recording_paths = []
+    recording_paths.extend([f.path for f in os.scandir("/mnt/datastore/Harry/cohort8_may2021/of") if f.is_dir()])
+    recording_paths.extend([f.path for f in os.scandir("/mnt/datastore/Harry/cohort7_october2020/of") if f.is_dir()])
+    recording_paths.extend([f.path for f in os.scandir("/mnt/datastore/Harry/cohort6_july2020/of") if f.is_dir()])
+    recording_paths.extend([f.path for f in os.scandir("/mnt/datastore/Harry/cohort8_may2021/vr") if f.is_dir()])
+    recording_paths.extend([f.path for f in os.scandir("/mnt/datastore/Harry/cohort7_october2020/vr") if f.is_dir()])
+    recording_paths.extend([f.path for f in os.scandir("/mnt/datastore/Harry/cohort6_july2020/vr") if f.is_dir()])
 
     process_recordings(recording_paths,
                        local_path="/home/ubuntu/to_sort/recordings/",
                        processed_folder_name="processed",
-                       copy_locally=True,
+                       copy_locally=False,
                        run_formatter=True,
-                       convert2nwb=False,
-                       convert_ADC_to_VRbehaviour=True,
+                       convert2nwb=True,
+                       convert_ADC_to_VRbehaviour=False,
                        create_param_yml=False)
 
 if __name__ == '__main__':

@@ -7,6 +7,8 @@ import pandas as pd
 import csv
 from scipy.interpolate import interp1d
 
+from Helpers import math_utility
+
 def read_bonsai_file(recording_folder):
     if os.path.isdir(recording_folder) is False:
         print('I could not find a bonsai file in', recording_folder)
@@ -47,27 +49,23 @@ def convert_time_to_seconds(position_data):
 
 def resample_position_data(position_data, fs):
     '''
-    Resample position data so that they are of exact sampling rate.
+    Resample position data so FPS is consistent.
     Sometimes the FPS of the camera is not stable,
     which may lead to error in syncing.
     Assume pos has a time_seconds column
     '''
 
     t = position_data.time_seconds.values
+    t2 = np.arange(0,t[-1],1/fs)
 
     print('I will now resample the data at ',str(fs), ' Hz')
-    print("Mean frame rate: ", str(len(position_data)/(t[-1]-t[0])))
+    print("Mean frame rate:", str(len(position_data)/(t[-1]-t[0])), "FPS")
+    print("SD of frame rate:", str(np.nanstd(1 / np.diff(t))), "FPS")
 
-    #TODO
-    #print("Standard deviation of frame rate: ", str(len(position_data)))
-
-    t = position_data.time_seconds.values
-    t2 = np.arange(0,t[-1],1/fs)
     df = {}
     for col in position_data.columns:
-        f = interp1d(t,position_data[col].values)
+        f = interp1d(t, position_data[col].values)
         df[col] = f(t2)
-
     df['time_seconds'] = t2
     df2return = pd.DataFrame(df)
     return df2return
@@ -87,10 +85,11 @@ def proces_bonsai_position(position_data):
 
 def calculate_speed(position_data):
     elapsed_time = position_data['time_seconds'].diff()
-    distance_travelled = np.sqrt(position_data['x_left'].diff().pow(2) + position_data['y_left'].diff().pow(2))
-    position_data['speed_left'] = distance_travelled / elapsed_time
-    distance_travelled = np.sqrt(position_data['x_right'].diff().pow(2) + position_data['y_right'].diff().pow(2))
-    position_data['speed_right'] = distance_travelled / elapsed_time
+    distance_travelled_left = np.sqrt(position_data['x_left'].diff().pow(2) + position_data['y_left'].diff().pow(2))
+    distance_travelled_right = np.sqrt(position_data['x_right'].diff().pow(2) + position_data['y_right'].diff().pow(2))
+
+    position_data['speed_left'] = distance_travelled_left / elapsed_time
+    position_data['speed_right'] = distance_travelled_right / elapsed_time
     return position_data
 
 
@@ -152,8 +151,10 @@ def calculate_position(position_data):
 
 
 def calculate_head_direction(position_data):
-    position_data['head_dir_tmp'] = np.degrees(np.arctan((position_data['y_left_cleaned'] + position_data['y_right_cleaned']) / (position_data['x_left_cleaned'] + position_data['x_right_cleaned'])))
-    rho, hd = math_utility.cart2pol(position_data['x_right_cleaned'] - position_data['x_left_cleaned'], position['y_right_cleaned'] - position_data['y_left_cleaned'])
+    position_data['head_dir_tmp'] = np.degrees(np.arctan((position_data['y_left_cleaned'] + position_data['y_right_cleaned']) /
+                                                         (position_data['x_left_cleaned'] + position_data['x_right_cleaned'])))
+    rho, hd = math_utility.cart2pol(position_data['x_right_cleaned'] - position_data['x_left_cleaned'],
+                                    position_data['y_right_cleaned'] - position_data['y_left_cleaned'])
     position_data['hd'] = np.degrees(hd)
     position_data['hd'] = position_data['hd'].interpolate()  # interpolate missing data
     return position_data
@@ -178,14 +179,18 @@ def process_position_data(recording_path):
     bonsai_position_data = read_bonsai_file(recording_path)
     position_data = proces_bonsai_position(bonsai_position_data)
     position_data = resample_position_data(position_data, 30)
+
+    position_data = calculate_speed(position_data)
     position_data = curate_position(position_data)  # remove jumps from data, and when the beads are far apart
     position_data = calculate_position(position_data)  # get central position and interpolate missing data
+    position_data = calculate_head_direction(position_data)  # use coord from the two beads to get hd and interpolate
     position_data = shift_to_start_from_zero_at_bottom_left(position_data)
     position_data = convert_to_cm(position_data)
-    position_data = calculate_head_direction(position_data)  # use coord from the two beads to get hd and interpolate
-    position_data = calculate_speed(position_data)
     position_data = calculate_central_speed(position_data)
 
     position_data = position_data[['time_seconds', 'position_x', 'position_x_pixels',
                                    'position_y', 'position_y_pixels', 'hd', 'syncLED', 'speed']]
     return position_data
+
+def sync_position_data():
+    return
