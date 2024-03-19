@@ -34,7 +34,10 @@ def convert(recording_path, processed_folder_name, **kwargs):
 
     # handle metadata
     metadata_path = "/mnt/datastore/Harry/basic_metadata.yml" # basic
+    # TODO put Additional_files/basic_metadata.yml into a location that can be read from and read from there.
     path_to_dob_csv = "/mnt/datastore/Harry/Grid_anchoring_eLife_2023/mouse_dobs.csv"
+    # TODO date of birth information needs to be supplied somewhere.
+
     params = load_dict_from_file(recording_path+"/params.yml")
     subject_id = recording_path.split("/")[-1].split("_")[0]
     session_id = recording_path.split("/")[-1]

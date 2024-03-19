@@ -52,7 +52,7 @@ def calculate_track_location(position_data, recording_folder, track_length):
     distance_unit = recorded_track_length/track_length  # Obtain distance unit (cm) by dividing recorded track length to actual track length
     location_in_cm = (recorded_location - recorded_startpoint) / distance_unit
 
-    position_data['x_position_cm'] = np.asarray(location_in_cm, dtype=np.float16) # fill in dataframe
+    position_data['x_position_cm'] = np.asarray(location_in_cm, dtype=np.float32) # fill in dataframe
     return position_data
 
 
@@ -82,29 +82,70 @@ def recalculate_track_location(position_data, track_length):
         trial_location_in_cm = (trial_locations - recorded_startpoint) / distance_unit
 
         location_in_cm = np.concatenate((location_in_cm, trial_location_in_cm))
-    position_data['x_position_cm'] = np.asarray(location_in_cm, dtype=np.float16) # fill in dataframe
+    position_data['x_position_cm'] = np.asarray(location_in_cm, dtype=np.float32) # fill in dataframe
     return position_data
 
-
-def fix_around_teleports(raw_position_data, new_trial_indices, track_length):
-    x_position_cm = np.array(raw_position_data["x_position_cm"])
-    trial_numbers = np.array(raw_position_data["trial_number"])
+def curate_track_location(raw_position_data, track_length):
+    # do not allow trials to go back on themselves
+    # trial(n) cannot be lower than trial(n-1)
+    x_position_cm = np.array(raw_position_data["x_position_cm"], dtype=np.float64)
+    trial_numbers = np.array(raw_position_data["trial_number"], dtype=np.int64)
     distance_travelled = x_position_cm + (track_length * (trial_numbers - 1))
 
-    # add nans around teleports so we can interpolate
-    n_samples_to_nan_out = settings.sampling_rate*0.2 # 200 ms
-    # use new trial indices to fix velocity around teleports
-    for new_trial_indice in new_trial_indices:
-        if new_trial_indice > int(n_samples_to_nan_out): # ignore first trial
-            distance_travelled[int(new_trial_indice-n_samples_to_nan_out):
-                               int(new_trial_indice+n_samples_to_nan_out)] = np.nan
+    # nan out sections where trial number decreases
+    bad_indices = ((np.diff(trial_numbers) >= 0) == False).nonzero()[0]
+    for bad_idx in bad_indices:
+        last_good_dt = distance_travelled[bad_idx]
 
-    # also add nans to inconcievable speeds
+        from_bad_idx_mask = np.zeros(len(distance_travelled))
+        from_bad_idx_mask[bad_idx+1:] = 1
+        from_bad_idx_mask = from_bad_idx_mask==1
+        bad_tn_mask = trial_numbers == trial_numbers[bad_idx+1]
+        mask = from_bad_idx_mask & bad_tn_mask
+
+        distance_travelled[mask] = last_good_dt
+
+    # remake trial numbers and position
+    distance_travelled = distance_travelled-\
+                         (distance_travelled[0] // track_length)*track_length # added redundancy so trials start at 1
+    x_position_cm = distance_travelled % track_length
+    trial_numbers = np.array(distance_travelled//track_length, dtype=np.int64)+1
+
+    # trial numbers should start at 1
+    assert trial_numbers[0] == 1
+    # trial numbers should never go down
+    assert np.all(np.diff(trial_numbers) >= 0)
+
+    print('This mouse did ', len(np.unique(trial_numbers)), ' trials')
+    raw_position_data["x_position_cm"] = x_position_cm
+    raw_position_data["trial_number"] = trial_numbers
+    return raw_position_data
+
+
+
+
+def fix_around_teleports(raw_position_data, track_length):
+    x_position_cm = np.array(raw_position_data["x_position_cm"], dtype=np.float64)
+    trial_numbers = np.array(raw_position_data["trial_number"], dtype=np.int64)
+    distance_travelled = x_position_cm + (track_length * (trial_numbers - 1))
+
+    n_samples_to_nan_out = int(settings.sampling_rate * 0.2)  # 200 ms
+
+    # add nans to inconcievable speeds
     change_in_distance_travelled = np.concatenate([np.zeros(1), np.diff(distance_travelled)], axis=0)
     bad_indices = np.asarray(abs(change_in_distance_travelled) > 10).nonzero()[0]
     for bad_idx in bad_indices:
-        assert (bad_idx-n_samples_to_nan_out)>0 and (bad_idx+n_samples_to_nan_out)<len(distance_travelled)
-        distance_travelled[int(bad_idx-n_samples_to_nan_out): int(bad_idx+n_samples_to_nan_out)] = np.nan
+        if bad_idx-n_samples_to_nan_out <= 0:
+            bad_ind_from = 0
+        else:
+            bad_ind_from = bad_idx-n_samples_to_nan_out
+        if bad_idx+n_samples_to_nan_out >= len(distance_travelled):
+            bad_ind_to = len(distance_travelled)
+        else:
+            bad_ind_to = bad_idx+n_samples_to_nan_out
+
+        assert (bad_ind_from >= 0) and (bad_ind_to <= len(distance_travelled))
+        distance_travelled[bad_ind_from: bad_ind_to] = np.nan
 
     #now interpolate where these nan values are
     ok = ~np.isnan(distance_travelled)
@@ -113,11 +154,9 @@ def fix_around_teleports(raw_position_data, new_trial_indices, track_length):
     x  = np.isnan(distance_travelled).ravel().nonzero()[0]
     distance_travelled[np.isnan(distance_travelled)] = np.interp(x, xp, fp)
 
+    # remake trial numbers
     x_position_cm = distance_travelled % track_length
-    trial_numbers = np.array(distance_travelled//track_length, dtype=np.int64)+1
-
-    # trial numbers should never go down
-    assert np.all(np.diff(trial_numbers) >= 0)
+    trial_numbers = np.array(distance_travelled // track_length, dtype=np.int64) + 1
 
     raw_position_data["x_position_cm"] = x_position_cm
     raw_position_data["trial_number"] = trial_numbers
@@ -125,9 +164,9 @@ def fix_around_teleports(raw_position_data, new_trial_indices, track_length):
 
 
 def smoothen_track_location(raw_position_data, track_length):
-    x_position_cm = np.asarray(raw_position_data["x_position_cm"])
-    trial_numbers = np.array(raw_position_data['trial_number'], dtype=np.int64)
-    distance_travelled = (track_length*(trial_numbers-1))+x_position_cm
+    x_position_cm = np.array(raw_position_data["x_position_cm"], dtype=np.float64)
+    trial_numbers = np.array(raw_position_data["trial_number"], dtype=np.int64)
+    distance_travelled = x_position_cm + (track_length * (trial_numbers - 1))
 
     # smooth out the ephys noise
     gauss_kernel = Gaussian1DKernel(stddev=200)
@@ -154,8 +193,7 @@ def calculate_trial_numbers(position_data):
     trials = fill_in_trial_array(new_trial_indices,trials)
 
     position_data['trial_number'] = np.asarray(trials, dtype=np.uint16)
-    print('This mouse did ', int(max(trials)), ' trials')
-    return position_data, new_trial_indices
+    return position_data
 
 
 def get_new_trial_indices(position_data):
@@ -258,10 +296,11 @@ def calculate_track_location(position_data, recording_folder, track_length):
 def extract_position_data(recording_path, track_length):
     raw_position_data = pd.DataFrame()
     raw_position_data = calculate_track_location(raw_position_data, recording_path, track_length)
-    raw_position_data, new_trial_indices = calculate_trial_numbers(raw_position_data)
+    raw_position_data = calculate_trial_numbers(raw_position_data)
     raw_position_data = recalculate_track_location(raw_position_data, track_length)
-    raw_position_data = fix_around_teleports(raw_position_data, new_trial_indices, track_length)
+    raw_position_data = fix_around_teleports(raw_position_data, track_length)
     raw_position_data = smoothen_track_location(raw_position_data, track_length)
+    raw_position_data = curate_track_location(raw_position_data, track_length)
     raw_position_data = calculate_trial_types(raw_position_data, recording_path)
     raw_position_data = calculate_time(raw_position_data, sampling_rate=settings.sampling_rate)
     down_sampled_position_data = downsample_position_data(raw_position_data)
@@ -290,7 +329,7 @@ def run_checks_for_position_data(position_data, recording_path, processed_folder
 
     # make some plots
     output_path = recording_path+"/"+processed_folder_name
-    plot_variables(position_data, save_path=output_path+"/Figures/Behaviour")
+    plot_variables(position_data, output_path=output_path+"/Figures/Behaviour")
     plot_behaviour(processed_position_data, output_path, track_length)
     print("some plots have been saved at ", output_path, "")
 
