@@ -1,5 +1,18 @@
 import numpy as np
 
+def find_nearest(array, value):
+    array = np.asarray(array)
+    index = (np.abs(array - value)).argmin()
+    return index
+
+
+def pad_shorter_array_with_0s(array1, array2):
+    if len(array1) < len(array2):
+        array1 = np.pad(array1, (0, len(array2)-len(array1)), 'constant')
+    if len(array2) < len(array1):
+        array2 = np.pad(array2, (0, len(array1)-len(array2)), 'constant')
+    return array1, array2
+
 
 # https://stackoverflow.com/questions/30399534/shift-elements-in-a-numpy-array
 def shift(array_to_shift, n):
