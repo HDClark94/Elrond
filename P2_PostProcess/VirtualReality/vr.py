@@ -20,11 +20,18 @@ def process(recording_path, processed_folder_name, **kwargs):
 
     # add a step for syncing data if necesssary
     # TODO position_data = sync_posi...
+    # process video
+    # TODO add a section to process video feed
 
-    # process and save position data
+    # save position data
+    if not os.path.exists(recording_path + "/" + processed_folder_name):
+        os.mkdir(recording_path + "/" + processed_folder_name)
+    position_data.to_csv(recording_path + "/" + processed_folder_name + "/position_data.csv")
+
+    # process and plot position data
     processed_position_data = process_position_data(position_data, track_length, stop_threshold)
     processed_position_data.to_pickle(recording_path+"/"+processed_folder_name+"/processed_position_data.pkl")
-    position_data.to_pickle(recording_path+"/"+processed_folder_name+"/position_data.pkl")
+    plot_behaviour(position_data, processed_position_data, output_path=recording_path+"/"+processed_folder_name, track_length=track_length)
 
     # process and save spatial spike data
     spike_data_path = recording_path+"/"+processed_folder_name+"/"+settings.sorterName+"/firing.pkl"
@@ -32,16 +39,12 @@ def process(recording_path, processed_folder_name, **kwargs):
         spike_data = pd.read_pickle(spike_data_path)
         spike_data = add_location_and_task_variables(spike_data, position_data, processed_position_data, track_length)
         spike_data.to_pickle(spike_data_path)
+
+        #plot
+        plot_track_firing(spike_data, processed_position_data, output_path=recording_path+"/"+processed_folder_name, track_length=track_length)
+        plot_firing_properties(spike_data, output_path=recording_path+"/"+processed_folder_name)
     else:
         print("I couldn't find spike data at ", spike_data_path)
-
-    # process video
-    # TODO add a section to process video feed
-
-    # make plots
-    plot_behaviour(processed_position_data, output_path=recording_path+"/"+processed_folder_name, track_length=track_length)
-    plot_track_firing(spike_data, processed_position_data, output_path=recording_path+"/"+processed_folder_name, track_length=track_length)
-    plot_firing_properties(spike_data, output_path=recording_path+"/"+processed_folder_name)
     return
 
 #  this is here for testing

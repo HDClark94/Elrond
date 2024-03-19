@@ -3,7 +3,6 @@ import pandas as pd
 import os
 import traceback
 from scipy import stats
-import sys
 import settings
 from astropy.convolution import convolve, Gaussian1DKernel
 import Helpers.metadata_extraction as metadata_extraction
@@ -13,7 +12,6 @@ def get_track_length(recording_path):
     parameter_file_path = metadata_extraction.get_tags_parameter_file(recording_path)
     _, track_length = metadata_extraction.process_running_parameter_tag(parameter_file_path)
     return track_length
-
 
 def get_stop_threshold(recording_path):
     parameter_file_path = metadata_extraction.get_tags_parameter_file(recording_path)
@@ -65,7 +63,8 @@ def add_stops_according_to_blender(position_data, processed_position_data):
     stop_locations = []
     first_stop_locations = []
     for tn in processed_position_data["trial_number"]:
-        trial_stop_locations = np.array(position_data[(position_data["below_speed_threshold"] == True) & (position_data["trial_number"] == tn)]['x_position_cm'])
+        trial_stop_locations = np.array(position_data[(position_data["below_speed_threshold"] == True)
+                                                      & (position_data["trial_number"] == tn)]['x_position_cm'])
         if len(trial_stop_locations)>0:
             trial_first_stop_location = trial_stop_locations[0]
         else:

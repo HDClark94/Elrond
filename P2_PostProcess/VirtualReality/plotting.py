@@ -35,7 +35,8 @@ def plot_speed_heat_map(processed_position_data, output_path="", track_length=20
     cbar.set_label('Speed (cm/s)', fontsize=20, rotation=270)
     plt.ylabel('Trial Number', fontsize=25, labelpad = 10)
     plt.xlabel('Location (cm)', fontsize=25, labelpad = 10)
-    plt.xlim(0,track_length)
+    plt.xlim(0, track_length)
+    plt.ylim(0, len(processed_position_data))
     ax.yaxis.set_major_locator(ticker.MultipleLocator(100))
     ax.tick_params(axis='both', which='major', labelsize=20)
     ax.yaxis.set_ticks_position('left')
@@ -116,8 +117,8 @@ def plot_stops_on_track(processed_position_data, output_path, track_length=200):
     save_path = output_path+'/Figures/behaviour'
     if os.path.exists(save_path) is False:
         os.makedirs(save_path)
-    stops_on_track = plt.figure(figsize=(6,6))
-    ax = stops_on_track.add_subplot(1, 1, 1)  # specify (nrows, ncols, axnum)
+    fig = plt.figure(figsize=(6,6))
+    ax = fig.add_subplot(1, 1, 1)  # specify (nrows, ncols, axnum)
 
     for index, trial_row in processed_position_data.iterrows():
         trial_row = trial_row.to_frame().T.reset_index(drop=True)
@@ -125,22 +126,27 @@ def plot_stops_on_track(processed_position_data, output_path, track_length=200):
         trial_number = trial_row["trial_number"].iloc[0]
         trial_stop_color = get_trial_color(trial_type)
 
-        ax.plot(np.array(trial_row["stop_location_cm"].iloc[0]), trial_number*np.ones(len(trial_row["stop_location_cm"].iloc[0])), 'o', color=trial_stop_color, markersize=4)
+        ax.plot(np.array(trial_row["stop_location_cm"].iloc[0]),
+                trial_number*np.ones(len(trial_row["stop_location_cm"].iloc[0])),
+                'o', color=trial_stop_color, markersize=4)
 
-    plt.ylabel('Stops on trials', fontsize=20, labelpad = 10)
-    plt.xlabel('Location (cm)', fontsize=20, labelpad = 10)
+    plt.ylabel('Stops on trials', fontsize=25, labelpad = 10)
+    plt.xlabel('Location (cm)', fontsize=25, labelpad = 10)
     plt.xlim(0,track_length)
+    ax.tick_params(axis='both', which='major', labelsize=20)
+    plt.ylim(0,len(processed_position_data))
     ax.yaxis.set_ticks_position('left')
     ax.xaxis.set_ticks_position('bottom')
     plot_utility.style_track_plot(ax, track_length)
     n_trials = len(processed_position_data)
     x_max = n_trials+0.5
     plot_utility.style_vr_plot(ax, x_max)
-    plt.subplots_adjust(hspace = .35, wspace = .35,  bottom = 0.2, left = 0.12, right = 0.87, top = 0.92)
+    plt.subplots_adjust(hspace = .35, wspace = .35,  bottom = 0.2, left = 0.2, right = 0.87, top = 0.92)
     plt.savefig(save_path + '/stop_raster.png', dpi=200)
     plt.close()
 
-def plot_variables(position_data, save_path): # can be raw or downsampled
+def plot_variables(position_data, output_path): # can be raw or downsampled
+    save_path = output_path+'/Figures/behaviour'
     if os.path.exists(save_path) is False:
         os.makedirs(save_path)
 
@@ -149,32 +155,67 @@ def plot_variables(position_data, save_path): # can be raw or downsampled
         plt.savefig(save_path + '/' + column + '.png')
         plt.close()
 
+def curate_stops(stop_locations, stop_trial_numbers, track_length):
+    stop_locations = np.array(stop_locations)
+    stop_trial_numbers = np.array(stop_trial_numbers)
+    stop_locations_elapsed = (track_length * (stop_trial_numbers - 1)) + stop_locations
+
+    curated_stop_location_elapsed = []
+    curated_stop_locations = []
+    curated_stop_trials = []
+    for i, stop_loc in enumerate(stop_locations_elapsed):
+        if (i == 0):  # take first stop always
+            add_stop = True
+        elif ((stop_locations_elapsed[i] - max(curated_stop_location_elapsed)) > 1):
+            # only include stop if the stop was at least 1cm away for a curated stop
+            add_stop = True
+        else:
+            add_stop = False
+
+        if add_stop:
+            curated_stop_location_elapsed.append(stop_locations_elapsed[i])
+            curated_stop_locations.append(stop_locations[i])
+            curated_stop_trials.append(stop_trial_numbers[i])
+
+    return np.array(curated_stop_locations), np.array(curated_stop_trials)
+
+
 def plot_stop_histogram(processed_position_data, output_path="", track_length=200):
     # TODO test this
     print('plotting stop histogram...')
     save_path = output_path+'/Figures/behaviour'
     if os.path.exists(save_path) is False:
         os.makedirs(save_path)
-    stop_histogram = plt.figure(figsize=(6,4))
-    ax = stop_histogram.add_subplot(1, 1, 1)
+    fig = plt.figure(figsize=(6,6))
+    ax = fig.add_subplot(1, 1, 1)
     bin_size = 5
 
     for tt, c in zip([0,1,2], ["black", "red", "blue"]):
         tt_processed_position_data = processed_position_data[processed_position_data["trial_type"] == tt]
-        tt_stops = pandas_collumn_to_numpy_array(tt_processed_position_data["stop_location_cm"])
+
+        tt_stops = []
+        tt_trial_numbers = []
+        for i, tn in enumerate(tt_processed_position_data["trial_number"]):
+            tt_stops.extend(tt_processed_position_data["stop_location_cm"].iloc[i])
+            tt_trial_numbers.extend(np.ones(len(tt_processed_position_data["stop_location_cm"].iloc[i]))*tn)
+
+        tt_stops, tt_trial_numbers = curate_stops(tt_stops, tt_trial_numbers, track_length)
         tt_stops_hist, bin_edges = np.histogram(tt_stops, bins=int(track_length/bin_size), range=(0, track_length))
         bin_centres = 0.5 * (bin_edges[1:] + bin_edges[:-1])
         if len(tt_processed_position_data) > 0:
             ax.plot(bin_centres, tt_stops_hist / len(tt_processed_position_data), '-', color=c)
 
-    plt.ylabel('Stops/Trial', fontsize=20, labelpad = 10)
-    plt.xlabel('Location (cm)', fontsize=20, labelpad = 10)
+    plt.ylabel('Stops/Trial', fontsize=25, labelpad = 10)
+    plt.xlabel('Location (cm)', fontsize=25, labelpad = 10)
+    ax.yaxis.set_major_locator(ticker.MultipleLocator(1))
+    ax.tick_params(axis='both', which='major', labelsize=20)
     plt.xlim(0,track_length)
+    ax.set_ylim(bottom=0)
     ax.yaxis.set_ticks_position('left')
     ax.xaxis.set_ticks_position('bottom')
     plot_utility.style_track_plot(ax, track_length)
     plot_utility.style_vr_plot(ax)
-    plt.subplots_adjust(hspace = .35, wspace = .35,  bottom = 0.2, left = 0.12, right = 0.87, top = 0.92)
+    plt.subplots_adjust(hspace = .35, wspace = .35,  bottom = 0.2, left = 0.2, right = 0.87, top = 0.92)
     plt.savefig(save_path + '/stop_histogram.png', dpi=200)
     plt.close()
 
@@ -198,8 +239,8 @@ def plot_speed_histogram(processed_position_data, output_path="", track_length=2
     if os.path.exists(save_path) is False:
         os.makedirs(save_path)
 
-    speed_histogram = plt.figure(figsize=(6,4))
-    ax = speed_histogram.add_subplot(1, 1, 1)  # specify (nrows, ncols, axnum)
+    fig = plt.figure(figsize=(6,6))
+    ax = fig.add_subplot(1, 1, 1)  # specify (nrows, ncols, axnum)
     for tt, c in zip([0,1,2], ["black", "red", "blue"]):
         tt_processed_position_data = processed_position_data[processed_position_data["trial_type"] == tt]
         if len(tt_processed_position_data)>0:
@@ -216,12 +257,13 @@ def plot_speed_histogram(processed_position_data, output_path="", track_length=2
     ax.yaxis.set_ticks_position('left')
     ax.xaxis.set_ticks_position('bottom')
     plot_utility.style_track_plot(ax, track_length)
-    tick_spacing = 100
-    plt.xticks(fontsize=20)
-    plt.yticks(fontsize=20)
-    ax.xaxis.set_major_locator(ticker.MultipleLocator(tick_spacing))
+    plt.ylabel('Trial Number', fontsize=25, labelpad = 10)
+    plt.xlabel('Location (cm)', fontsize=25, labelpad = 10)
+    ax.xaxis.set_major_locator(ticker.MultipleLocator(100))
+    ax.yaxis.set_major_locator(ticker.MultipleLocator(100))
+    ax.tick_params(axis='both', which='major', labelsize=20)
     plot_utility.style_vr_plot(ax, x_max=115)
-    plt.subplots_adjust(hspace = .35, wspace = .35,  bottom = 0.2, left = 0.12, right = 0.87, top = 0.92)
+    plt.subplots_adjust(hspace = .35, wspace = .35,  bottom = 0.2, left = 0.2, right = 0.87, top = 0.92)
     plt.savefig(save_path + '/speed_histogram.png', dpi=200)
     plt.close()
 
@@ -329,7 +371,8 @@ def plot_firing_rate_maps(spike_data, processed_position_data, output_path, trac
     return spike_data
 
 
-def plot_behaviour(processed_position_data, output_path, track_length):
+def plot_behaviour(position_data, processed_position_data, output_path, track_length):
+    plot_variables(position_data, output_path)
     plot_stops_on_track(processed_position_data, output_path, track_length=track_length)
     plot_stop_histogram(processed_position_data, output_path, track_length=track_length)
     plot_speed_histogram(processed_position_data, output_path, track_length=track_length)
