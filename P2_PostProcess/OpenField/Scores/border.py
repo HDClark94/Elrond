@@ -34,12 +34,9 @@ calculates the border scores according to Solstad et al (2008)
 Corner scores and cue scores are also formalised loosely following the b = (cM - dm) / (cM + dm) structure.
 '''
 
-def calculate_border_score(spike_data, spatial_data):
-    # identify fields
-
+def calculate_border_scores(spike_data, spatial_data):
     for index, cluster_data in spike_data.iterrows():
         firing_rate_map = cluster_data.firing_maps.copy()
-
 
 
 

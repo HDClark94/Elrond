@@ -1,12 +1,12 @@
 import pandas as pd
 import settings
-from P2_PostProcess.OpenField.rate_map import calculate_rate_map
-from P2_PostProcess.OpenField.Scores.spatial_information import calculate_spatial_information_score
-from P2_PostProcess.OpenField.Scores.half_session import calculate_half_session_stability_score
-from P2_PostProcess.OpenField.Scores.border import calculate_border_score
-from P2_PostProcess.OpenField.Scores.grid import calculate_grid_score
-from P2_PostProcess.OpenField.Scores.head_direction import calculate_head_direction_score
-from P2_PostProcess.OpenField.Scores.speed import calculate_speed_score
+from P2_PostProcess.OpenField.rate_map import calculate_rate_maps
+from P2_PostProcess.OpenField.Scores.spatial_information import calculate_spatial_information_scores
+from P2_PostProcess.OpenField.Scores.half_session import calculate_half_session_stability_scores
+from P2_PostProcess.OpenField.Scores.border import calculate_border_scores
+from P2_PostProcess.OpenField.Scores.grid import calculate_grid_scores
+from P2_PostProcess.OpenField.Scores.head_direction import calculate_head_direction_scores
+from P2_PostProcess.OpenField.Scores.speed import calculate_speed_scores
 
 def calculate_corresponding_indices(spike_data, spatial_data, sampling_rate_ephys = settings.sampling_rate):
     avg_sampling_rate_bonsai = float(1 / spatial_data['synced_time'].diff().mean())
@@ -67,12 +67,12 @@ def add_spatial_variables(spike_data, spatial_data):
     """
 
     spike_data = find_firing_location_indices(spike_data, spatial_data)
-    spike_data = calculate_rate_map(spike_data, spatial_data)
-    spike_data = calculate_spatial_information_score(spike_data, spatial_data)
-    spike_data = calculate_head_direction_score(spike_data, spatial_data)
-    spike_data = calculate_border_score(spike_data, spatial_data)
-    spike_data = calculate_grid_score(spike_data, spatial_data)
-    spike_data = calculate_half_session_stability_score(spike_data, spatial_data)
-    spike_data = calculate_speed_score(spike_data, spatial_data)
+    spike_data = calculate_rate_maps(spike_data, spatial_data)
+    spike_data = calculate_spatial_information_scores(spike_data, spatial_data)
+    spike_data = calculate_head_direction_scores(spike_data, spatial_data)
+    spike_data = calculate_border_scores(spike_data, spatial_data)
+    spike_data = calculate_grid_scores(spike_data, spatial_data)
+    spike_data = calculate_half_session_stability_scores(spike_data, spatial_data)
+    spike_data = calculate_speed_scores(spike_data, spatial_data)
 
     return spike_data

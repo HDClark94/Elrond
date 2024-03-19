@@ -8,6 +8,7 @@ def process(recording_path, processed_folder_name, **kwargs):
     # process and save position data
     position_data = process_position_data(recording_path)
     position_data = synchronise_position_data_via_ttl_pulses(position_data, recording_path)
+    position_heat_map = get_position_heatmap(position_data)
 
     # save position data
     if not os.path.exists(recording_path + "/" + processed_folder_name):
