@@ -1,64 +1,49 @@
 import numpy as np
 import pandas as pd
-import PostSorting.parameters
-import PostSorting.vr_stop_analysis
-import PostSorting.vr_time_analysis
-import PostSorting.vr_make_plots
-import PostSorting.vr_cued
-import PostSorting.vr_sync_spatial_data
 import traceback
-import PostSorting.vr_spatial_firing
-import control_sorting_analysis
 import os
 import sys
 import settings
+from P2_PostProcess.VirtualReality.spatial_firing import bin_fr_in_space
+from P2_PostProcess.VirtualReality.spatial_data import get_track_length, get_stop_threshold
 
 
 def add_speed(shuffle_firing, position_data):
     raw_speed_per200ms = np.array(position_data["speed_per200ms"])
-
     speed_per200ms = []
     for shuffle_index, shuffle_id in enumerate(shuffle_firing.shuffle_id):
         cluster_firing_indices = np.asarray(shuffle_firing[shuffle_firing.shuffle_id == shuffle_id].firing_times)[0]
         speed_per200ms.append(raw_speed_per200ms[cluster_firing_indices].tolist())
-
     shuffle_firing["speed_per200ms"] = speed_per200ms
     return shuffle_firing
 
 
 def add_position_x(shuffle_firing, position_data):
     raw_x_position_cm = np.array(position_data["x_position_cm"])
-
     x_position_cm = []
     for shuffle_index, shuffle_id in enumerate(shuffle_firing.shuffle_id):
         cluster_firing_indices = np.asarray(shuffle_firing[shuffle_firing.shuffle_id == shuffle_id].firing_times)[0]
         x_position_cm.append(raw_x_position_cm[cluster_firing_indices].tolist())
-
     shuffle_firing["x_position_cm"] = x_position_cm
     return shuffle_firing
 
 
 def add_trial_number(shuffle_firing, position_data):
     raw_trial_number = np.array(position_data["trial_number"])
-
     trial_number = []
     for shuffle_index, shuffle_id in enumerate(shuffle_firing.shuffle_id):
         cluster_firing_indices = np.asarray(shuffle_firing[shuffle_firing.shuffle_id == shuffle_id].firing_times)[0]
         trial_number.append(raw_trial_number[cluster_firing_indices].tolist())
-
     shuffle_firing["trial_number"] = trial_number
     return shuffle_firing
 
 
 def add_trial_type(shuffle_firing, position_data):
     raw_trial_type = np.array(position_data["trial_type"])
-
     trial_type = []
-
     for shuffle_index, shuffle_id in enumerate(shuffle_firing.shuffle_id):
         cluster_firing_indices = np.asarray(shuffle_firing[shuffle_firing.shuffle_id == shuffle_id].firing_times)[0]
         trial_type.append(raw_trial_type[cluster_firing_indices].tolist())
-
     shuffle_firing["trial_type"] = trial_type
     return shuffle_firing
 
@@ -67,6 +52,7 @@ def get_stop_threshold_and_track_length(recording_path):
     parameter_file_path = control_sorting_analysis.get_tags_parameter_file(recording_path)
     stop_threshold, track_length, _ = PostSorting.post_process_sorted_data_vr.process_running_parameter_tag(parameter_file_path)
     return stop_threshold, track_length
+
 
 def generate_shuffled_times(cluster_firing, n_shuffles, sample_rate, downsample_rate):
     session_id = cluster_firing["session_id"].iloc[0]
@@ -139,7 +125,7 @@ def run_shuffle_analysis(spike_data, processed_position_data, position_data, tra
         shuffle_firing = add_trial_type(shuffle_firing, position_data)
         position_data['dwell_time_ms'] = 1/settings.down_sampled_rate
 
-        shuffle_firing = PostSorting.vr_spatial_firing.bin_fr_in_space(shuffle_firing, position_data, track_length, smoothen=False)
+        shuffle_firing = P2.vr_spatial_firing.bin_fr_in_space(shuffle_firing, position_data, track_length, smoothen=False)
         shuffle_firing = add_firing_rate_maps_by_trial_type(shuffle_firing, b_trial_numbers, nb_trial_numbers, p_trial_numbers)
         shuffle_firing = shuffle_firing[['session_id', 'cluster_id', 'shuffle_id', 'beaconed_map', 'non_beaconed_map', 'probe_map']]
 
@@ -159,7 +145,8 @@ def process_recordings(vr_recording_path_list, n_shuffles=1000, by_rewarded=True
     for recording in vr_recording_path_list:
         print("processing ", recording)
         try:
-            stop_threshold, track_length = get_stop_threshold_and_track_length(recording)
+            track_length = get_track_length(recording)
+            stop_threshold = get_stop_threshold(recording)
 
             # check if shuffle has already ran
             run_shuffle = True
