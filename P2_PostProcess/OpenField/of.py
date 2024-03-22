@@ -11,8 +11,6 @@ def process(recording_path, processed_folder_name, **kwargs):
     position_heat_map = get_position_heatmap(position_data)
 
     # save position data
-    if not os.path.exists(recording_path + "/" + processed_folder_name):
-        os.mkdir(recording_path + "/" + processed_folder_name)
     position_data.to_csv(recording_path + "/" + processed_folder_name + "/position_data.csv")
 
     # process and save spatial spike data

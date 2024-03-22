@@ -70,7 +70,7 @@ def process_recordings(recording_paths, local_path="", processed_folder_name="",
             if copy_locally:
                 print("I will copy the recording from local and remove the recording from local")
                 copy_from_local(recording_path, local_path, processed_folder_name, **kwargs)
-                empty_recording_folder_from_local(local_path) # clear folder from local
+                #empty_recording_folder_from_local(local_path) # clear folder from local
 
         except Exception as ex:
             print('There was a problem! This is what Python says happened:')
@@ -98,7 +98,7 @@ def main():
     #recording_paths.extend([f.path for f in os.scandir("/mnt/datastore/Harry/cohort8_may2021/of") if f.is_dir()])
     #recording_paths.extend([f.path for f in os.scandir("/mnt/datastore/Harry/cohort7_october2020/of") if f.is_dir()])
     #recording_paths.extend([f.path for f in os.scandir("/mnt/datastore/Harry/cohort6_july2020/of") if f.is_dir()])
-    recording_paths = ["/mnt/datastore/Harry/test_recording/vr/M11_D36_2021-06-28_12-04-36"] # example vr tetrode session with a linked of session
+    #recording_paths = ["/mnt/datastore/Harry/test_recording/vr/M11_D36_2021-06-28_12-04-36"] # example vr tetrode session with a linked of session
     #recording_paths = ["/mnt/datastore/Harry/test_recording/vr/M18_D1_2023-10-30_12-38-29"] # example vr cambridge p1 probe session with a linked of session (2 x 64 channels)
     #recording_paths = ["/mnt/datastore/Harry/test_recording/vr/M18_D1_2023-10-30_12-38-29",
     #                   "/mnt/datastore/Harry/test_recording/vr/M11_D36_2021-06-28_12-04-36",
@@ -108,18 +108,18 @@ def main():
     #recording_paths = ["/mnt/datastore/Harry/test_recording/vr/M18_D1_2023-10-30_12-38-29"]
     #recording_paths = ["/mnt/datastore/Harry/cohort8_may2021/vr/M14_D7_2021-05-18_11-44-56"]
     #recording_paths=["/mnt/datastore/Harry/cohort8_may2021/vr/M14_D38_2021-06-30_12-35-11"]
-    #recording_paths = ["/mnt/datastore/Harry/Cohort9_february2023/vr/M16_D1_2023-02-28_17-42-27",
-    #                   "/mnt/datastore/Harry/test_recording/vr/M18_D1_2023-10-30_12-38-29"]
+    recording_paths = ["/mnt/datastore/Harry/Cohort9_february2023/vr/M16_D1_2023-02-28_17-42-27",
+                       "/mnt/datastore/Harry/test_recording/vr/M18_D1_2023-10-30_12-38-29"]
     #recording_paths = ["/mnt/datastore/Harry/Cohort9_february2023/of/M16_D1_2023-02-28_18-42-28"]
     #recording_paths= ["/mnt/datastore/Harry/cohort6_july2020/of/M2_D6_2020-08-10_15-58-12"]
     process_recordings(recording_paths,
                        local_path="/home/ubuntu/to_sort/recordings/",
                        processed_folder_name="processed",
-                       copy_locally=True,
-                       run_spikesorting=True,
+                       copy_locally=False,
+                       run_spikesorting=False,
                        update_results_from_phy=False,
                        run_postprocessing=True,
-                       concat_sort=True,
+                       concat_sort=False,
                        postprocess_based_on_concat_sort=False,
                        save2phy=True,
                        sorterName="mountainsort4")

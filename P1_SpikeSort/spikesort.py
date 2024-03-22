@@ -88,6 +88,8 @@ def spikesort(recording_path, local_path, processed_folder_name, **kwargs):
     recording_mono = si.concatenate_recordings(recordings)
     recording_mono, probe = add_probe(recording_mono, recording_path)
 
+    #recording_mono = recording_mono.frame_slice(start_frame=0, end_frame=int(30 * 30000))  # debugging purposes
+
     # preprocess and ammend preprocessing parameters for presorting
     default_params = si.get_default_sorter_params(settings.sorterName)
     recording_mono = preprocess(recording_mono)
@@ -112,10 +114,11 @@ def spikesort(recording_path, local_path, processed_folder_name, **kwargs):
     quality_metrics = auto_curate(quality_metrics)
 
     # split our extractors back
-    sorters = si.split_sorting(sorting_mono, recordings)
-    sorters = [si.select_segment_sorting(sorters, i) for i in range(len(recordings))] # turn it into a list of sorters
-    waveforms = get_waveforms(we, sorters)
     recordings = si.split_recording(recording_mono)
+    #sorters = si.split_sorting(sorting_mono, recordings)
+    #sorters = [si.select_segment_sorting(sorters, i) for i in range(len(recordings))] # turn it into a list of sorters
+    sorters = [si.select_segment_sorting(sorting_mono, i) for i in range(len(recordings))] # turn it into a list of sorters
+    waveforms = get_waveforms(we, sorters)
 
     # save spike times and waveform information for further analysis
     save_spikes_to_dataframe(sorters, waveforms, quality_metrics, recording_paths, processed_folder_name)

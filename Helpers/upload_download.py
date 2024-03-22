@@ -47,6 +47,8 @@ def load_recordings(recording_paths, recording_formats):
         else:
             print("I don't recognise the recording format")
             print("Current options are open_ephys, spikeglx and nwb")
+
+        #recording = recording.frame_slice(start_frame=0, end_frame=int(15 * 30000))  # debugging purposes
         recordings.append(recording)
     return recordings
 
@@ -158,8 +160,7 @@ def copy_to_local(recording_path, local_path, **kwargs):
         recording_name = os.path.basename(recording_to_download)
         if os.path.exists(recording_to_download) and not os.path.exists(local_path+recording_name):
             # results are saved specific to named sorter
-            shutil.copytree(recording_to_download,
-                            local_path+recording_name, dirs_exist_ok=True)
+            shutil.copytree(recording_to_download, local_path+recording_name, dirs_exist_ok=True)
             print("copied " + recording_to_download + " to " + local_path+recording_name)
         else:
             print("Oh no! Either the recording path or local path couldn't be found")
@@ -180,30 +181,26 @@ def copy_from_local(recording_path, local_path, processed_folder_name, **kwargs)
         local_recording_path = local_path + recording_name
 
         # remove /processed_folder_name from recording on server
-        if os.path.exists(recording_path + "/" + processed_folder_name):
-            shutil.rmtree(recording_path + "/" + processed_folder_name)
+        if os.path.exists(recording_to_upload + "/" + processed_folder_name):
+            shutil.rmtree(recording_to_upload + "/" + processed_folder_name)
 
         # copy the processed_folder_name from local to server
         if os.path.exists(local_recording_path + "/" + processed_folder_name):
             shutil.copytree(local_recording_path + "/" + processed_folder_name,
                             recording_to_upload  + "/" + processed_folder_name,
-                            copy_function=copy2_verbose, dirs_exist_ok=True)
+                            copy_function=copy2_verbose)
             print("copied "+local_recording_path+  "/" + processed_folder_name+" to "
                            +recording_to_upload +  "/" + processed_folder_name)
     return
 
-import logging
-def _logpath(path, names):
-    logging.info('Working in %s' % path)
-    return []   # nothing will be ignored
 
-def empty_recording_folder_from_local(local_path):
-    for folder_path in os.listdir(local_path):
-        if "datastore" in local_path:
+def empty_recording_folder_from_local(path):
+    for folder_path in os.listdir(path):
+        if "datastore" in path:
             raise Exception("The local path contains 'datastore' in the path name, "
                             "you don't want to delete anything from the datastores server")
         else:
-            shutil.rmtree(local_path+folder_path)
+            shutil.rmtree(path+folder_path)
 
 def test_upload():
     return
