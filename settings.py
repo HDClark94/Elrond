@@ -8,6 +8,7 @@ suppress_warnings = True
 processed_folder = "/processed"
 dead_channel_file_name = "/dead_channels.txt"
 temp_storage_path = '/home/ubuntu/to_sort/recordings/tmp'
+PIL_fontstyle_path = '/home/ubuntu/Elrond_code/Additional_files/Arial.ttf'
 
 ##########
 # Recording setting
