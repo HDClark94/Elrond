@@ -6,6 +6,9 @@ from Helpers.upload_download import *
 from P1_SpikeSort.probe import add_probe
 from P1_SpikeSort.preprocess import preprocess
 from Helpers.array_utility import *
+import scipy.ndimage.filters as filters
+from scipy.signal import convolve2d
+from astropy.nddata import block_reduce
 
 def trace_gif(by="shank"):
     return
@@ -24,7 +27,8 @@ def make_spike_trace_summary(recording_path, processed_folder_name):
     split_recording_dict = recording_mono.split_by("group")
 
     # make 2 second stills at intervals
-    trace_duration = 2 # seconds
+    trace_duration = 4 # seconds
+    trace_duration_view = 2 # seconds
     time_dutation = recording_mono.get_duration()
 
     for dir in [f.path for f in os.scandir(recording_path+"/"+processed_folder_name) if f.is_dir()]:
@@ -41,15 +45,15 @@ def make_spike_trace_summary(recording_path, processed_folder_name):
                 fig, axs = plt.subplots(nrows=2, ncols=2, figsize=(30, 20),
                                         gridspec_kw={'height_ratios': [1,40]})
                 axs[0, 0].plot([0, 1], [1, 1], color="black")
-                axs[0, 0].scatter(x=start_time / time_dutation, y=0, s=60, color="red", marker="D", zorder=1)
+                axs[0, 0].scatter(x=start_time / time_dutation, y=1, s=60, color="red", marker="D", zorder=1)
                 axs[0, 0].set_xlim(-2, 3)
                 axs[0, 0].axis('off')
                 axs[0, 1].axis('off')
                 for idx, cluster_df in spikes.iterrows():
                     shank_id = cluster_df["shank_id"]
                     spike_times = cluster_df["firing_times"]/settings.sampling_rate
-                    valid_spike_times = spike_times[(spike_times > start_time)
-                                                    & (spike_times <= (start_time)+(trace_duration))]
+                    valid_spike_times = spike_times[(spike_times > (start_time+((trace_duration-trace_duration_view)/2)))
+                                                    & (spike_times <= (start_time+(trace_duration-((trace_duration-trace_duration_view)/2))))]
                     if len(valid_spike_times)>0:
                         axs[1, 0].scatter(valid_spike_times, np.ones(len(valid_spike_times))*idx, s=40, marker="|", color=colors[shank_id])
                 axs[1, 0].axis('off')
@@ -57,8 +61,8 @@ def make_spike_trace_summary(recording_path, processed_folder_name):
                 plt.subplots_adjust(wspace=0.05, hspace=0.05)
                 plt.margins(x=0)
                 plt.margins(y=0)
-                plt.savefig(recording_path + "/" + processed_folder_name + "/" + sorterName + "/spike_view/stills_t"
-                            + str(int(start_time)) + "-" + str(int(start_time + trace_duration))+".png", dpi=300)
+                plt.savefig(recording_path + "/" + processed_folder_name +"/" + sorterName + "/spike_view/stills_t" + str(int(start_time + ((trace_duration - trace_duration_view) / 2))) +
+                            "-" + str(int(start_time + ((trace_duration - trace_duration_view) / 2)) + trace_duration_view)+".png", dpi=300)
                 plt.close()
     return
 
@@ -85,9 +89,52 @@ def make_lfp_trace_summary(recording_path, processed_folder_name, n_channels_to_
 
     downsampled_rate = 1000 # Hz
 
+    # session session
+    fig, axs = plt.subplots(nrows=n_groups, ncols=8, figsize=(30, 20), gridspec_kw={'height_ratios': height_ratios})
+    groups = np.arange(0, n_groups)
+    for group in groups:
+        traces = split_recording_dict[group].get_traces()
+        traces = np.transpose(traces)
+
+        channels_to_plot = np.arange(0, len(traces), len(traces) // n_channels_to_plot)
+        for i, ch in enumerate(channels_to_plot):
+            ch_trace = traces[ch][::int(settings.sampling_rate/downsampled_rate)] # the cheap way to downsample
+            coefs_cwt, _, f_cwt, t_cwt, _ = cwt(ch_trace, fs=downsampled_rate, verbose=True, freqs=np.arange(1, 20, 0.1), voices_per_octave=None)
+            t_cwt = t_cwt[::100] # downsample more
+            coefs_cwt = coefs_cwt[:, ::100] # downsample more
+            psd_cwt = coefs_cwt.real ** 2 + coefs_cwt.imag ** 2
+            psd_cwt = np.clip(psd_cwt, a_min=0, a_max=np.nanpercentile(psd_cwt, 99))
+            psd_cwt /= np.max(psd_cwt)
+            fred_red = 1
+            time_red = 200
+            psd_cwt = block_reduce(psd_cwt, [fred_red, time_red])
+            t_cwt = block_reduce(t_cwt, time_red)
+            f_cwt = block_reduce(f_cwt, fred_red)
+            axs[group, i].pcolormesh(t_cwt, f_cwt, psd_cwt, shading="gourand", cmap=plt.cm.Spectral_r, rasterized=True, linewidth=0)
+            axs[group, i].set_ylim(1, 20)
+            if group != n_groups-1:
+                axs[group, i].set_xticks([])
+            if i != 0:
+                axs[group, i].set_yticks([])
+    fig.text(0.52, 0.08, 'Time (S)', ha='center', fontsize=25)
+    fig.text(0.10, 0.5, 'Frequency (Hz)', va='center', rotation='vertical', fontsize=25)
+    plt.subplots_adjust(wspace=0.05, hspace=0.05)
+    plt.margins(x=0)
+    plt.margins(y=0)
+
+    plt.savefig(recording_path+"/"+processed_folder_name+"/lfp_view/full_session_1-20Hz", dpi=300)
+    plt.close()
+
+    height_ratios = np.concatenate([[1], (np.ones(n_groups) * (40 / n_groups)).tolist()])
     # 2 second stills
+    ncols=8
     for start_time in trace_start_times:
-        fig, axs = plt.subplots(nrows=n_groups, ncols=8, figsize=(30, 20), gridspec_kw={'height_ratios': height_ratios})
+        fig, axs = plt.subplots(nrows=n_groups+1, ncols=ncols, figsize=(30, 20), gridspec_kw={'height_ratios': height_ratios})
+        axs[0,0].plot([0,1],[1,1], color="black")
+        axs[0,0].scatter(x=start_time/time_dutation, y=1, s=60, color="red", marker="D", zorder=1)
+        for col in range(ncols):
+            axs[0,col].axis('off')
+
         for group in range(n_groups):
             traces = split_recording_dict[group].get_traces(start_frame=int(start_time * settings.sampling_rate),
                                                             end_frame=int((start_time * settings.sampling_rate) +
@@ -108,14 +155,14 @@ def make_lfp_trace_summary(recording_path, processed_folder_name, n_channels_to_
 
                 psd_cwt = coefs_cwt.real**2 + coefs_cwt.imag**2
                 psd_cwt /= np.max(psd_cwt)
-                axs[group, i].pcolormesh(t_cwt, f_cwt, psd_cwt, shading="gourand", vmin=0, vmax=1, cmap=plt.cm.Spectral_r, rasterized=True, linewidth=0)
-                axs[group, i].set_ylim(1, 20)
-                axs[group, i].set_xlim((trace_duration-trace_duration_view)/2, trace_duration_view+((trace_duration-trace_duration_view)/2))
+                axs[group+1, i].pcolormesh(t_cwt, f_cwt, psd_cwt, shading="gourand", vmin=0, vmax=1, cmap=plt.cm.Spectral_r, rasterized=True, linewidth=0)
+                axs[group+1, i].set_ylim(1, 20)
+                axs[group+1, i].set_xlim((trace_duration-trace_duration_view)/2, trace_duration_view+((trace_duration-trace_duration_view)/2))
 
                 if group != n_groups-1:
-                    axs[group, i].set_xticks([])
+                    axs[group+1, i].set_xticks([])
                 if i != 0:
-                    axs[group, i].set_yticks([])
+                    axs[group+1, i].set_yticks([])
 
         fig.text(0.52, 0.08, 'Time (S)', ha='center', fontsize=25)
         fig.text(0.10, 0.5, 'Frequency (Hz)', va='center', rotation='vertical', fontsize=25)
@@ -125,77 +172,6 @@ def make_lfp_trace_summary(recording_path, processed_folder_name, n_channels_to_
         plt.savefig(recording_path+"/"+processed_folder_name+"/lfp_view/stills_t"+str(int(start_time+((trace_duration-trace_duration_view)/2)))+
                                                                               "-"+str(int(start_time+((trace_duration-trace_duration_view)/2))+trace_duration_view), dpi=300)
         plt.close()
-
-
-    # session session
-    fig, axs = plt.subplots(nrows=n_groups, ncols=8, figsize=(30, 20), gridspec_kw={'height_ratios': height_ratios}, sharex=True, sharey=True)
-    for group in range(n_groups):
-        traces = split_recording_dict[group].get_traces()
-        traces = np.transpose(traces)
-
-        channels_to_plot = np.arange(0, len(traces), len(traces) // n_channels_to_plot)
-        for i, ch in enumerate(channels_to_plot):
-            ch_trace = traces[ch][::int(settings.sampling_rate/downsampled_rate)] # the cheap way to downsample
-            #ch_trace = samplerate.resample(traces[ch], downsampled_rate/settings.sampling_rate, 'sinc_best')
-            coefs_cwt, _, f_cwt, t_cwt, _ = cwt(ch_trace, fs=downsampled_rate, verbose=True, freqs=np.arange(1, 20, 0.1), voices_per_octave=None)
-            t_cwt = t_cwt[::100] # downsample more
-            coefs_cwt = coefs_cwt[:, ::100] # downsample more
-            psd_cwt = coefs_cwt.real ** 2 + coefs_cwt.imag ** 2
-            psd_cwt /= np.max(psd_cwt)
-
-            axs[group, i].pcolormesh(t_cwt, f_cwt, psd_cwt, shading="gourand", vmin=0, vmax=1, cmap=plt.cm.Spectral_r,
-                                     rasterized=True, linewidth=0)
-            axs[group, i].set_ylim(1, 20)
-
-            if group != n_groups - 1:
-                axs[group, i].set_xticks([])
-            if i != 0:
-                axs[group, i].set_yticks([])
-
-    fig.text(0.52, 0.08, 'Time (S)', ha='center', fontsize=25)
-    fig.text(0.10, 0.5, 'Frequency (Hz)', va='center', rotation='vertical', fontsize=25)
-    plt.tick_params(labelcolor='none', which='both', top=False, bottom=False, left=False, right=False)
-    plt.subplots_adjust(wspace=0.05, hspace=0.05)
-    plt.margins(x=0)
-    plt.margins(y=0)
-    plt.savefig(recording_path+"/"+processed_folder_name+"/lfp_view/full_session_1-20Hz", dpi=300)
-    plt.close()
-
-
-    # session session
-    fig, axs = plt.subplots(nrows=n_groups, ncols=8, figsize=(30, 20), gridspec_kw={'height_ratios': height_ratios}, sharex=True, sharey=True)
-    for group in range(n_groups):
-        traces = split_recording_dict[group].get_traces()
-        traces = np.transpose(traces)
-
-        channels_to_plot = np.arange(0, len(traces), len(traces) // n_channels_to_plot)
-        for i, ch in enumerate(channels_to_plot):
-            ch_trace = traces[ch][::int(settings.sampling_rate/downsampled_rate)] # the cheap way to downsample
-            #ch_trace = samplerate.resample(traces[ch], downsampled_rate/settings.sampling_rate, 'sinc_best')
-            coefs_cwt, _, f_cwt, t_cwt, _ = cwt(ch_trace, fs=downsampled_rate, verbose=True, freqs=np.arange(1, 200, 0.5), voices_per_octave=None)
-            t_cwt = t_cwt[::100] # downsample more
-            coefs_cwt = coefs_cwt[:, ::100] # downsample more
-            psd_cwt = coefs_cwt.real ** 2 + coefs_cwt.imag ** 2
-            psd_cwt /= np.max(psd_cwt)
-
-            axs[group, i].pcolormesh(t_cwt, f_cwt, psd_cwt, shading="gourand", vmin=0, vmax=1, cmap=plt.cm.Spectral_r,
-                                     rasterized=True, linewidth=0)
-            axs[group, i].set_ylim(1, 20)
-
-            if group != n_groups - 1:
-                axs[group, i].set_xticks([])
-            if i != 0:
-                axs[group, i].set_yticks([])
-
-    fig.text(0.52, 0.08, 'Time (S)', ha='center', fontsize=25)
-    fig.text(0.10, 0.5, 'Frequency (Hz)', va='center', rotation='vertical', fontsize=25)
-    plt.tick_params(labelcolor='none', which='both', top=False, bottom=False, left=False, right=False)
-    plt.subplots_adjust(wspace=0.05, hspace=0.05)
-    plt.margins(x=0)
-    plt.margins(y=0)
-    plt.savefig(recording_path+"/"+processed_folder_name+"/lfp_view/full_session_1-200Hz", dpi=300)
-    plt.close()
-
     return
 
 
@@ -219,14 +195,15 @@ def make_channel_trace_summary(recording_path, processed_folder_name, filtered=F
         recording_mono = preprocess(recording_mono)
 
     # make 2 second stills at intervals
-    trace_duration = 2 # seconds
+    trace_duration = 4 # seconds
+    trace_duration_view = 2 # seconds
     time_dutation = recording_mono.get_duration()
-    trace_start_times = np.linspace(0, time_dutation, 10)[:-1]
 
     if not os.path.exists(recording_path+"/"+processed_folder_name+"/trace_view/"):
         os.mkdir(recording_path+"/"+processed_folder_name+"/trace_view/")
 
     # stills
+    trace_start_times = np.linspace(0, time_dutation, 10)[:-1]
     for start_time in trace_start_times:
         traces = recording_mono.get_traces(start_frame=int(start_time * settings.sampling_rate),
                                            end_frame=int((start_time * settings.sampling_rate) +
@@ -239,23 +216,24 @@ def make_channel_trace_summary(recording_path, processed_folder_name, filtered=F
 
         fig, axs = plt.subplots(nrows=1+n_groups, ncols=2, figsize=(30, 20), gridspec_kw={'height_ratios': height_ratios})
         axs[0,0].plot([0,1],[1,1], color="black")
-        axs[0,0].scatter(x=start_time/time_dutation, y=0, s=60, color="red", marker="D", zorder=1)
+        axs[0,0].scatter(x=start_time/time_dutation, y=1, s=60, color="red", marker="D", zorder=1)
         axs[0,0].set_xlim(-2,3)
         axs[0,0].axis('off')
         axs[0,1].axis('off')
 
         for group in range(n_groups):
             si.plot_traces(split_recording_dict[group], backend='matplotlib', ax=axs[group+1, 0], color=colors[group],
-                           time_range=(start_time, start_time+trace_duration), color_groups=False, mode="line", add_legend=False)
+                           time_range=((start_time + ((trace_duration - trace_duration_view) / 2)), start_time+(trace_duration - ((trace_duration - trace_duration_view) / 2))),
+                           color_groups=False, mode="line", add_legend=False)
             si.plot_traces(split_recording_dict[group], backend='matplotlib', ax=axs[group+1, 1], clim=(-1*max_abs_trace, max_abs_trace),
-                           time_range=(start_time, start_time + trace_duration), mode="map", add_legend=False)
+                           time_range=((start_time + ((trace_duration - trace_duration_view) / 2)), start_time+(trace_duration - ((trace_duration - trace_duration_view) / 2))), mode="map", add_legend=False)
             axs[group+1, 0].axis('off')
             axs[group+1, 1].axis('off')
         plt.subplots_adjust(wspace=0.05, hspace=0.05)
         plt.margins(x=0)
         plt.margins(y=0)
-        plt.savefig(recording_path+"/"+processed_folder_name+"/trace_view/stills_t"
-                    +str(int(start_time))+"-"+str(int(start_time+trace_duration))+suffix, dpi=300)
+        plt.savefig(recording_path+"/"+processed_folder_name+"/trace_view/stills_t"+str(int(start_time+((trace_duration-trace_duration_view)/2)))+
+                                                                              "-"+str(int(start_time+((trace_duration-trace_duration_view)/2))+trace_duration_view)+suffix, dpi=300)
         plt.close()
     return
 
