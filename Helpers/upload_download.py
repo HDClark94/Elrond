@@ -5,34 +5,6 @@ import settings
 import spikeinterface.full as si
 from neuroconv.utils.dict import load_dict_from_file, dict_deep_update
 
-"""
-## UNUSED
-def save_extractors(sorters, recordings, recording_paths, processed_folder_name,
-                    save_recording_extractors=False, save_sorting_extractors=True):
-    for sorter, recording, recording_path in zip(sorters, recordings, recording_paths):
-        print("I am saving sorter and recording objects for ", recording_path, " at ",
-              recording_path + "/" + processed_folder_name)
-
-        if not os.path.exists(recording_path + "/" + processed_folder_name):
-            os.mkdir(recording_path + "/" + processed_folder_name)
-
-        if not os.path.exists(recording_path + "/" + processed_folder_name + "/" + settings.sorterName):
-            os.mkdir(recording_path + "/" + processed_folder_name + "/" + settings.sorterName)
-
-        sorter_folder = recording_path + "/" + processed_folder_name + "/" + settings.sorterName + "/sorter"
-        recording_folder = recording_path + "/" + processed_folder_name + "/recording"
-
-        if os.path.exists(sorter_folder):
-            shutil.rmtree(sorter_folder)
-        if os.path.exists(recording_folder):
-            shutil.rmtree(recording_folder)
-
-        if save_sorting_extractors:
-            sorter.save(folder=sorter_folder, n_jobs=4, chunk_size=2000, progress_bar=True, overwrite=True)
-        if save_recording_extractors:
-            recording.save(folder=recording_folder, n_jobs=4, chunk_size=2000, progress_bar=True, overwrite=True)
-"""
-
 
 def load_recordings(recording_paths, recording_formats):
     recordings = []
@@ -51,6 +23,7 @@ def load_recordings(recording_paths, recording_formats):
         #recording = recording.frame_slice(start_frame=0, end_frame=int(15 * 30000))  # debugging purposes
         recordings.append(recording)
     return recordings
+
 
 def get_recordings_to_postprocess(recording_path, local_path, **kwargs):
     """
@@ -71,6 +44,7 @@ def get_recordings_to_postprocess(recording_path, local_path, **kwargs):
                 assert os.path.exists(matched_working_recording_path)
     return recordings_to_sort
 
+
 def get_recordings_to_sort(recording_path, local_path, **kwargs):
     """
     This is a function that returns a list of paths for recordings in which to execute PX_scripts.
@@ -89,6 +63,7 @@ def get_recordings_to_sort(recording_path, local_path, **kwargs):
                 assert os.path.exists(matched_working_recording_path)
     return recordings_to_sort
 
+
 def get_recording_types(recording_paths):
     recording_types = []
     for i in range(len(recording_paths)):
@@ -101,6 +76,17 @@ def get_recording_types(recording_paths):
             print("I can't assign a recording type without input")
             recording_types.append("NOT A A VALID RECORDING TYPE")
     return recording_types
+
+
+def get_recording_format(recording_path):
+    if os.path.isfile(recording_path + "/params.yml"):
+        with open(recording_path + "/params.yml", 'r') as f:
+            params = yaml.safe_load(f)
+            if 'recording_format' in params:
+                return params["recording_format"]
+    print("I could not extract the format from the param.yml")
+    return "unknown"
+
 
 def get_recording_formats(recording_paths):
     recording_formats = []
@@ -132,9 +118,11 @@ def copy_folder(src_folder, dest_folder, ignore_items=[]):
                                                      copy_function=copy2_verbose, dirs_exist_ok=True)
     print("")
 
+
 def copy2_verbose(src, dst):
     print('Copying {0}'.format(src))
     shutil.copy2(src,dst)
+
 
 def get_matched_recording_paths(recording_path):
     matched_recording_paths = []
@@ -145,6 +133,7 @@ def get_matched_recording_paths(recording_path):
                 for matched_recording_path in params["matched_recordings"]:
                     matched_recording_paths.append(matched_recording_path)
     return matched_recording_paths
+
 
 def copy_to_local(recording_path, local_path, **kwargs):
     recordings_to_download = [recording_path]
@@ -165,6 +154,7 @@ def copy_to_local(recording_path, local_path, **kwargs):
         else:
             print("Oh no! Either the recording path or local path couldn't be found")
     return
+
 
 def copy_from_local(recording_path, local_path, processed_folder_name, **kwargs):
     recordings_to_upload = [recording_path]
@@ -202,17 +192,21 @@ def empty_recording_folder_from_local(path):
         else:
             shutil.rmtree(path+folder_path)
 
+
 def test_upload():
     return
 
+
 def empty_directory(local_path):
     return
+
 
 def test_download(recording_path, local_path):
     empty_directory(local_path)
     empty_directory(local_path)
     empty_directory(local_path)
     return
+
 
 def main():
     # test download and upload

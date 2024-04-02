@@ -14,12 +14,11 @@ def process_recordings(recording_paths, local_path="", processed_folder_name= ""
     :param processed_folder_name: name of the folder all the processed results will be returned to
     :param copy_locally: flag whether to download results to the local device before processing further,
     results will be uploaded to origin after processing
-    :param run_formatter: flag whether to reformat data (e.g. convert to NWB, )
+    :param run_formatter: flag whether to reformat data (e.g. ,,)
     :param **kwargs:
         See below
 
     :Keyword Arguments:
-        convert2nwb: flag whether to attempt conversion of the data into nwb format in preprocessing
         convert_ADC_to_VRbehaviour: flag whether to attempt to convert ADCs in vr recordings into behavioural tables
         create_param_yml: flag whether to attempt to create a param.yml using a present parameter.txt in the recording path
          (https://www.nwb.org/nwb-neurophysiology/)
@@ -75,6 +74,7 @@ def main():
     recording_paths.extend([f.path for f in os.scandir("/mnt/datastore/Harry/cohort7_october2020/vr") if f.is_dir()])
     recording_paths.extend([f.path for f in os.scandir("/mnt/datastore/Harry/cohort6_july2020/vr") if f.is_dir()])
 
+    recording_paths = ["/mnt/datastore/Harry/test_recording/vr/M11_D36_2021-06-28_12-04-36"]
     process_recordings(recording_paths,
                        local_path="/home/ubuntu/to_sort/recordings/",
                        processed_folder_name="processed",

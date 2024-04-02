@@ -18,6 +18,7 @@ def process(recording_path, processed_folder_name, **kwargs):
     if os.path.exists(spike_data_path):
         spike_data = pd.read_pickle(spike_data_path)
         spike_data = add_spatial_variables(spike_data, position_data)
+        spike_data = add_scores(spike_data, position_data)
         spike_data.to_pickle(spike_data_path)
 
         # make plots

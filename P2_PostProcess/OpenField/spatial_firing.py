@@ -65,14 +65,21 @@ def add_spatial_variables(spike_data, spatial_data):
     :return: spike_data: updated dataframe containing firing times where each row is a neuron
     with rate maps, classic open field scores and metrics
     """
-
     spike_data = find_firing_location_indices(spike_data, spatial_data)
     spike_data = calculate_rate_maps(spike_data, spatial_data)
-    spike_data = calculate_spatial_information_scores(spike_data, spatial_data)
+    return spike_data
+
+def add_scores(spike_data, spatial_data):
+    """
+    :param spike_data: data frame containing firing times where each row is a neuron
+    :param spatial_data: data frame containing position of animal (x, y, hd, time)
+    :return: spike_data: updated dataframe containing firing times where each row is a neuron
+    with rate maps
+    """
+    spike_data = calculate_spatial_information_scores(spike_data)
     spike_data = calculate_head_direction_scores(spike_data, spatial_data)
-    spike_data = calculate_border_scores(spike_data, spatial_data)
+    spike_data = calculate_border_scores(spike_data)
     spike_data = calculate_grid_scores(spike_data, spatial_data)
     spike_data = calculate_half_session_stability_scores(spike_data, spatial_data)
     spike_data = calculate_speed_scores(spike_data, spatial_data)
-
     return spike_data

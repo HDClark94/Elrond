@@ -22,6 +22,7 @@ def process_recordings(recording_paths, local_path="", processed_folder_name= ""
         convert2nwb: flag whether to attempt conversion of the data into nwb format in preprocessing
         convert_ADC_to_VRbehaviour: flag whether to attempt to convert ADCs in vr recordings into behavioural tables
         create_param_yml: flag whether to attempt to create a param.yml using a present parameter.txt in the recording path
+        allow_overwrite_nwb: flag whether to allow the nwb file to be written even if it exists
         metadata_path: path where to find the metadata.yml file in which to make the nwb file with
          (https://www.nwb.org/nwb-neurophysiology/)
 
@@ -65,23 +66,23 @@ def main():
     #      recording_paths.extend([f.path for f in os.scandir("/mnt/datastore/Harry/test_recording/vr") if f.is_dir()])
     # to grab a whole directory of recordings
 
-    #recording_paths = []
-    #recording_paths.extend([f.path for f in os.scandir("/mnt/datastore/Harry/cohort6_july2020/of") if f.is_dir()])
-    #recording_paths.extend([f.path for f in os.scandir("/mnt/datastore/Harry/cohort6_july2020/vr") if f.is_dir()])
-    #metadata_path = "/mnt/datastore/Harry/cohort6_july2020/basic_metadata.yml"
+    recording_paths = []
+    recording_paths.extend([f.path for f in os.scandir("/mnt/datastore/Harry/cohort6_july2020/of") if f.is_dir()])
+    recording_paths.extend([f.path for f in os.scandir("/mnt/datastore/Harry/cohort6_july2020/vr") if f.is_dir()])
+    metadata_path = "/mnt/datastore/Harry/cohort6_july2020/basic_metadata.yml"
 
     #recording_paths = []
     #recording_paths.extend([f.path for f in os.scandir("/mnt/datastore/Harry/cohort7_october2020/of") if f.is_dir()])
     #recording_paths.extend([f.path for f in os.scandir("/mnt/datastore/Harry/cohort7_october2020/vr") if f.is_dir()])
     #metadata_path = "/mnt/datastore/Harry/cohort7_october2020/basic_metadata.yml"
 
-    recording_paths = []
-    recording_paths.extend([f.path for f in os.scandir("/mnt/datastore/Harry/cohort8_may2021/of") if f.is_dir()])
-    recording_paths.extend([f.path for f in os.scandir("/mnt/datastore/Harry/cohort8_may2021/vr") if f.is_dir()])
-    metadata_path = "/mnt/datastore/Harry/cohort8_may2021/basic_metadata.yml"
-
-    #recording_paths = ["/mnt/datastore/Harry/test_recording/vr/M11_D36_2021-06-28_12-04-36"]
+    #recording_paths = []
+    #recording_paths.extend([f.path for f in os.scandir("/mnt/datastore/Harry/cohort8_may2021/of") if f.is_dir()])
+    #recording_paths.extend([f.path for f in os.scandir("/mnt/datastore/Harry/cohort8_may2021/vr") if f.is_dir()])
     #metadata_path = "/mnt/datastore/Harry/cohort8_may2021/basic_metadata.yml"
+
+    recording_paths = ["/mnt/datastore/Harry/cohort6_july2020/vr/M1_D6_2020-08-10_14-17-21"]
+    metadata_path = "/mnt/datastore/Harry/cohort6_july2020/basic_metadata.yml"
 
     process_recordings(recording_paths,
                        local_path="/home/ubuntu/to_sort/recordings/",
@@ -91,6 +92,7 @@ def main():
                        convert2nwb=True,
                        convert_ADC_to_VRbehaviour=False,
                        create_param_yml=False,
+                       allow_overwrite_nwb=False,
                        metadata_path=metadata_path)
 
 if __name__ == '__main__':
