@@ -5,7 +5,8 @@ import warnings
 import settings
 
 from Helpers.upload_download import copy_from_local, copy_to_local, empty_recording_folder_from_local
-from P0_Format.NWB_Formatter.nwb_format import format
+from P0_Format.vr_extract_behaviour_from_ADC_channels import generate_position_data_from_ADC_channels, \
+    run_checks_for_position_data
 
 def process_recordings(recording_paths, local_path="", processed_folder_name= "", copy_locally=False, run_formatter=False, **kwargs):
     """
@@ -14,18 +15,7 @@ def process_recordings(recording_paths, local_path="", processed_folder_name= ""
     :param processed_folder_name: name of the folder all the processed results will be returned to
     :param copy_locally: flag whether to download results to the local device before processing further,
     results will be uploaded to origin after processing
-    :param run_formatter: flag whether to reformat data (e.g. convert to NWB, )
-    :param **kwargs:
-        See below
-
-    :Keyword Arguments:
-        convert2nwb: flag whether to attempt conversion of the data into nwb format in preprocessing
-        convert_ADC_to_VRbehaviour: flag whether to attempt to convert ADCs in vr recordings into behavioural tables
-        create_param_yml: flag whether to attempt to create a param.yml using a present parameter.txt in the recording path
-        allow_overwrite_nwb: flag whether to allow the nwb file to be written even if it exists
-        metadata_path: path where to find the metadata.yml file in which to make the nwb file with
-         (https://www.nwb.org/nwb-neurophysiology/)
-
+    :param run_formatter: flag whether to reformat data (e.g. ,,)
     :return: processed recording returned to origin
     """
 
@@ -43,6 +33,13 @@ def process_recordings(recording_paths, local_path="", processed_folder_name= ""
             if run_formatter:
                 print("I will now try to format the recording as requested")
                 format(working_recording_path, processed_folder_name, **kwargs)
+                # create the processed folder if not already made
+                if not os.path.exists(working_recording_path + "/" + processed_folder_name):
+                    os.mkdir(working_recording_path + "/" + processed_folder_name)
+
+                print("I will attempt to convert this position data encoded within ADC channels into csv format")
+                position_data = generate_position_data_from_ADC_channels(working_recording_path, processed_folder_name)
+                run_checks_for_position_data(position_data, working_recording_path, processed_folder_name)
 
             if copy_locally:
                 print("I will copy the recordingfrom local and remove the recording from local")
@@ -60,40 +57,30 @@ def process_recordings(recording_paths, local_path="", processed_folder_name= ""
 def main():
     if settings.suppress_warnings:
         warnings.filterwarnings("ignore")
+
     # take a list of recordings to process
     # e.g. recording_paths = ["/mnt/datastore/Harry/test_recording/vr/M11_D36_2021-06-28_12-04-36"] or
     #      recording_paths = []
     #      recording_paths.extend([f.path for f in os.scandir("/mnt/datastore/Harry/test_recording/vr") if f.is_dir()])
     # to grab a whole directory of recordings
 
+    #recording_paths = ["/mnt/datastore/Harry/test_recording/M18_D1_2023-10-30_12-38-29"]
+
     recording_paths = []
+    recording_paths.extend([f.path for f in os.scandir("/mnt/datastore/Harry/cohort8_may2021/of") if f.is_dir()])
+    recording_paths.extend([f.path for f in os.scandir("/mnt/datastore/Harry/cohort7_october2020/of") if f.is_dir()])
     recording_paths.extend([f.path for f in os.scandir("/mnt/datastore/Harry/cohort6_july2020/of") if f.is_dir()])
+    recording_paths.extend([f.path for f in os.scandir("/mnt/datastore/Harry/cohort8_may2021/vr") if f.is_dir()])
+    recording_paths.extend([f.path for f in os.scandir("/mnt/datastore/Harry/cohort7_october2020/vr") if f.is_dir()])
     recording_paths.extend([f.path for f in os.scandir("/mnt/datastore/Harry/cohort6_july2020/vr") if f.is_dir()])
-    metadata_path = "/mnt/datastore/Harry/cohort6_july2020/basic_metadata.yml"
 
-    #recording_paths = []
-    #recording_paths.extend([f.path for f in os.scandir("/mnt/datastore/Harry/cohort7_october2020/of") if f.is_dir()])
-    #recording_paths.extend([f.path for f in os.scandir("/mnt/datastore/Harry/cohort7_october2020/vr") if f.is_dir()])
-    #metadata_path = "/mnt/datastore/Harry/cohort7_october2020/basic_metadata.yml"
-
-    #recording_paths = []
-    #recording_paths.extend([f.path for f in os.scandir("/mnt/datastore/Harry/cohort8_may2021/of") if f.is_dir()])
-    #recording_paths.extend([f.path for f in os.scandir("/mnt/datastore/Harry/cohort8_may2021/vr") if f.is_dir()])
-    #metadata_path = "/mnt/datastore/Harry/cohort8_may2021/basic_metadata.yml"
-
-    recording_paths = ["/mnt/datastore/Harry/cohort6_july2020/vr/M1_D6_2020-08-10_14-17-21"]
-    metadata_path = "/mnt/datastore/Harry/cohort6_july2020/basic_metadata.yml"
-
+    recording_paths = []
+    recording_paths.extend([f.path for f in os.scandir("/mnt/datastore/Harry/Cohort9_february2023/of") if f.is_dir()])
+    recording_paths.extend([f.path for f in os.scandir("/mnt/datastore/Harry/Cohort9_february2023/vr") if f.is_dir()])
     process_recordings(recording_paths,
                        local_path="/home/ubuntu/to_sort/recordings/",
                        processed_folder_name="processed",
                        copy_locally=False,
-                       run_formatter=True,
-                       convert2nwb=True,
-                       convert_ADC_to_VRbehaviour=False,
-                       create_param_yml=False,
-                       allow_overwrite_nwb=False,
-                       metadata_path=metadata_path)
-
+                       run_formatter=True)
 if __name__ == '__main__':
     main()

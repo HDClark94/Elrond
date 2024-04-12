@@ -12,7 +12,7 @@ PIL_fontstyle_path = '/home/ubuntu/Elrond_code/Additional_files/Arial.ttf'
 
 ##########
 # Recording setting
-sampling_rate = 30000
+sampling_rate = 30000 # TODO better to inherit from data if available
 down_sampled_rate = 1000
 
 #########

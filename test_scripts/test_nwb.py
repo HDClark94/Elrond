@@ -61,7 +61,7 @@ def main():
     recording_paths.extend([f.path for f in os.scandir("/mnt/datastore/Harry/cohort8_may2021/of") if f.is_dir()])
     recording_paths.extend([f.path for f in os.scandir("/mnt/datastore/Harry/cohort8_may2021/vr") if f.is_dir()])
 
-    test_recordings_with_spike_interface(recording_paths, nwb_folder_name="processed/nwb/", suffix="_v2")
+    test_recordings_with_spike_interface(recording_paths, nwb_folder_name="processed/nwb/", suffix="_v3")
 
 if __name__ == '__main__':
     main()

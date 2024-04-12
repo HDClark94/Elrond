@@ -31,7 +31,7 @@ def convert(recording_path, processed_folder_name, **kwargs):
     # handle save locations and paths
     recording_name = os.path.basename(recording_path)
     nwb_path = recording_path+"/"+processed_folder_name+"/nwb/" # Where to save the .nwb file
-    nwb_file_name = nwb_path+recording_name+"_v2.nwb"
+    nwb_file_name = nwb_path+recording_name+"_v3.nwb"
     if not os.path.exists(nwb_path):
         os.mkdir(nwb_path)
 

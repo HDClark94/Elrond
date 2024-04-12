@@ -6,22 +6,24 @@ import spikeinterface.full as si
 from neuroconv.utils.dict import load_dict_from_file, dict_deep_update
 
 
+def load_recording(recording_path, recording_format):
+    if recording_format == "openephys":
+        recording = si.read_openephys(recording_path, stream_name='Signals CH')
+    elif recording_format == "spikeglx":
+        recording = si.read_spikeglx(recording_path)  # untested
+    elif recording_format == "nwb":
+        recording = si.read_nwb_recording(recording_path)  # untested
+    else:
+        raise AssertionError("I don't recognise the recording format,"
+                        "Current options are open_ephys, spikeglx and nwb")
+    # recording = recording.frame_slice(start_frame=0, end_frame=int(15 * 30000))  # debugging purposes
+    return recording
+
+
 def load_recordings(recording_paths, recording_formats):
     recordings = []
-
     for path, format, in zip(recording_paths, recording_formats):
-        if format == "openephys":
-            recording = si.read_openephys(path, stream_name='Signals CH')
-        elif format == "spikeglx":
-            recording = si.read_spikeglx(path)  # untested
-        elif format == "nwb":
-            recording = si.read_nwb_recording(path)  # untested
-        else:
-            print("I don't recognise the recording format")
-            print("Current options are open_ephys, spikeglx and nwb")
-
-        #recording = recording.frame_slice(start_frame=0, end_frame=int(15 * 30000))  # debugging purposes
-        recordings.append(recording)
+        recordings.append(load_recording(path,format))
     return recordings
 
 
