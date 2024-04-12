@@ -23,7 +23,7 @@ def get_age_at_recording(session_start_time, date_of_birth):
 
 def get_dob(subject_id, dob_csv):
     dob = dob_csv[dob_csv["id"] == subject_id]["dob"].iloc[0]
-    dob.to_pydatetime()
+    dob = pd.to_datetime(dob)
     return dob
 
 
@@ -31,7 +31,7 @@ def convert(recording_path, processed_folder_name, **kwargs):
     # handle save locations and paths
     recording_name = os.path.basename(recording_path)
     nwb_path = recording_path+"/"+processed_folder_name+"/nwb/" # Where to save the .nwb file
-    nwb_file_name = nwb_path+recording_name+"_v3.nwb"
+    nwb_file_name = nwb_path+recording_name+"_v4.nwb"
     if not os.path.exists(nwb_path):
         os.mkdir(nwb_path)
 
@@ -66,7 +66,7 @@ def convert(recording_path, processed_folder_name, **kwargs):
             metadata["NWBFile"]["session_start_time"] = st
             metadata["NWBFile"]["session_description"] = session_description
             metadata["Subject"]["subject_id"] = subject_id
-            metadata["Subject"]["age"] = "P"+str(age)
+            metadata["Subject"]["age"] = "P"+str(age)+"D"
             metadata["Subject"]["date_of_birth"] = date_of_birth
             metadata["Ecephys"]["ElectricalSeries"]["starting_time"] = 0
 
@@ -87,7 +87,7 @@ def convert(recording_path, processed_folder_name, **kwargs):
             ts_interface.dataframe = ts_interface.dataframe.drop(ts_interface.dataframe.filter(regex='Unnamed').columns, axis=1) # remove unwanted columns
             ts_interface.dataframe = ts_interface.dataframe.select_dtypes(exclude=[np.bool_, object])  # remove unwanted columns
             metadata["position"] = {"name": "position","description": "position: cm, speed: cm/s, angle: degrees, trials: non-zero indexed, "
-                                    "trial types: 0-beaconed, 1-nonbeaconed, 2-probe","comments": '',"unit": '', "resolution": 0.0,"conversion": 0.0,"offset": 0.0}
+                                    "trial types: 0-beaconed, 1-nonbeaconed, 2-probe","comments": '',"unit": 'second', "resolution": 0.001,"conversion": 0.0,"offset": 0.0}
 
             # convert to pipe and save as nwb
             converter = ConverterPipe(data_interfaces=[ephys_interface, ts_interface], verbose=True)

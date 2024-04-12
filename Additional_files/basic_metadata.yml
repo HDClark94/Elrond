@@ -8,7 +8,7 @@ NWBFile:
   experiment_description:  "Extracellular recording of mice medial entorhinal cortex during free exploration in a 100 x 100 cm open field and a virtual reality location memory task" # general description of the experiment
   session_id: "inherited" # lab-specific ID for the session
   experimenter:  # Name of person/people who performed experiment
-    - "Harry"
+    - "Clark, Harry"
   identifier:  # A unique text identifier for the file. If one is not provided it will be randomly assigned
   institution: "University of Edinburgh" # Institution(s) where experiment is performed
   lab: "Nolan Lab" # Lab where experiment was performed
