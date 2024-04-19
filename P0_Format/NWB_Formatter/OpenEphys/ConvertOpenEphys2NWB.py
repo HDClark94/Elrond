@@ -31,7 +31,8 @@ def convert(recording_path, processed_folder_name, **kwargs):
     # handle save locations and paths
     recording_name = os.path.basename(recording_path)
     nwb_path = recording_path+"/"+processed_folder_name+"/nwb/" # Where to save the .nwb file
-    nwb_file_name = nwb_path+recording_name+"_v4.nwb"
+    nwb_file_name = nwb_path+recording_name+".nwb"
+
     if not os.path.exists(nwb_path):
         os.mkdir(nwb_path)
 
@@ -87,7 +88,7 @@ def convert(recording_path, processed_folder_name, **kwargs):
             ts_interface.dataframe = ts_interface.dataframe.drop(ts_interface.dataframe.filter(regex='Unnamed').columns, axis=1) # remove unwanted columns
             ts_interface.dataframe = ts_interface.dataframe.select_dtypes(exclude=[np.bool_, object])  # remove unwanted columns
             metadata["position"] = {"name": "position","description": "position: cm, speed: cm/s, angle: degrees, trials: non-zero indexed, "
-                                    "trial types: 0-beaconed, 1-nonbeaconed, 2-probe","comments": '',"unit": 'second', "resolution": 0.001,"conversion": 0.0,"offset": 0.0}
+                                    "trial types: 0-beaconed, 1-nonbeaconed, 2-probe","comments": '',"unit": 'second', "resolution": -1.0, "conversion": 0.0,"offset": 0.0}
 
             # convert to pipe and save as nwb
             converter = ConverterPipe(data_interfaces=[ephys_interface, ts_interface], verbose=True)

@@ -108,35 +108,40 @@ def main():
     if settings.suppress_warnings:
         warnings.filterwarnings("ignore")
 
-    recording_paths = []
-    recording_paths.extend([f.path for f in os.scandir("/mnt/datastore/Harry/Cohort10_october2023/of") if f.is_dir()])
-    recording_paths.extend([f.path for f in os.scandir("/mnt/datastore/Harry/Cohort10_october2023/vr") if f.is_dir()])
-    parameter_helper_path = "/mnt/datastore/Harry/Cohort10_october2023/parameter_helper.csv"
-    process_recordings(recording_paths, parameter_helper_path=parameter_helper_path, allow_overwrite=True)
+    #recording_paths = []
+    #recording_paths.extend([f.path for f in os.scandir("/mnt/datastore/Harry/Cohort10_october2023/of") if f.is_dir()])
+    #recording_paths.extend([f.path for f in os.scandir("/mnt/datastore/Harry/Cohort10_october2023/vr") if f.is_dir()])
+    #parameter_helper_path = "/mnt/datastore/Harry/Cohort10_october2023/parameter_helper.csv"
+    #process_recordings(recording_paths, parameter_helper_path=parameter_helper_path, allow_overwrite=True)
+
+    #recording_paths = []
+    #recording_paths.extend([f.path for f in os.scandir("/mnt/datastore/Harry/Cohort9_february2023/of") if f.is_dir()])
+    #recording_paths.extend([f.path for f in os.scandir("/mnt/datastore/Harry/Cohort9_february2023/vr") if f.is_dir()])
+    #parameter_helper_path = "/mnt/datastore/Harry/Cohort9_february2023/parameter_helper.csv"
+    #process_recordings(recording_paths, parameter_helper_path=parameter_helper_path, allow_overwrite=True)
+
+    #recording_paths = []
+    #recording_paths.extend([f.path for f in os.scandir("/mnt/datastore/Harry/cohort8_may2021/of") if f.is_dir()])
+    #recording_paths.extend([f.path for f in os.scandir("/mnt/datastore/Harry/cohort8_may2021/vr") if f.is_dir()])
+    #parameter_helper_path = "/mnt/datastore/Harry/cohort8_may2021/parameter_helper.csv"
+    #process_recordings(recording_paths, parameter_helper_path=parameter_helper_path, allow_overwrite=True)
+
+    #recording_paths = []
+    #recording_paths.extend([f.path for f in os.scandir("/mnt/datastore/Harry/cohort7_october2020/of") if f.is_dir()])
+    #recording_paths.extend([f.path for f in os.scandir("/mnt/datastore/Harry/cohort7_october2020/vr") if f.is_dir()])
+    #parameter_helper_path = "/mnt/datastore/Harry/cohort7_october2020/parameter_helper.csv"
+    #process_recordings(recording_paths, parameter_helper_path=parameter_helper_path, allow_overwrite=True)
+
+    #recording_paths = []
+    #recording_paths.extend([f.path for f in os.scandir("/mnt/datastore/Harry/cohort6_july2020/of") if f.is_dir()])
+    #recording_paths.extend([f.path for f in os.scandir("/mnt/datastore/Harry/cohort6_july2020/vr") if f.is_dir()])
+    #parameter_helper_path = "/mnt/datastore/Harry/cohort6_july2020/parameter_helper.csv"
+    #process_recordings(recording_paths, parameter_helper_path=parameter_helper_path, allow_overwrite=True)
+
 
     recording_paths = []
-    recording_paths.extend([f.path for f in os.scandir("/mnt/datastore/Harry/Cohort9_february2023/of") if f.is_dir()])
-    recording_paths.extend([f.path for f in os.scandir("/mnt/datastore/Harry/Cohort9_february2023/vr") if f.is_dir()])
-    parameter_helper_path = "/mnt/datastore/Harry/Cohort9_february2023/parameter_helper.csv"
-    process_recordings(recording_paths, parameter_helper_path=parameter_helper_path, allow_overwrite=True)
-
-    recording_paths = []
-    recording_paths.extend([f.path for f in os.scandir("/mnt/datastore/Harry/cohort8_may2021/of") if f.is_dir()])
-    recording_paths.extend([f.path for f in os.scandir("/mnt/datastore/Harry/cohort8_may2021/vr") if f.is_dir()])
-    parameter_helper_path = "/mnt/datastore/Harry/cohort8_may2021/parameter_helper.csv"
-    process_recordings(recording_paths, parameter_helper_path=parameter_helper_path, allow_overwrite=True)
-
-    recording_paths = []
-    recording_paths.extend([f.path for f in os.scandir("/mnt/datastore/Harry/cohort7_october2020/of") if f.is_dir()])
-    recording_paths.extend([f.path for f in os.scandir("/mnt/datastore/Harry/cohort7_october2020/vr") if f.is_dir()])
-    parameter_helper_path = "/mnt/datastore/Harry/cohort7_october2020/parameter_helper.csv"
-    process_recordings(recording_paths, parameter_helper_path=parameter_helper_path, allow_overwrite=True)
-
-    recording_paths = []
-    recording_paths.extend([f.path for f in os.scandir("/mnt/datastore/Harry/cohort6_july2020/of") if f.is_dir()])
-    recording_paths.extend([f.path for f in os.scandir("/mnt/datastore/Harry/cohort6_july2020/vr") if f.is_dir()])
-    parameter_helper_path = "/mnt/datastore/Harry/cohort6_july2020/parameter_helper.csv"
-    process_recordings(recording_paths, parameter_helper_path=parameter_helper_path, allow_overwrite=True)
+    #parameter_helper_path = "/mnt/datastore/Harry/Cohort9_february2023/parameter_helper.csv"
+    #process_recordings(recording_paths, parameter_helper_path=parameter_helper_path, allow_overwrite=True)
 
 
 if __name__ == '__main__':
