@@ -24,8 +24,6 @@ def process(recording_path, processed_folder_name, **kwargs):
     # TODO add a section to process video feed
 
     # save position data
-    if not os.path.exists(recording_path + "/" + processed_folder_name):
-        os.mkdir(recording_path + "/" + processed_folder_name)
     position_data.to_csv(recording_path + "/" + processed_folder_name + "/position_data.csv")
 
     # process and plot position data

@@ -8,7 +8,6 @@ import scipy.ndimage
 from typing import Tuple
 import settings
 
-
 def plot_spike_histogram(spatial_firing, output_path, sampling_rate = settings.sampling_rate):
     print('I will plot spikes vs time for the whole session excluding opto tagging.')
     save_path = output_path + '/Figures/firing_properties'
@@ -37,45 +36,8 @@ def plot_spike_histogram(spatial_firing, output_path, sampling_rate = settings.s
             plt.yticks(fontsize=20)
 
             plt.savefig(save_path + '/' + cluster_df['session_id'].iloc[0] + '_' + str(cluster_id) + '_spike_histogram.png', dpi=300, bbox_inches='tight', pad_inches=0)
-            # plt.savefig(save_path + '/' + spatial_firing.session_id[cluster] + '_' + str(cluster + 1) + '_spike_histogram.pdf', bbox_inches='tight', pad_inches=0)
             plt.close()
 
-
-def plot_firing_rate_vs_speed(spatial_firing, spatial_data,  prm):
-    sampling_rate = 30
-    print('I will plot spikes vs speed for the whole session excluding opto tagging.')
-    save_path = prm.get_output_path() + '/Figures/firing_properties'
-    if os.path.exists(save_path) is False:
-        os.makedirs(save_path)
-    speed = spatial_data.speed[~np.isnan(spatial_data.speed)]
-    number_of_bins = math.ceil(max(speed)) - math.floor(min(speed))
-    session_hist, bins_s = np.histogram(speed, bins=number_of_bins, range=(math.floor(min(speed)), math.ceil(max(speed))))
-
-    for cluster_index, cluster_id in enumerate(spatial_firing.cluster_id):
-
-        cluster_df = spatial_firing[(spatial_firing.cluster_id == cluster_id)] # dataframe for that cluster
-        speed_cluster = cluster_df['speed'].iloc[0]
-        speed_cluster = sorted(speed_cluster)
-        spike_hist = plt.figure()
-        spike_hist.set_size_inches(5, 5, forward=True)
-        ax = spike_hist.add_subplot(1, 1, 1)
-        speed_hist, ax = plot_utility.style_plot(ax)
-        if number_of_bins > 0:
-            hist, bins = np.histogram(speed_cluster[1:], bins=number_of_bins, range=(math.floor(min(speed)), math.ceil(max(speed))))
-            width = bins[1] - bins[0]
-            center_bin = (bins[:-1] + bins[1:]) / 2
-            center = center_bin[tuple([np.where(session_hist > sum(session_hist)*0.005)])]
-            hist = np.array(hist, dtype=float)
-            session_hist = np.array(session_hist, dtype=float)
-            rate = np.divide(hist, session_hist, out=np.zeros_like(hist), where=session_hist != 0)
-            rate = rate[tuple([np.where(session_hist[~np.isnan(session_hist)] > sum(session_hist)*0.005)])]
-            plt.bar(center[0], rate[0]*sampling_rate, align='center', width=width, color='black')
-        plt.xlabel('speed [cm/s]')
-        plt.ylabel('firing rate [Hz]')
-        plt.xlim(0, 30)
-        plt.savefig(save_path + '/' + cluster_df['session_id'].iloc[0] + '_' + str(cluster_id) + '_speed_histogram.png', dpi=300, bbox_inches='tight', pad_inches=0)
-        # plt.savefig(save_path + '/' + spatial_firing.session_id[cluster] + '_' + str(cluster + 1) + '_speed_histogram.pdf', bbox_inches='tight', pad_inches=0)
-        plt.close()
 
 
 def calculate_autocorrelogram_hist(spikes, bin_size, window):
@@ -112,11 +74,9 @@ def get_10ms_autocorr(firing_times_cluster, sampling_rate):
     corr1, time1 = calculate_autocorrelogram_hist(np.array(firing_times_cluster) / sampling_rate, 1, 20)
     return corr1, time1
 
-
 def get_250ms_autocorr(firing_times_cluster, sampling_rate):
     corr, time = calculate_autocorrelogram_hist(np.array(firing_times_cluster) / sampling_rate, 1, 500)
     return corr, time
-
 
 def make_combined_autocorr_plot(time_10, corr_10, time_250, corr_250, spike_data, save_path, cluster_index, cluster_id):
     grid = plt.GridSpec(2, 1, hspace=0.5)
@@ -183,7 +143,6 @@ def plot_spikes_for_channel_centered(grid, spike_data, cluster_id, channel, snip
         plt.ylim(lowest_value - 10, highest_value + 30)
         snippet_plot.plot(cluster_df[snippet_column_name].iloc[0][channel, :, :] * -1, color='lightslategray')
         snippet_plot.plot(np.mean(cluster_df[snippet_column_name].iloc[0][channel, :, :], 1) * -1, color=mean_color)
-
     plt.xticks([0, 30], [0, 1])
     plt.xticks(fontsize=14)
     plt.yticks(fontsize=14)
@@ -209,77 +168,8 @@ def plot_waveforms(spike_data, output_path):
         plt.close()
 
 
-'''
-Calculate median, 25th and 75th percentile of firing rate (y) at given speed (x) values. Speed is binned into 6 cm/s 
-overlapping bins with a 2 cm/s step size.
-
-Based on: Gois & Tort, 2018, Cell Reports 25, 1872–1884
-'''
-
-
-def calculate_median_for_scatter_binned(x: np.ndarray, y: np.ndarray) -> 'Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]':
-    bin_size = 6
-    step_size = 2
-    number_of_bins = int((max(x) - min(x)) / 2)
-
-    median_x = []
-    median_y = []
-    percentile_25 = []
-    percentile_75 = []
-    for x_bin in range(number_of_bins):
-        median_x.append(x_bin * step_size + bin_size/2)
-        data_in_bin = np.take(y, np.where((x_bin * step_size < x) & (x < x_bin * step_size + bin_size)))
-        if len(data_in_bin[0]) > 0:
-            med_y = np.median(data_in_bin)
-            median_y.append(med_y)
-            percentile_25.append(np.percentile(data_in_bin, 25))
-            percentile_75.append(np.percentile(data_in_bin, 75))
-        else:
-            median_y.append(0)
-            percentile_25.append(0)
-            percentile_75.append(0)
-
-    return np.array(median_x), np.array(median_y), np.array(percentile_25), np.array(percentile_75)
-
-
-'''
-Make scatter plot of speed vs firing rate and mark the median and the 25th and 75th percentiles.
-
-position : data frame that contains the speed of the animal as a column ('speed')
-spatial_firing : data frame that contains the firing times ('firing_times') and speed scores ('speed_score')
-sigma : standard deviation for Gaussian filter (sigma = 250 / video_sampling)
-sampling_rate_conversion : sampling rate of ephys data relative to seconds. If the firing times are in seconds then this
-should be 1.
-save_path : path to folder where the plot gets saved
-
-'''
-
-
-def plot_speed_vs_firing_rate(position: pd.DataFrame, spatial_firing: pd.DataFrame, sampling_rate_conversion: int, gauss_sd: float, prm: object) -> None:
-    sampling_rate_video = int(1 / position['synced_time'].diff().mean())
-    sigma = gauss_sd / sampling_rate_video
-
-    speed = scipy.ndimage.filters.gaussian_filter(position.speed, sigma)
-    save_path = prm.get_output_path() + '/Figures/firing_properties'
-    for index, cell in spatial_firing.iterrows():
-        firing_times = cell.firing_times
-        firing_hist, edges = np.histogram(firing_times, bins=len(speed), range=(0, max(position.synced_time) * sampling_rate_conversion))
-        firing_hist *= sampling_rate_video
-        smooth_hist = scipy.ndimage.filters.gaussian_filter(firing_hist.astype(float), sigma)
-        speed, smooth_hist = array_utility.remove_nans_from_both_arrays(speed, smooth_hist)
-        median_x, median_y, percentile_25, percentile_75 = calculate_median_for_scatter_binned(speed, smooth_hist)
-        plt.cla()
-        fig, ax = plt.subplots()
-        ax = plot_utility.format_bar_chart(ax, 'Speed (cm/s)', 'Firing rate (Hz)')
-        plt.scatter(speed[::10], smooth_hist[::10], color='gray', alpha=0.7)
-        plt.plot(median_x, percentile_25, color='black', linewidth=5)
-        plt.plot(median_x, percentile_75, color='black', linewidth=5)
-        plt.scatter(median_x, median_y, color='black', s=100)
-        plt.title('Speed score: ' + str(np.round(cell.speed_score, 4)), fontsize=24)
-        plt.xlim(0, 50)
-        plt.ylim(0, None)
-        plt.savefig(save_path + '/' + cell.session_id + '_' + str(cell.cluster_id) + '_speed_vs_firing_rate.png', dpi=300, bbox_inches='tight', pad_inches=0)
-        plt.close()
-
 def plot_firing_properties(spike_data, output_path):
+    plot_waveforms(spike_data, output_path)
+    plot_spike_histogram(spike_data, output_path)
+    plot_autocorrelograms(spike_data, output_path)
     return

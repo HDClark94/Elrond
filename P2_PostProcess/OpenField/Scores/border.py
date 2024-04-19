@@ -1,7 +1,4 @@
 import numpy as np
-import pandas as pd
-import matplotlib.pyplot as plt
-
 '''
 calculates the border scores according to Solstad et al (2008)
 
@@ -30,32 +27,31 @@ calculates the border scores according to Solstad et al (2008)
   into the recording enclosure, the analysis was restricted to border cells with fields along a 
   single wall, i.e. cells where the border score for the preferred wall was at least twice as 
   high as the score for any of the remaining three walls."
-
-Corner scores and cue scores are also formalised loosely following the b = (cM - dm) / (cM + dm) structure.
 '''
 
-def calculate_border_score(spike_data, spatial_data):
-    # identify fields
+def calculate_border_scores(spike_data):
+    threshold = 0.3
+    border_scores = []
+    for index, cluster in spike_data.iterrows():
+        firing_rate_map = putative_border_fields_clip_by_firing_rate(cluster.firing_maps, threshold=threshold)
+        firing_fields = get_firing_field_data(cluster.firing_maps, index, threshold=threshold)
+        firing_fields = fields2map(firing_fields, firing_rate_map)
+        firing_fields = clip_fields_by_size(firing_fields, bin_size_cm=2.5)
+        firing_fields = put_firing_rates_back(firing_fields, firing_rate_map)
+        border_score = calculate_border_score(firing_fields, bin_size_cm=2.5)
+        border_scores.append(border_score)
+    spike_data['border_score'] = border_scores
+    return spike_data
 
-    for index, cluster_data in spike_data.iterrows():
-        firing_rate_map = cluster_data.firing_maps.copy()
 
-
-
-
-
-def calculate_border_score(firing_fields_cluster, bin_size_cm):
+def calculate_border_score(firing_fields, bin_size_cm):
     # only execute if there are firing fields to analyse
-    if len(firing_fields_cluster) > 0:
-
-        normalised_distance_mat = distance_matrix_border(firing_fields_cluster[0], bin_size_cm)
+    if len(firing_fields) > 0:
+        normalised_distance_mat = distance_matrix_border(firing_fields, bin_size_cm)
 
         dm = []
-
         maxcM = 0
-
-        for field in firing_fields_cluster:
-
+        for field in firing_fields:
             field_count = field.copy()
             field_count[field_count > 0] = 1
 
@@ -90,48 +86,16 @@ def calculate_border_score(firing_fields_cluster, bin_size_cm):
         cM = maxcM
 
         border_score = (cM - dm) / (cM + dm)
-
-        return border_score
-
     else:
         border_score = np.nan
-
-        # if no fields are found return NaN for border score (discredit these)
-        return border_score
+    return border_score
 
 
-
-
-def process_border_data(spatial_firing):
-    threshold = 0.3
-    border_scores = []
-
-    for index, cluster in spatial_firing.iterrows():
-        cluster_id = cluster.cluster_id
-
-        firing_rate_map = cluster.firing_maps.copy()
-        firing_rate_map = putative_border_fields_clip_by_firing_rate(firing_rate_map, threshold=threshold)
-
-        firing_fields_cluster, _ = get_firing_field_data(spatial_firing, index, threshold=threshold)
-        firing_fields_cluster = fields2map(firing_fields_cluster, firing_rate_map)
-        firing_fields_cluster = clip_fields_by_size(firing_fields_cluster, bin_size_cm=2.5)
-        firing_fields_cluster = put_firing_rates_back(firing_fields_cluster, firing_rate_map)
-
-        border_score = calculate_border_score(firing_fields_cluster, bin_size_cm=2.5)
-
-        border_scores.append(border_score)
-
-    spatial_firing['border_score'] = border_scores
-    return spatial_firing
-
-
-
-def put_firing_rates_back(firing_fields_cluster, firing_rate_map):
+def put_firing_rates_back(firing_fields, firing_rate_map):
     new = []
-    for field in firing_fields_cluster:
+    for field in firing_fields:
         new.append(np.multiply(field, firing_rate_map))
     return new
-
 
 
 def distance_matrix_border(field, bin_size_cm):
@@ -162,9 +126,6 @@ def distance_matrix_border(field, bin_size_cm):
     return distance_matrix
 
 
-
-
-
 def fields2map(firing_fields_cluster, firing_rate_map_template):
     '''
     :param firing_field_cluster: coordinates of firing fields for a given cluster
@@ -172,15 +133,11 @@ def fields2map(firing_fields_cluster, firing_rate_map_template):
     :return: rate map per field
     '''
     firing_fields = []
-
     for field in firing_fields_cluster:
         field_firing = firing_rate_map_template.copy() * 0
-
         for i in range(len(field)):
             field_firing[field[i][0]][field[i][1]] = 1
-
         firing_fields.append(field_firing)
-
     return firing_fields
 
 
@@ -193,12 +150,11 @@ def clip_fields_by_size(masked_rate_maps, bin_size_cm=2.5):
     bin_volume_cm2 = bin_size_cm * bin_size_cm
 
     new_masked_rate_maps = []
-
     for field in masked_rate_maps:
-        if np.sum(
-                field * bin_volume_cm2) > 200:  # as specified by Solstad et al (2008), only fields larger than 200cm2 are considered
+        if np.sum(field * bin_volume_cm2) > 200:
+            # as specified by Solstad et al (2008),
+            # only fields larger than 200cm2 are considered
             new_masked_rate_maps.append(field)
-
     return new_masked_rate_maps
 
 
@@ -208,25 +164,16 @@ def putative_border_fields_clip_by_firing_rate(firing_rate_map, threshold):
     :param firing_rate_map: smoothened firing rate map
     :return: firing_rate_map clipped by 0.3x max firing rate
     '''
-
     max_firing = np.max(firing_rate_map)
     firing_rate_map[firing_rate_map < threshold * max_firing] = 0
     return firing_rate_map
-
-
-'''
-Functions below taken from open_field_firing_fields,
-modified to fit the purposes of border field detection
-'''
 
 
 # return indices of neighbors of bin considering borders
 def find_neighbors(bin_to_test, max_x, max_y):
     x = bin_to_test[0]
     y = bin_to_test[1]
-
     neighbors = [[x, y + 1], [x, y - 1], [x + 1, y], [x - 1, y]]
-
     if x == max_x:
         neighbors = [[x, y + 1], [x, y - 1], [x - 1, y]]
     if y == max_y:
@@ -239,13 +186,10 @@ def find_neighbors(bin_to_test, max_x, max_y):
         neighbors = [[x, y + 1], [x + 1, y], [x - 1, y]]
     if x == 0 and y == 0:
         neighbors = [[x, y + 1], [x + 1, y]]
-
     if x == max_x and y == 0:
         neighbors = [[x, y + 1], [x - 1, y]]
-
     if y == max_y and x == 0:
         neighbors = [[x, y - 1], [x + 1, y]]
-
     return neighbors
 
 
@@ -344,22 +288,19 @@ def find_current_maxima_indices(rate_map, threshold):
     max_fr = rate_map[highest_rate_bin]
     if found_new is False:
         return None, found_new, None
-    # plt.imshow(rate_map)
-    # plt.scatter(highest_rate_bin[1], highest_rate_bin[0], marker='o', s=500, color='yellow')
     masked_rate_map = np.full((rate_map.shape[0], rate_map.shape[1]), 0)
     masked_rate_map[highest_rate_bin] = 1
     changed = True
     while changed:
-        masked_rate_map, changed = find_neighborhood(masked_rate_map, rate_map, rate_map[highest_rate_bin],
-                                                     threshold=threshold)
+        masked_rate_map, changed = find_neighborhood(masked_rate_map, rate_map, rate_map[highest_rate_bin],threshold=threshold)
 
     field_indices = np.array(np.where(masked_rate_map > 0)).T
     found_new = test_if_field_is_big_enough(field_indices)
     if found_new is False:
         return None, found_new, None
 
-    # found_new = test_if_field_is_small_enough(field_indices, rate_map)
-    # if found_new is False:
+    #found_new = test_if_field_is_small_enough(field_indices, rate_map)
+    #if found_new is False:
     #    return None, found_new, None
 
     found_new = ensure_the_field_does_not_have_a_hole_in_the_middle(field_indices)
@@ -376,18 +317,15 @@ def remove_indices_from_rate_map(rate_map, indices):
 
 
 # find firing fields and maximum firing rates for each field for a cluster
-def get_firing_field_data(spatial_firing, cluster, threshold):
-    firing_fields_cluster = []
-    max_firing_rates_cluster = []
-    rate_map = spatial_firing.firing_maps[cluster].copy()
+def get_firing_field_data(rate_map, threshold):
+    firing_fields = []
     found_new = True
     while found_new:
         field_indices, found_new, max_firing_rate = find_current_maxima_indices(rate_map, threshold=threshold)
         if found_new:
-            firing_fields_cluster.append(field_indices)
-            max_firing_rates_cluster.append(max_firing_rate)
+            firing_fields.append(field_indices)
             rate_map = remove_indices_from_rate_map(rate_map, field_indices)
-    return firing_fields_cluster, max_firing_rates_cluster
+    return firing_fields
 
 
 #  this is here for testing

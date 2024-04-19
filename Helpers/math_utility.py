@@ -177,3 +177,7 @@ def butter_bandpass_filter(data, lowcut, highcut, fs, order=5):
     b, a = butter_bandpass(lowcut, highcut, fs, order=order)
     y = lfilter(b, a, data)
     return y
+
+def gaussian_kernel(kernx):
+    kerny = np.exp(np.power(kernx, 2)/2 * (-1))
+    return kerny

@@ -8,10 +8,11 @@ suppress_warnings = True
 processed_folder = "/processed"
 dead_channel_file_name = "/dead_channels.txt"
 temp_storage_path = '/home/ubuntu/to_sort/recordings/tmp'
+PIL_fontstyle_path = '/home/ubuntu/Elrond_code/Additional_files/Arial.ttf'
 
 ##########
 # Recording setting
-sampling_rate = 30000
+sampling_rate = 30000 # TODO better to inherit from data if available
 down_sampled_rate = 1000
 
 #########
@@ -30,14 +31,13 @@ n_sorting_workers = 8
 ############
 # Automatic Curation
 list_of_quality_metrics = ['snr','isi_violation','firing_rate', 'presence_ratio', 'amplitude_cutoff',\
-                          'isolation_distance', 'l_ratio', 'd_prime', 'nearest_neighbor', 'nn_isolation', 'nn_noise_overlap']
+                          'isolation_distance', 'nearest_neighbor', 'nn_isolation', 'nn_noise_overlap']
 
 # assign the quality metric name, sign of threshold ("<", ">") and value in a tuple
-auto_curation_thresholds = [('isolation_distance', '>', 0.9),
-                            ('nn_noise_overlap', '<', 0.05),
-                            ('snr', '>', 1),
-                            ('firing_rate', '>', 0.0)]
+# ('isolation_distance', '>', 0.9) and ('nn_noise_overlap', '<', 0.05) use if pca components are computed
 
+auto_curation_thresholds = [('snr', '>', 1),
+                            ('firing_rate', '>', 0.05)]
 ##########
 # VR
 

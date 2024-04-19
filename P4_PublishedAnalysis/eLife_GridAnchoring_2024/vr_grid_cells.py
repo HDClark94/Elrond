@@ -583,9 +583,8 @@ def get_spatial_information_score_for_trials(track_length, position_data, cluste
     Ispike = Isec / mrate
     if np.isnan(Ispike):
         Ispike = 0
-
     if Ispike < 0:
-        print("hello")
+        print("Ispike shouldnt be negative!")
 
     return Isec
 

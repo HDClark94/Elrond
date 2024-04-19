@@ -19,7 +19,7 @@ sampling_rate_conversion : sampling rate of ephys data relative to seconds. If t
 should be 1.
 '''
 
-def calculate_speed_score(spike_data, spatial_data, gauss_sd = settings.gauss_sd_for_speed_score,
+def calculate_speed_scores(spike_data, spatial_data, gauss_sd = settings.gauss_sd_for_speed_score,
                                                     sampling_rate = settings.sampling_rate):
     avg_sampling_rate_video = float(1 / spatial_data['synced_time'].diff().mean())
     sigma = gauss_sd / avg_sampling_rate_video
