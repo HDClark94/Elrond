@@ -48,10 +48,16 @@ def update_from_phy(recording_path, local_path, processed_folder_name, **kwargs)
     recording_mono, probe = add_probe(recording_mono, recording_path)
     recording_mono = preprocess(recording_mono)
 
-    spike_data = pd.read_pickle(recording_paths[0]+"/"+processed_folder_name +"/"+settings.sorterName+"/spikes.pkl")
+    if "sorterName" in kwargs:
+        sorterName = kwargs["sorterName"]
+    else:
+        sorterName = settings.sorterName
+    print("I will use sorted results from", sorterName)
+
+    spike_data = pd.read_pickle(recording_paths[0]+"/"+processed_folder_name +"/"+sorterName+"/spikes.pkl")
 
     # create sorting extractor from first primarly recording phy folder
-    phy_path = recording_paths[0]+"/"+processed_folder_name +"/"+settings.sorterName+"/phy"
+    phy_path = recording_paths[0]+"/"+processed_folder_name +"/"+sorterName+"/phy"
     sorting_mono = si.read_phy(phy_path, exclude_cluster_groups=["noise", "mua"])
     print("I found " + str(len(sorting_mono.unit_ids)) + " clusters")
 
@@ -75,7 +81,7 @@ def update_from_phy(recording_path, local_path, processed_folder_name, **kwargs)
     if "save2phy" in kwargs:
         if kwargs["save2phy"] == True:
             si.export_report(we,
-                             output_folder=recording_path + "/" + processed_folder_name + "/" + settings.sorterName + "/manually_curated_report",
+                             output_folder=recording_path + "/" + processed_folder_name + "/" + sorterName + "/manually_curated_report",
                              remove_if_exists=True)
     return
 
@@ -90,13 +96,19 @@ def spikesort(recording_path, local_path, processed_folder_name, **kwargs):
 
     #recording_mono = recording_mono.frame_slice(start_frame=0, end_frame=int(30 * 30000))  # debugging purposes
 
+    if "sorterName" in kwargs:
+        sorterName = kwargs["sorterName"]
+    else:
+        sorterName = settings.sorterName
+    print("I will sort using", sorterName)
+
     # preprocess and ammend preprocessing parameters for presorting
-    default_params = si.get_default_sorter_params(settings.sorterName)
+    default_params = si.get_default_sorter_params(sorterName)
     recording_mono = preprocess(recording_mono)
     params = ammend_preprocessing_parameters(default_params)
 
     # Run spike sorting
-    sorting_mono = si.run_sorter_by_property(sorter_name=settings.sorterName,
+    sorting_mono = si.run_sorter_by_property(sorter_name=sorterName,
                                              recording=recording_mono,
                                              grouping_property='group',
                                              working_folder='sorting_tmp',
@@ -126,6 +138,6 @@ def spikesort(recording_path, local_path, processed_folder_name, **kwargs):
     # Optionally
     if "save2phy" in kwargs:
         if kwargs["save2phy"] == True:
-            si.export_to_phy(we, output_folder=recording_path + "/" + processed_folder_name + "/" + settings.sorterName + "/phy", remove_if_exists=True, copy_binary=True)
-            si.export_report(we, output_folder=recording_path + "/" + processed_folder_name + "/" + settings.sorterName + "/uncurated_report", remove_if_exists=True)
+            si.export_to_phy(we, output_folder=recording_path + "/" + processed_folder_name + "/" + sorterName + "/phy", remove_if_exists=True, copy_binary=True)
+            si.export_report(we, output_folder=recording_path + "/" + processed_folder_name + "/" + sorterName + "/uncurated_report", remove_if_exists=True)
     return
