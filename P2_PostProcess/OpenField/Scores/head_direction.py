@@ -7,8 +7,6 @@ import pandas as pd
 import subprocess
 import settings
 
-import PostSorting.open_field_firing_maps
-
 
 def moving_sum(array, window):
     ret = np.cumsum(array, dtype=float)
