@@ -17,9 +17,9 @@ down_sampled_rate = 1000
 
 #########
 # Sorter Configuration
-sorterName = 'mountainsort4'
+sorterName = 'kilosort4'
 list_of_named_sorters = ['MountainSort', 'mountainsort4','klusta','tridesclous','hdsort','ironclust',
-                         'kilosort','kilosort2', 'spykingcircus','herdingspikes','waveclus']
+                         'kilosort','kilosort2', 'kilosort4', 'spykingcircus','herdingspikes','waveclus']
 
 whiten = True
 common_reference = True
