@@ -1,14 +1,25 @@
 import os
 import shutil
 import yaml
+import numpy as np
+from pathlib import Path
 import settings
 import spikeinterface.full as si
 from neuroconv.utils.dict import load_dict_from_file, dict_deep_update
 
 
 def load_recording(recording_path, recording_format):
+    # load recording channels but don't load ADC channels
+
     if recording_format == "openephys":
-        recording = si.read_openephys(recording_path, stream_name='Signals CH')
+        files = [f for f in Path(recording_path).iterdir()]
+        if np.any([".continuous" in f.name and f.is_file() for f in files]):
+            # format = 'legacy'
+            recording = si.read_openephys(recording_path, stream_name='Signals CH')
+        else:
+            # format = 'binary'
+            recording = si.read_openephys(recording_path)
+
     elif recording_format == "spikeglx":
         recording = si.read_spikeglx(recording_path)  # untested
     elif recording_format == "nwb":
