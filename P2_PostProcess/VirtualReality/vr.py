@@ -1,9 +1,7 @@
-from P0_Format.vr_extract_behaviour_from_ADC_channels import *
-
-from P2_PostProcess.Shared.time_sync import *
+from P2_PostProcess.VirtualReality.behaviour_from_blender import *
+from P2_PostProcess.VirtualReality.behaviour_from_ADC_channels import *
 from P2_PostProcess.VirtualReality.spatial_data import *
 from P2_PostProcess.VirtualReality.spatial_firing import *
-from P2_PostProcess.VirtualReality.video import *
 from P2_PostProcess.VirtualReality.plotting import *
 
 def process(recording_path, processed_folder_name, **kwargs):
@@ -11,10 +9,13 @@ def process(recording_path, processed_folder_name, **kwargs):
     stop_threshold = get_stop_threshold(recording_path)
 
     # look for position_data
+    files = [f for f in Path(recording_path).iterdir()]
     if os.path.exists(recording_path+"/"+processed_folder_name+"/position_data.csv"):
         position_data = pd.read_csv(recording_path+"/"+processed_folder_name+"/position_data.csv")
+    elif np.any(["blender.csv" in f.name and f.is_file() for f in files]):
+        position_data = generate_position_data_from_blender_file(recording_path, processed_folder_name)
     else:
-        print("I couldn't find a position_data.csv file, "
+        print("I couldn't find a position_data.csv or a blender.csv file, "
               "I will attempt to use ADC channel information")
         position_data = generate_position_data_from_ADC_channels(recording_path, processed_folder_name)
 
