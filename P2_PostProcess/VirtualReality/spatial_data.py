@@ -7,16 +7,31 @@ import settings
 from astropy.convolution import convolve, Gaussian1DKernel
 import Helpers.metadata_extraction as metadata_extraction
 import matplotlib.pylab as plt
+from neuroconv.utils.dict import load_dict_from_file
+
 
 def get_track_length(recording_path):
-    parameter_file_path = metadata_extraction.get_tags_parameter_file(recording_path)
-    _, track_length = metadata_extraction.process_running_parameter_tag(parameter_file_path)
-    return track_length
+    if os.path.exists(recording_path+"/params.yml"):
+        params = load_dict_from_file(recording_path + "/params.yml")
+        return params["track_length"]
+    elif os.path.exists(recording_path+"/parameters.txt"):
+        parameter_file_path = metadata_extraction.get_tags_parameter_file(recording_path)
+        _, track_length = metadata_extraction.process_running_parameter_tag(parameter_file_path)
+        return track_length
+    else:
+        raise AssertionError("I could not find a params.yml or parameters.txt file")
+
 
 def get_stop_threshold(recording_path):
-    parameter_file_path = metadata_extraction.get_tags_parameter_file(recording_path)
-    stop_threshold, _ = metadata_extraction.process_running_parameter_tag(parameter_file_path)
-    return stop_threshold
+    if os.path.exists(recording_path+"/params.yml"):
+        params = load_dict_from_file(recording_path + "/params.yml")
+        return params["stop_threshold"]
+    elif os.path.exists(recording_path+"/parameters.txt"):
+        parameter_file_path = metadata_extraction.get_tags_parameter_file(recording_path)
+        stop_threshold, _ = metadata_extraction.process_running_parameter_tag(parameter_file_path)
+        return stop_threshold
+    else:
+        raise AssertionError("I could not find a params.yml or parameters.txt file")
 
 
 def add_speed_per_100ms(position_data, track_length):
