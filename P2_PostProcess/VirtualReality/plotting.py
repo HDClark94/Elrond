@@ -20,11 +20,12 @@ def plot_speed_heat_map(processed_position_data, output_path="", track_length=20
     ax = fig.add_subplot(1, 1, 1)  # specify (nrows, ncols, axnum)
     trial_speeds = pandas_collumn_to_2d_numpy_array(processed_position_data["speeds_binned_in_space"])
     where_are_NaNs = np.isnan(trial_speeds)
-    trial_speeds[where_are_NaNs] = 0
+    #trial_speeds[where_are_NaNs] = 0
     locations = np.arange(0, len(trial_speeds[0]))
     ordered = np.arange(0, len(trial_speeds), 1)
     X, Y = np.meshgrid(locations, ordered)
     cmap = plt.cm.get_cmap("jet")
+    cmap.set_bad("white")
     pcm = ax.pcolormesh(X, Y, trial_speeds, cmap=cmap, shading="auto")
     cbar = fig.colorbar(pcm, ax=ax, fraction=0.046, pad=0.14)
     cbar.mappable.set_clim(0, 100)
@@ -151,6 +152,8 @@ def plot_variables(position_data, output_path): # can be raw or downsampled
         os.makedirs(save_path)
 
     for column in list(position_data):
+        print("plotting", column)
+        print("avg value:", str(np.nanmean(position_data[column])))
         plt.plot(position_data[column])
         plt.savefig(save_path + '/' + column + '.png')
         plt.close()
