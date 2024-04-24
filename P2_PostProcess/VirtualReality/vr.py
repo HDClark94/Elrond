@@ -3,6 +3,7 @@ from P2_PostProcess.VirtualReality.behaviour_from_ADC_channels import *
 from P2_PostProcess.VirtualReality.spatial_data import *
 from P2_PostProcess.VirtualReality.spatial_firing import *
 from P2_PostProcess.VirtualReality.plotting import *
+from P2_PostProcess.VirtualReality.video import *
 
 def process(recording_path, processed_folder_name, **kwargs):
     track_length = get_track_length(recording_path)
@@ -15,17 +16,15 @@ def process(recording_path, processed_folder_name, **kwargs):
     elif np.any(["blender.csv" in f.name and f.is_file() for f in files]):
         position_data = generate_position_data_from_blender_file(recording_path, processed_folder_name)
     else:
-        print("I couldn't find a position_data.csv or a blender.csv file, "
-              "I will attempt to use ADC channel information")
         position_data = generate_position_data_from_ADC_channels(recording_path, processed_folder_name)
-
+    print("I am using position data with an avg sampling rate of ", str(1/np.nanmean(np.diff(position_data["time_seconds"]))), "Hz")
     # add a step for syncing data if necesssary
     # TODO position_data = sync_posi...
     # process video
-    # TODO add a section to process video feed
+    position_data = process_video(recording_path, processed_folder_name, position_data)
 
     # save position data
-    position_data.to_csv(recording_path + "/" + processed_folder_name + "/position_data.csv")
+    position_data.to_csv(recording_path + "/" + processed_folder_name + "/position_data.csv", index=False)
 
     # process and plot position data
     processed_position_data = process_position_data(position_data, track_length, stop_threshold)
