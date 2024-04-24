@@ -5,7 +5,7 @@ import warnings
 import settings
 
 from Helpers.upload_download import copy_from_local, copy_to_local, empty_recording_folder_from_local
-from P0_Format.vr_extract_behaviour_from_ADC_channels import generate_position_data_from_ADC_channels, \
+from P2_PostProcess.VirtualReality.behaviour_from_ADC_channels import generate_position_data_from_ADC_channels, \
     run_checks_for_position_data
 
 def process_recordings(recording_paths, local_path="", processed_folder_name= "", copy_locally=False, run_formatter=False, **kwargs):
@@ -37,7 +37,6 @@ def process_recordings(recording_paths, local_path="", processed_folder_name= ""
                 if not os.path.exists(working_recording_path + "/" + processed_folder_name):
                     os.mkdir(working_recording_path + "/" + processed_folder_name)
 
-                print("I will attempt to convert this position data encoded within ADC channels into csv format")
                 position_data = generate_position_data_from_ADC_channels(working_recording_path, processed_folder_name)
                 run_checks_for_position_data(position_data, working_recording_path, processed_folder_name)
 
