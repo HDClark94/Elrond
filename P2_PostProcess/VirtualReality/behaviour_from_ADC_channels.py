@@ -308,6 +308,8 @@ def extract_position_data(recording_path, track_length):
 
 
 def generate_position_data_from_ADC_channels(recording_path, processed_folder_name):
+    print("I will attempt to use ADC channel information")
+
     # recording type needs to be vr
     assert get_recording_types([recording_path])[0] == "vr"
 

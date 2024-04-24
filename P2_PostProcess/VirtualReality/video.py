@@ -6,15 +6,7 @@ import sys
 import cv2
 import numpy as np
 import matplotlib.pyplot as plt
-
-def get_mouse(session_id):
-    return session_id.split("_")[0]
-
-def get_day(session_id):
-    tmp =  session_id.split("_")[1]
-    tmp = tmp.split("D")[1]
-    tmp = ''.join(filter(str.isdigit, tmp))
-    return int(tmp)
+from neuroconv.utils.dict import load_dict_from_file
 
 def analyse_licking(recording, video_path, update_spatial_firing, update_processed_position_data):
     return
@@ -183,7 +175,6 @@ def analyse_pupils(recording, video_path, update_spatial_firing, update_processe
     ax.plot(slice_intensity)
     plt.savefig(save_path + "/slice_intensity.png")
     plt.close()
-
     return
 
 
@@ -213,6 +204,79 @@ def process_recordings(vr_recording_path_list):
             print("couldn't process vr_grid analysis on "+recording)
 
 
+def get_bounding_box(x_origin, x_length, y_origin, y_length):
+    upper_left_x = x_origin
+    upper_right_x = x_origin+x_length
+    lower_right_x = x_origin+x_length
+    lower_left_x = x_origin
+    upper_left_y = y_origin
+    upper_right_y = y_origin
+    lower_right_y = y_origin + y_length
+    lower_left_y = y_origin + y_length
+    return upper_left_x, upper_right_x, lower_right_x, lower_left_x,\
+        upper_left_y, upper_right_y, lower_right_y, lower_left_y
+
+
+def plot_led(params, video_path, save_path):
+    upper_left_x, upper_right_x, lower_right_x, lower_left_x, \
+    upper_left_y, upper_right_y, lower_right_y, lower_left_y = \
+        get_bounding_box(params["vr_sync_pulse_led_bounding_box_x_origin"], params["vr_sync_pulse_led_bounding_box_x_length"],
+                         params["vr_sync_pulse_led_bounding_box_y_origin"], params["vr_sync_pulse_led_bounding_box_y_length"])
+    vidcap = cv2.VideoCapture(video_path)
+    length = int(vidcap.get(cv2.CAP_PROP_FRAME_COUNT))
+    width = int(vidcap.get(cv2.CAP_PROP_FRAME_WIDTH))
+    height = int(vidcap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+    fps = vidcap.get(cv2.CAP_PROP_FPS)
+    frame_id = int(length/2) # look at the middle frame by default to avoid any edge artefacts
+    vidcap.set(cv2.CAP_PROP_POS_FRAMES, frame_id)
+    ret, frame = vidcap.read()
+    greyscale_frame = np.nanmean(frame, axis=2)
+    bounding_box = frame[upper_left_y:lower_right_y, upper_left_x:upper_right_x]
+
+    fig, ax = plt.subplots()
+    ax.imshow(frame)
+    plt.title("middle frame")
+    plt.savefig(save_path + "/middle_frame.png")
+    plt.close()
+
+    fig, ax = plt.subplots()
+    ax.imshow(frame)
+    ax.plot([upper_left_x, upper_right_x, lower_right_x, lower_left_x, upper_left_x],
+            [upper_left_y, upper_right_y, lower_right_y, lower_left_y, upper_left_y], linewidth=3, color='red')
+    plt.title("middle frame with led bounding box")
+    plt.savefig(save_path + "/middle_frame_with_bounding_box.png")
+    plt.close()
+
+    fig, ax = plt.subplots()
+    ax.imshow(bounding_box)
+    plt.title("led bounding box")
+    plt.savefig(save_path + "/bounding_box.png")
+    plt.close()
+
+
+def process_video(recording_path, processed_folder_name, position_data):
+    # look for video in recording_path, use deep lab cut to analyse on cpu frame by frame,
+    # align with position_data using sync pulse from led in the video
+    # look for a video to analyse
+    # get bounding box for led
+    if os.path.exists(recording_path+"/params.yml"):
+        params = load_dict_from_file(recording_path+"/params.yml")
+    else:
+        raise AssertionError("I need a params file in order to process video")
+
+    save_path = recording_path+"/"+processed_folder_name+"/video"
+    if not os.path.exists(save_path):
+        os.mkdir(save_path)
+    video_paths = [os.path.abspath(os.path.join(recording_path, filename))
+                   for filename in os.listdir(recording_path) if (filename.endswith(".mp4") or filename.endswith(".avi"))]
+    if len(video_paths) != 1:
+        raise AssertionError("I only want one video filename!")
+    plot_led(params, video_paths[0], save_path) # only take the first video as there hopefully is only one
+
+    # add lick or no lick and pupil radius to position data using deeplabcut model
+    #add_licks(position_data, video_path=video_filenames[0])
+    #add_pupil_radius(position_data, video_path=video_filenames[0])
+    return position_data
 
 #  for testing
 def main():
