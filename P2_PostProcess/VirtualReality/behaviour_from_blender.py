@@ -1,13 +1,5 @@
-import os
-import numpy as np
 import pandas as pd
-from scipy import stats
-import settings
-import Helpers.open_ephys_IO as open_ephys_IO
-from astropy.convolution import convolve, Gaussian1DKernel
 from Helpers.upload_download import *
-from P2_PostProcess.VirtualReality.spatial_data import process_position_data, get_stop_threshold, get_track_length
-from P2_PostProcess.VirtualReality.plotting import plot_variables, plot_behaviour
 
 # Behavioural variables can be stored as an output from blender log files, these are made up of a csv-like format
 # whereby rows indicate a timestep and columns represent some task variable.
@@ -15,19 +7,15 @@ from P2_PostProcess.VirtualReality.plotting import plot_variables, plot_behaviou
 # This script will convert the data within the blender file into
 # a behavioural dataframe using .csv or .pkl file formats.
 
-
 def generate_position_data_from_blender_file(recording_path, processed_folder_name):
     blender_files = [f for f in Path(recording_path).iterdir() if "blender.csv" in f.name and f.is_file()]
     assert len(blender_files) == 1, "I need one blender.csv file, There isn't exactly one"
     assert get_recording_types([recording_path])[0] == "vr", "recording type must be vr if attempting to generate position data from a blender file"
 
-    track_length = get_track_length(recording_path)
-    stop_threshold = get_stop_threshold(recording_path)
-
     blender_data = pd.read_csv(blender_files[0], skiprows=4, sep=";",
-                               names=["Time", "Position-X", "Speed", "Speed/gain_mod", "Reward_received", "Reward_failed",
-                                      "Lick_detected", "Tone_played", "Position-Y", "Tot trial", "gain_mod", "rz_start",
-                                      "rz_end", "sync_pulse"])
+                               names=["Time", "Position-X", "Speed", "Speed/gain_mod", "Reward_received",
+                                      "Reward_failed", "Lick_detected", "Tone_played", "Position-Y",
+                                      "Tot trial", "gain_mod", "rz_start", "rz_end", "sync_pulse"])
 
     position_data = pd.DataFrame()
     position_data["x_position_cm"] = blender_data["Position-X"]*10 # assumes 10 cm per virtual unit
