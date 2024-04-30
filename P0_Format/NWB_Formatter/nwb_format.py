@@ -1,6 +1,6 @@
 import os
 from P0_Format.NWB_Formatter.OpenEphys import ConvertOpenEphys2NWB
-from P0_Format.vr_extract_behaviour_from_ADC_channels import generate_position_data_from_ADC_channels, \
+from P2_PostProcess.VirtualReality.behaviour_from_ADC_channels import generate_position_data_from_ADC_channels, \
     run_checks_for_position_data
 from Helpers.upload_download import get_recording_format
 
@@ -16,7 +16,6 @@ def format(recording_path, processed_folder_name, **kwargs):
 
     if "convert_ADC_to_VRbehaviour" in kwargs:
         if kwargs["convert_ADC_to_VRbehaviour"] == True:
-            print("I will attempt to convert this position data encoded within ADC channels into csv format")
             position_data = generate_position_data_from_ADC_channels(recording_path, processed_folder_name)
             run_checks_for_position_data(position_data, recording_path, processed_folder_name)
 

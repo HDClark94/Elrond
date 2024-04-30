@@ -9,7 +9,7 @@ import pandas as pd
 from natsort import natsorted, ns
 import settings
 
-def image_list2pdf(image_list, labels, save_path, res=100):
+def image_list2pdf(image_list, labels, save_path, res=500):
     """
     :param image_list: list of images to concatenate into a pdf
     :param labels: singular string or array-like, if array-like, image must match length of image_list
@@ -28,8 +28,10 @@ def image_list2pdf(image_list, labels, save_path, res=100):
             first = False
         else:
             im_list.append(open_image(im_path,label=label))
-    pdf_filename = save_path+".pdf"
-    im1.save(pdf_filename, "PDF", resolution=res, save_all=True, append_images=im_list)
+
+    if len(image_list)>0: # if any images exist
+        pdf_filename = save_path + ".pdf"
+        im1.save(pdf_filename, "PDF", resolution=res, save_all=True, append_images=im_list)
 
 
 def open_image(im_path, label=None, margin=100, size=None):

@@ -12,10 +12,9 @@ def process(recording_path, processed_folder_name, **kwargs):
     # plot tracess for spikes and channels
     make_pdf_from_recording(recording_path, processed_folder_name)
 
-
-    make_spike_trace_summary(recording_path, processed_folder_name)
-    make_channel_trace_summary(recording_path, processed_folder_name, filtered=False)
-    make_channel_trace_summary(recording_path, processed_folder_name, filtered=True)
+    #make_spike_trace_summary(recording_path, processed_folder_name)
+    #make_channel_trace_summary(recording_path, processed_folder_name, filtered=False)
+    #make_channel_trace_summary(recording_path, processed_folder_name, filtered=True)
     #make_lfp_trace_summary(recording_path, processed_folder_name)
 
     return

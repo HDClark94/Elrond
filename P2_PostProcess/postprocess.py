@@ -17,7 +17,6 @@ def postprocess(working_recording_path, local_path, processed_folder_name, **kwa
         if not os.path.exists(recording_path + "/" + processed_folder_name):
             os.mkdir(recording_path + "/" + processed_folder_name)
 
-        shared.process(recording_path, processed_folder_name, **kwargs)
         if type == "vr":
             vr.process(recording_path, processed_folder_name, **kwargs)
         elif type == "openfield":
@@ -27,7 +26,7 @@ def postprocess(working_recording_path, local_path, processed_folder_name, **kwa
         elif type == "sleep":
             sleep.process(recording_path, processed_folder_name, **kwargs)
         else:
-            print(type, " isn't a recognised recording "
-                        "type in postprocessing ")
+            print(type, " isn't a recognised recording type in postprocessing")
+        shared.process(recording_path, processed_folder_name, **kwargs)
 
     print("Finished post-processing...")

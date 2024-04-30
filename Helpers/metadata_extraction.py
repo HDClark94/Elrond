@@ -12,7 +12,7 @@ def get_tags_parameter_file(recording_directory):
 
 def process_running_parameter_tag(running_parameter_tags):
     stop_threshold = 4.7  # defaults
-    track_length = 200 # default assumptions
+    track_length = 200 # default
 
     if not running_parameter_tags:
         return stop_threshold, track_length
