@@ -95,7 +95,10 @@ def main():
     #recording_paths.extend([f.path for f in os.scandir("/mnt/datastore/Harry/cohort6_july2020/of") if f.is_dir()])
     #recording_paths = ["/mnt/datastore/Harry/test_recording/vr/M11_D36_2021-06-28_12-04-36"] # example vr tetrode session with a linked of session
     #recording_paths = ["/mnt/datastore/Harry/test_recording/vr/M18_D1_2023-10-30_12-38-29"] # example vr cambridge p1 probe session with a linked of session (2 x 64 channels)
-    recording_paths = ["/mnt/datastore/Harry/Cohort9_february2023/vr/M16_D1_2023-02-28_17-42-27"]
+    #recording_paths = ["/mnt/datastore/Harry/Cohort9_february2023/vr/M16_D1_2023-02-28_17-42-27"]
+    #recording_paths =["/mnt/datastore/Harry/test_recording/vr/M0_D0_just_behaviour"]
+    recording_paths.extend([f.path for f in os.scandir("/mnt/datastore/Harry/cohort11_april2024/vr") if f.is_dir()])
+
     process_recordings(recording_paths,
                        local_path="/home/ubuntu/to_sort/recordings/",
                        processed_folder_name="processed",
