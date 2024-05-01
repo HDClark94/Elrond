@@ -21,7 +21,7 @@ def process(recording_path, processed_folder_name, **kwargs):
     # add a step for syncing data if necesssary
     # TODO position_data = sync_posi...
     # process video
-    #position_data = process_video(recording_path, processed_folder_name, position_data)
+    position_data = process_video(recording_path, processed_folder_name, position_data)
 
     # save position data
     position_data.to_csv(recording_path + "/" + processed_folder_name + "/position_data.csv", index=False)

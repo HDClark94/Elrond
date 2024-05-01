@@ -41,6 +41,7 @@ auto_curation_thresholds = [('snr', '>', 1),
 ##########
 # VR
 
+deeplabcut_project_path = "/mnt/datastore/Harry/vr-hc-2024-03-14"
 vr_bin_size_cm = 1
 time_bin_size = 0.1 # seconds
 guassian_std_for_smoothing_in_time_seconds = 0.2 # seconds
