@@ -104,7 +104,7 @@ def spikesort(recording_path, local_path, processed_folder_name, **kwargs):
 
     # preprocess and ammend preprocessing parameters for presorting
     params = si.get_default_sorter_params(sorterName)
-    recording_mono = preprocess(recording_mono)
+    #recording_mono = preprocess(recording_mono)
     #params = ammend_preprocessing_parameters(params)
 
     # Run spike sorting
