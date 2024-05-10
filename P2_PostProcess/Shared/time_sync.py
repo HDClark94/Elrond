@@ -1,5 +1,7 @@
 import os
 import glob
+
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from Helpers import open_ephys_IO
@@ -7,12 +9,11 @@ from Helpers.array_utility import *
 import settings
 
 
-def get_video_sync_on_and_off_times(spatial_data):
-    threshold = np.median(spatial_data['syncLED']) + 4 * np.std(spatial_data['syncLED'])
-    spatial_data['sync_pulse_on'] = spatial_data['syncLED'] > threshold
-    spatial_data['sync_pulse_on_diff'] = np.append([None], np.diff(spatial_data['sync_pulse_on'].values))
-    return spatial_data
-
+def get_video_sync_on_and_off_times(video_data):
+    threshold = np.median(video_data['syncLED']) + 4 * np.std(video_data['syncLED'])
+    video_data['sync_pulse_on'] = video_data['syncLED'] > threshold
+    video_data['sync_pulse_on_diff'] = np.append([None], np.diff(video_data['sync_pulse_on'].values))
+    return video_data
 
 def get_ephys_sync_on_and_off_times(sync_data_ephys):
     sync_data_ephys['on_index'] = sync_data_ephys['sync_pulse'] > 0.5
@@ -20,6 +21,11 @@ def get_ephys_sync_on_and_off_times(sync_data_ephys):
     sync_data_ephys['time'] = sync_data_ephys.index / settings.sampling_rate
     return sync_data_ephys
 
+def get_behaviour_sync_on_and_off_times(position_data):
+    position_data['on_index'] = position_data['sync_pulse'] > 0.5
+    position_data['on_index_diff'] = np.append([None], np.diff(position_data['on_index'].values))  # true when light turns on
+    position_data['time'] = position_data["time_seconds"]
+    return position_data
 
 def reduce_noise(pulses, threshold, high_level=5):
     '''
@@ -101,7 +107,8 @@ def calculate_lag(sync_data_ephys, spatial_data):
     bonsai = np.append(0, np.diff(spatial_data['syncLED'].values)) # step to remove human error-caused light intensity jumps
     ephys = sync_data_ephys_downsampled.sync_pulse.values
     bonsai = reduce_noise(bonsai, np.median(bonsai) + 6 * np.std(bonsai))
-    ephys = reduce_noise(ephys, 2)
+    if max(ephys)>1:
+        ephys = reduce_noise(ephys, 2)
     bonsai, ephys = pad_shorter_array_with_0s(bonsai, ephys)
     corr = np.correlate(bonsai, ephys, "full")  # this is the correlation array between the sync pulse series
     avg_sampling_rate_bonsai = float(1 / spatial_data['time_seconds'].diff().mean())
@@ -133,7 +140,15 @@ def search_for_file(folder_to_search_in, string_to_find):
             matches.append(file_path)
     return matches
 
-def get_ttl_pulse_array(recording_path):
+def get_ttl_pulse_array_in_column(df):
+    if "syncLED" in df.columns:
+        ttl_pulses = pd.DataFrame(df["syncLED"])
+    elif "sync_pulse" in df.columns:
+        ttl_pulses = pd.DataFrame(df["sync_pulse"])
+    ttl_pulses.columns = ['sync_pulse']
+    return ttl_pulses
+
+def get_ttl_pulse_array_in_ADC_channel(recording_path):
     # first look in the paramfile
     # TODO
 
@@ -151,9 +166,24 @@ def get_ttl_pulse_array(recording_path):
         print("I don't know how to handle this ttl pulse file")
         return ""
 
-def synchronise_position_data_via_ttl_pulses(position_data, recording_path):
+def synchronise_position_data_via_column_ttl_pulses(position_data, video_data):
+    # get on and off times for ttl pulse
+    position_data = get_behaviour_sync_on_and_off_times(position_data)
+    video_data = get_video_sync_on_and_off_times(video_data)
+
+    # calculate lag and align the position data
+    lag = calculate_lag(position_data, video_data)
+    video_data['synced_time'] = video_data.synced_time_estimate + lag
+
+    # remove negative time points
+    video_data = video_data.reset_index(drop=True)
+    del position_data["on_index_diff"]
+    del position_data["on_index"]
+    return position_data, video_data
+
+def synchronise_position_data_via_ADC_ttl_pulses(position_data, recording_path):
     # get array for the ttl pulses in the ephys data
-    sync_data = get_ttl_pulse_array(recording_path)
+    sync_data = get_ttl_pulse_array_in_ADC_channel(recording_path)
 
     # get on and off times for ttl pulse
     sync_data = get_ephys_sync_on_and_off_times(sync_data)
