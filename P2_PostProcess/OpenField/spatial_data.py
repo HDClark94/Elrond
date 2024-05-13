@@ -5,8 +5,8 @@ import settings
 import numpy as np
 import pandas as pd
 import csv
+from pathlib import Path
 from scipy.interpolate import interp1d
-
 from Helpers import math_utility
 
 def read_bonsai_file(recording_folder):
@@ -222,9 +222,23 @@ def get_position_heatmap(spatial_data):
     return position_heat_map
 
 
-def process_position_data(recording_path):
+def extract_position_from_dlc(recording_path):
+    dlc_position_data = pd.DataFrame()
+    files = [f for f in Path(recording_path).iterdir()]
+    if np.any([".avi" in f.name and f.is_file() for f in files]):
+        return dlc_position_data
+    return dlc_position_data
+
+
+def process_position_data(recording_path, **kwargs):
     bonsai_position_data = read_bonsai_file(recording_path)
     position_data = proces_bonsai_position(bonsai_position_data)
+
+    if "use_dlc_to_extract_openfield_position" in kwargs:
+        if kwargs["use_dlc_to_extract_openfield_position"]:
+            dlc_position_data = extract_position_from_dlc(recording_path)
+            position_data = pd.merge(position_data, dlc_position_data)
+
     position_data = resample_position_data(position_data, 30)
 
     position_data = calculate_speed(position_data)

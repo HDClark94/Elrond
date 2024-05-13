@@ -6,7 +6,7 @@ from P2_PostProcess.OpenField.plotting import *
 def process(recording_path, processed_folder_name, **kwargs):
 
     # process and save position data
-    position_data = process_position_data(recording_path)
+    position_data = process_position_data(recording_path, **kwargs)
     position_data = synchronise_position_data_via_ADC_ttl_pulses(position_data, recording_path)
     position_heat_map = get_position_heatmap(position_data)
 
