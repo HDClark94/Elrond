@@ -39,7 +39,7 @@ def make_spike_trace_summary(recording_path, processed_folder_name):
             if not os.path.exists(recording_path+"/"+processed_folder_name+"/"+sorterName+"/spike_view/"):
                 os.mkdir(recording_path+"/"+processed_folder_name+"/"+sorterName+"/spike_view/")
 
-            trace_start_times = np.linspace(0, time_dutation, 10)[:-1]
+            trace_start_times = np.linspace(0, time_dutation, 5)[:-1]
             for start_time in trace_start_times:
 
                 fig, axs = plt.subplots(nrows=2, ncols=2, figsize=(30, 20),
@@ -79,7 +79,7 @@ def make_lfp_trace_summary(recording_path, processed_folder_name, n_channels_to_
     trace_duration = 4 # seconds
     trace_duration_view = 2 # seconds
     time_dutation = recording_mono.get_duration()
-    trace_start_times = np.linspace(0, time_dutation, 10)[:-1]
+    trace_start_times = np.linspace(0, time_dutation, 5)[:-1]
 
     n_groups = len(split_recording_dict)
 
@@ -106,7 +106,7 @@ def make_lfp_trace_summary(recording_path, processed_folder_name, n_channels_to_
             psd_cwt = np.clip(psd_cwt, a_min=0, a_max=np.nanpercentile(psd_cwt, 99))
             psd_cwt /= np.max(psd_cwt)
             fred_red = 1
-            time_red = 200
+            time_red = 20
             psd_cwt = block_reduce(psd_cwt, [fred_red, time_red])
             t_cwt = block_reduce(t_cwt, time_red)
             f_cwt = block_reduce(f_cwt, fred_red)
