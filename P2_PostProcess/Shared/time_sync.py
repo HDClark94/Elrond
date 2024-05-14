@@ -1,12 +1,14 @@
 import os
 import glob
-
+import spikeinterface.full as si
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from Helpers import open_ephys_IO
 from Helpers.array_utility import *
 import settings
+from neuroconv.utils.dict import load_dict_from_file, dict_deep_update
+
 
 
 def get_video_sync_on_and_off_times(video_data):
@@ -149,22 +151,27 @@ def get_ttl_pulse_array_in_column(df):
     return ttl_pulses
 
 def get_ttl_pulse_array_in_ADC_channel(recording_path):
-    # first look in the paramfile
-    # TODO
+    # retrieve TTL sync pulses from recording
+
+    if os.path.exists(recording_path + "/params.yml"):
+        params = load_dict_from_file(recording_path + "/params.yml")
+        if ("probe_manufacturer" in params.keys()) and ("recording_aquisition" in params.keys()):
+            if (params["probe_manufacturer"] == 'neuropixel') and (params["recording_aquisition"] == 'openephys'):
+                recording = si.read_openephys(recording_path, load_sync_channel=True)
+                ttl_pulses = recording.get_traces(channel_ids=[recording.get_channel_ids()[-1]])
+                ttl_pulses = np.asarray(ttl_pulses)[:,0]
+                ttl_pulses = pd.DataFrame(ttl_pulses)
+                ttl_pulses.columns = ['sync_pulse']
+                return ttl_pulses
 
     # if still not found, use what is in the settings
     ttl_pulse_channel_paths = search_for_file(recording_path, settings.ttl_pulse_channel)
     assert len(ttl_pulse_channel_paths) == 1
     ttl_pulse_channel_path = ttl_pulse_channel_paths[0]
-
-    if ttl_pulse_channel_path.endswith(".continuous"):
-        ttl_pulses = open_ephys_IO.get_data_continuous(ttl_pulse_channel_path)
-        ttl_pulses = pd.DataFrame(ttl_pulses)
-        ttl_pulses.columns = ['sync_pulse']
-        return ttl_pulses
-    else:
-        print("I don't know how to handle this ttl pulse file")
-        return ""
+    ttl_pulses = open_ephys_IO.get_data_continuous(ttl_pulse_channel_path)
+    ttl_pulses = pd.DataFrame(ttl_pulses)
+    ttl_pulses.columns = ['sync_pulse']
+    return ttl_pulses
 
 def synchronise_position_data_via_column_ttl_pulses(position_data, video_data):
     # get on and off times for ttl pulse

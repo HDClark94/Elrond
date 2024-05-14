@@ -103,7 +103,7 @@ def main():
     #recording_paths = ["/run/user/1000/gvfs/smb-share:server=cmvm.datastore.ed.ac.uk,share=cmvm/sbms/groups/CDBS_SIDB_storage/NolanLab/"
     #                   "ActiveProjects/Harry/Cohort11_april2024/vr/M19_D9_2024-05-04_14-07-27"]
     recording_paths = ["/run/user/1000/gvfs/smb-share:server=cmvm.datastore.ed.ac.uk,share=cmvm/sbms/groups/CDBS_SIDB_storage/NolanLab/"
-                       "ActiveProjects/Harry/Cohort11_april2024/vr/M21_D10_2024-05-06_15-21-41"]
+                       "ActiveProjects/Harry/Cohort11_april2024/of/M20_D14_2024-05-13_17-40-50_OF2"]
     #recording_paths.extend([f.path for f in os.scandir("/run/user/1000/gvfs/smb-share:server=cmvm.datastore.ed.ac.uk,share=cmvm/sbms/"
     #                        "groups/CDBS_SIDB_storage/NolanLab/ActiveProjects/Harry/Cohort11_april2024/vr/") if f.is_dir()])
     #recording_paths = ["/mnt/datastore/Harry/Cohort11_april2024/vr/M20_D5_2024-04-30_16-39-47"]

@@ -102,7 +102,7 @@ def process_video(recording_path, processed_folder_name, position_data):
 
     # use bonsai csv to sync the video_markers_df with position_data and the sync pulse signal in that
     bonsai_data = read_bonsai_file(bonsai_csv_paths[0])
-    video_data = analyse_dlc_model(video_path=avi_paths[0], model_path=settings.deeplabcut_project_path, save_path=save_path)
+    video_data = analyse_dlc_model(video_path=avi_paths[0], model_path=settings.vr_deeplabcut_project_path, save_path=save_path)
     video_data = pd.concat([video_data.reset_index(drop=True), bonsai_data.reset_index(drop=True)], axis=1)
     video_data = add_eye_stats(video_data)
 
