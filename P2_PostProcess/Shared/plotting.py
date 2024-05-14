@@ -45,9 +45,6 @@ def open_image(im_path, label=None, margin=100, size=None):
     font = ImageFont.truetype(settings.PIL_fontstyle_path, 15)
 
     draw = ImageDraw.Draw(rgba)
-    textwidth, textheight = draw.textsize(label)
-    x = width - textwidth - margin
-    y = height - textheight - margin
     if label is not None:
         fontsize = 1  # starting font size
         # portion of image width you want text width to be

@@ -11,7 +11,7 @@ def process(recording_path, processed_folder_name, **kwargs):
 
     # look for position_data
     files = [f for f in Path(recording_path).iterdir()]
-    if os.path.exists(recording_path+"/"+processed_folder_name+"/position_data.csv"):
+    if os.path.exists(recording_path+"/"+processed_folder_name+"/position_data_finalised.csv"):
         position_data = pd.read_csv(recording_path+"/"+processed_folder_name+"/position_data.csv")
     elif np.any(["blender.csv" in f.name and f.is_file() for f in files]):
         position_data = generate_position_data_from_blender_file(recording_path, processed_folder_name)
