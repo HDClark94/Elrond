@@ -7,16 +7,17 @@ from P1_SpikeSort.waveforms import extract_waveforms, get_waveforms
 from P1_SpikeSort.auto_curate import auto_curate
 
 
-def save_spikes_to_dataframe(sorters, waveforms, quality_metrics, recording_paths, processed_folder_name, sorterName, spike_data=None):
-    for sorter, waveform, recording_path in zip(sorters, waveforms, recording_paths):
+def save_spikes_to_dataframe(sorters, recordings, waveforms, quality_metrics, recording_paths, processed_folder_name, sorterName, spike_data=None):
+    for sorter, recording, waveform, recording_path in zip(sorters, recordings, waveforms, recording_paths):
         recording_name = os.path.basename(recording_path)
 
         new_spike_data = pd.DataFrame()
         for i, id in enumerate(sorter.get_unit_ids()):
             cluster_df = pd.DataFrame()
             cluster_df['session_id'] = [recording_name]                      # str
-            cluster_df['cluster_id'] = [id]                                   # int
-            cluster_df['firing_times'] = [sorter.get_unit_spike_train(id)]    # np.array(n_spikes)
+            cluster_df['cluster_id'] = [id]                                  # int
+            cluster_df['firing_times'] = [sorter.get_unit_spike_train(id)]   # np.array(n_spikes)
+            cluster_df['mean_firing_rate'] = [len(sorter.get_unit_spike_train(id))/recording.get_duration()]
             cluster_df['waveforms'] = [waveform[i]]                          # np.array(n_spikes, n_samples, n_channels)
             if spike_data is not None:
                 cluster_df['shank_id'] = [spike_data[spike_data["cluster_id"] == id]['shank_id'].iloc[0]] # int
@@ -75,7 +76,7 @@ def update_from_phy(recording_path, local_path, processed_folder_name, **kwargs)
     recordings = si.split_recording(recording_mono)
 
     # save spike times and waveform information for further analysis
-    save_spikes_to_dataframe(sorters, waveforms, quality_metrics, recording_paths, processed_folder_name, spike_data=spike_data)
+    save_spikes_to_dataframe(sorters, recordings, waveforms, quality_metrics, recording_paths, processed_folder_name, spike_data=spike_data)
 
     # Optionally
     if "save2phy" in kwargs:
@@ -135,7 +136,7 @@ def spikesort(recording_path, local_path, processed_folder_name, **kwargs):
     waveforms = get_waveforms(we, sorters)
 
     # save spike times and waveform information for further analysis
-    save_spikes_to_dataframe(sorters, waveforms, quality_metrics, recording_paths, processed_folder_name, sorterName)
+    save_spikes_to_dataframe(sorters, recordings, waveforms, quality_metrics, recording_paths, processed_folder_name, sorterName)
 
     # Optionally
     if "save2phy" in kwargs:
