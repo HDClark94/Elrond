@@ -204,10 +204,16 @@ def get_number_of_bins(spatial_data):
     return number_of_bins_x, number_of_bins_y
 
 
-def get_position_heatmap(spatial_data):
-    min_dwell, min_dwell_distance_pixels = get_dwell(spatial_data)
+def get_position_heatmap(spatial_data,
+                         number_of_bins_x=None,
+                         number_of_bins_y=None,
+                         min_dwell_distance_pixels=None,
+                         min_dwell=None):
+    if number_of_bins_x is None:
+        number_of_bins_x, number_of_bins_y = get_number_of_bins(spatial_data)
+    if min_dwell is None:
+        min_dwell, min_dwell_distance_pixels = get_dwell(spatial_data)
     bin_size_pixels = get_bin_size()
-    number_of_bins_x, number_of_bins_y = get_number_of_bins(spatial_data)
 
     position_heat_map = np.zeros((number_of_bins_x, number_of_bins_y))
     # find value for each bin for heatmap
