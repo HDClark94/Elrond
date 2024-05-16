@@ -201,10 +201,10 @@ def calculate_grid_scores(spatial_firing):
             field_sizes.append(field_size)
             grid_scores.append(grid_score)
         else:
-            print('Not enough fields to calculate grid metrics.')
             grid_spacings.append(np.nan)
             field_sizes.append(np.nan)
             grid_scores.append(np.nan)
+        print("Grid score for cluster", str(cluster), ":", str(np.round(grid_score, decimals=2)))
     spatial_firing['rate_map_autocorrelogram'] = rate_map_correlograms
     spatial_firing['grid_spacing'] = grid_spacings
     spatial_firing['field_size'] = field_sizes

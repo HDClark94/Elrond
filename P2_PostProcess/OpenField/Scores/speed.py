@@ -26,14 +26,17 @@ def calculate_speed_scores(spike_data, spatial_data, gauss_sd = settings.gauss_s
     speed = scipy.ndimage.filters.gaussian_filter(spatial_data.speed, sigma)
     speed_scores = []
     speed_score_ps = []
-    for index, cell in spike_data.iterrows():
-        firing_times = cell.firing_times
+    for cluster_index, cluster_id in enumerate(spike_data.cluster_id):
+        cluster_df = spike_data[(spike_data.cluster_id == cluster_id)] # dataframe for that cluster
+        firing_times = cluster_df.iloc[0]["firing_times"]
         firing_hist, edges = np.histogram(firing_times, bins=len(speed), range=(0, max(spatial_data.synced_time)*sampling_rate))
         smooth_hist = scipy.ndimage.filters.gaussian_filter(firing_hist.astype(float), sigma)
         speed, smooth_hist = array_utility.remove_nans_from_both_arrays(speed, smooth_hist)
         speed_score, p = scipy.stats.pearsonr(speed, smooth_hist)
         speed_scores.append(speed_score)
         speed_score_ps.append(p)
+        print("Speed_score for cluster", str(cluster_id), ":", str(np.round(speed_score, decimals=2)))
+
     spike_data['speed_score'] = speed_scores
     spike_data['speed_score_p_values'] = speed_score_ps
     return spike_data

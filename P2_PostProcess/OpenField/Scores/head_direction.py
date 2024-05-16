@@ -95,6 +95,7 @@ def calculate_head_direction_score(spatial_firing):
         hd_hist = cluster_df.hd_spike_histogram.iloc[0].copy()
         r = get_hd_score_for_cluster(hd_hist)
         hd_scores.append(r)
+        print("HD score for cluster", str(cluster_id), ":", str(np.round(r, decimals=2)))
     spatial_firing['hd_score'] = np.array(hd_scores)
     return spatial_firing
 
@@ -107,7 +108,7 @@ def calculate_head_direction_scores(spike_data, spatial_data):
 
     hd_spike_histograms = []
     for index, cluster in spike_data.iterrows():
-        angles_spike = (cluster.hd + 180) * np.pi / 180
+        angles_spike = (np.array(cluster.hd) + 180) * np.pi / 180
         hd_spike_histogram = get_hd_histogram(angles_spike)
         hd_spike_histogram = hd_spike_histogram / hd_histogram
         hd_spike_histograms.append(hd_spike_histogram)
@@ -116,7 +117,7 @@ def calculate_head_direction_scores(spike_data, spatial_data):
     spike_data = get_max_firing_rate(spike_data)
     spike_data = calculate_head_direction_score(spike_data)
     spike_data = add_head_direction_rayleigh_score(spike_data)
-    return hd_histogram, spike_data
+    return spike_data
 
 def main():
     pass

@@ -34,12 +34,13 @@ def calculate_border_scores(spike_data):
     border_scores = []
     for index, cluster in spike_data.iterrows():
         firing_rate_map = putative_border_fields_clip_by_firing_rate(cluster.firing_maps, threshold=threshold)
-        firing_fields = get_firing_field_data(cluster.firing_maps, index, threshold=threshold)
+        firing_fields = get_firing_field_data(cluster.firing_maps, threshold=threshold)
         firing_fields = fields2map(firing_fields, firing_rate_map)
         firing_fields = clip_fields_by_size(firing_fields, bin_size_cm=2.5)
         firing_fields = put_firing_rates_back(firing_fields, firing_rate_map)
         border_score = calculate_border_score(firing_fields, bin_size_cm=2.5)
         border_scores.append(border_score)
+        print("Border score for cluster", str(cluster), ":", str(np.round(border_score, decimals=2)))
     spike_data['border_score'] = border_scores
     return spike_data
 
@@ -47,7 +48,7 @@ def calculate_border_scores(spike_data):
 def calculate_border_score(firing_fields, bin_size_cm):
     # only execute if there are firing fields to analyse
     if len(firing_fields) > 0:
-        normalised_distance_mat = distance_matrix_border(firing_fields, bin_size_cm)
+        normalised_distance_mat = distance_matrix_border(firing_fields[0], bin_size_cm)
 
         dm = []
         maxcM = 0
