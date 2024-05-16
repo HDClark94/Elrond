@@ -78,7 +78,7 @@ def detect_last_zero(signal):
     return last_zero_index
 
 
-def calculate_lag(sync_data_ephys, spatial_data):
+def calculate_lag(sync_data_ephys, spatial_data, output_path):
     """
     The ephys and spatial data is synchronized based on sync pulses sent both to the open ephys and bonsai systems.
     The open ephys GUI receives TTL pulses. Bonsai detects intensity from an LED that lights up whenever the TTL is
@@ -111,6 +111,8 @@ def calculate_lag(sync_data_ephys, spatial_data):
     bonsai = reduce_noise(bonsai, np.median(bonsai) + 6 * np.std(bonsai))
     if max(ephys)>1:
         ephys = reduce_noise(ephys, 2)
+    save_plots_of_pulses(bonsai, ephys, output_path, lag=np.nan, name='pulses_before_processing')
+
     bonsai, ephys = pad_shorter_array_with_0s(bonsai, ephys)
     corr = np.correlate(bonsai, ephys, "full")  # this is the correlation array between the sync pulse series
     avg_sampling_rate_bonsai = float(1 / spatial_data['time_seconds'].diff().mean())
@@ -132,8 +134,22 @@ def calculate_lag(sync_data_ephys, spatial_data):
 
     lag2 = ephys_rising_edge_time - bonsai_rising_edge_time
     print(f'Rising edge lag is {lag2}')
+
+    save_plots_of_pulses(trimmed_bonsai_pulses, trimmed_ephys_pulses, output_path, lag2, name='pulses_after_processing')
     return lag2
 
+def save_plots_of_pulses(bonsai, ephys, output_path, lag, name):
+    save_path = output_path + '/Figures/Sync_test/'
+    if os.path.exists(save_path) is False:
+        os.makedirs(save_path)
+    plt.figure()
+    bonsai_norm = bonsai / np.linalg.norm(bonsai)
+    plt.plot(ephys, color='red', label='open ephys')
+    plt.plot(bonsai_norm * 3.5, color='black', label='bonsai')
+    plt.title('lag=' + str(lag))
+    plt.legend()
+    plt.savefig(save_path + name + '_sync_pulses.png')
+    plt.close()
 
 def search_for_file(folder_to_search_in, string_to_find):
     matches = []
@@ -188,7 +204,7 @@ def synchronise_position_data_via_column_ttl_pulses(position_data, video_data):
     del position_data["on_index"]
     return position_data, video_data
 
-def synchronise_position_data_via_ADC_ttl_pulses(position_data, recording_path):
+def synchronise_position_data_via_ADC_ttl_pulses(position_data, processed_folder_name, recording_path):
     # get array for the ttl pulses in the ephys data
     sync_data = get_ttl_pulse_array_in_ADC_channel(recording_path)
 
@@ -197,7 +213,7 @@ def synchronise_position_data_via_ADC_ttl_pulses(position_data, recording_path):
     position_data = get_video_sync_on_and_off_times(position_data)
 
     # calculate lag and align the position data
-    lag = calculate_lag(sync_data, position_data)
+    lag = calculate_lag(sync_data, position_data, output_path=recording_path+"/"+processed_folder_name)
     position_data['synced_time'] = position_data.synced_time_estimate + lag
 
     # remove negative time points
