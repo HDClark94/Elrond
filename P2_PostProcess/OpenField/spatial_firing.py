@@ -46,8 +46,8 @@ def find_firing_location_indices(spike_data, spatial_data):
             "position_y":  list(spatial_data.position_y[bonsai_indices_cluster_round]),
             "position_y_pixels":  list(spatial_data.position_y_pixels[bonsai_indices_cluster_round]),
             "hd": list(spatial_data.hd[bonsai_indices_cluster_round]),
-            "speed": list(spatial_data.speed[bonsai_indices_cluster_round])
-        }, ignore_index=True)
+            "speed": list(spatial_data.speed[bonsai_indices_cluster_round])}, ignore_index=True)
+
     spike_data['position_x'] = spatial_firing.position_x.values
     spike_data['position_x_pixels'] = spatial_firing.position_x_pixels.values
     spike_data['position_y'] = spatial_firing.position_y.values
@@ -79,7 +79,7 @@ def add_scores(spike_data, spatial_data):
     spike_data = calculate_spatial_information_scores(spike_data)
     spike_data = calculate_head_direction_scores(spike_data, spatial_data)
     spike_data = calculate_border_scores(spike_data)
-    spike_data = calculate_grid_scores(spike_data, spatial_data)
-    spike_data = calculate_half_session_stability_scores(spike_data, spatial_data)
+    spike_data = calculate_grid_scores(spike_data)
+    #spike_data = calculate_half_session_stability_scores(spike_data, spatial_data)
     spike_data = calculate_speed_scores(spike_data, spatial_data)
     return spike_data
