@@ -41,7 +41,7 @@ def process(recording_path, processed_folder_name, **kwargs):
 
     # process and save spatial spike data
     spike_data_path = recording_path+"/"+processed_folder_name+"/"+settings.sorterName+"/firing.pkl"
-    if os.path.exists(spike_data_path):
+    if os.path.exists(spike_data_path) and ("postprocess_behaviour_only" in kwargs and kwargs["postprocess_behaviour_only"]):
         position_data = synchronise_position_data_via_ADC_ttl_pulses(position_data, processed_folder_name, recording_path)
         spike_data = pd.read_pickle(spike_data_path)
         spike_data = add_location_and_task_variables(spike_data, position_data, processed_position_data, track_length)
