@@ -55,13 +55,14 @@ def downsample_ephys_data(sync_data_ephys, spatial_data):
 
 
 # this is to remove any extra pulses that one dataset has but not the other
-def trim_arrays_find_starts(sync_data_ephys_downsampled, spatial_data):
+def trim_arrays_find_starts(sync_data_ephys_downsampled, spatial_data, trim_time_seconds=60):
     ephys_time = sync_data_ephys_downsampled.time
-    bonsai_time = spatial_data.synced_time_estimate
-    ephys_start_index = 19*30  # bonsai sampling rate times 19 seconds
-    ephys_start_time = ephys_time.values[19*30]
-    bonsai_start_index = find_nearest(bonsai_time.values, ephys_start_time)
-    return ephys_start_index, bonsai_start_index
+    spatial_time = spatial_data.synced_time_estimate
+    spatial_data_sampling_rate = float(1/spatial_data['time_seconds'].diff().mean())
+    ephys_start_index = int(trim_time_seconds*spatial_data_sampling_rate)  # bonsai sampling rate times trim_time in seconds
+    ephys_start_time = ephys_time.values[int(trim_time_seconds*spatial_data_sampling_rate)]
+    spatial_start_index = find_nearest(spatial_time.values, ephys_start_time)
+    return ephys_start_index, spatial_start_index
 
 
 #  this is needed for finding the rising edge of the pulse to by synced
@@ -78,7 +79,7 @@ def detect_last_zero(signal):
     return last_zero_index
 
 
-def calculate_lag(sync_data_ephys, spatial_data, output_path):
+def adjust_for_lag(sync_data_ephys, spatial_data, output_path):
     """
     The ephys and spatial data is synchronized based on sync pulses sent both to the open ephys and bonsai systems.
     The open ephys GUI receives TTL pulses. Bonsai detects intensity from an LED that lights up whenever the TTL is
@@ -108,10 +109,13 @@ def calculate_lag(sync_data_ephys, spatial_data, output_path):
     sync_data_ephys_downsampled = downsample_ephys_data(sync_data_ephys, spatial_data)
     bonsai = np.append(0, np.diff(spatial_data['syncLED'].values)) # step to remove human error-caused light intensity jumps
     ephys = sync_data_ephys_downsampled.sync_pulse.values
+    save_plots_of_pulses(bonsai=bonsai, output_path=output_path, lag=np.nan, name='bonsai')
+    save_plots_of_pulses(ephys=ephys,   output_path=output_path, lag=np.nan, name='ephys')
+
     bonsai = reduce_noise(bonsai, np.median(bonsai) + 6 * np.std(bonsai))
     if max(ephys)>1:
         ephys = reduce_noise(ephys, 2)
-    save_plots_of_pulses(bonsai, ephys, output_path, lag=np.nan, name='pulses_before_processing')
+    save_plots_of_pulses(bonsai=bonsai, ephys=ephys, output_path=output_path, lag=np.nan, name='pulses_before_processing')
 
     bonsai, ephys = pad_shorter_array_with_0s(bonsai, ephys)
     corr = np.correlate(bonsai, ephys, "full")  # this is the correlation array between the sync pulse series
@@ -119,7 +123,7 @@ def calculate_lag(sync_data_ephys, spatial_data, output_path):
     lag = (np.argmax(corr) - (corr.size + 1)/2)/avg_sampling_rate_bonsai  # lag between sync pulses is based on max correlation
     spatial_data['synced_time_estimate'] = spatial_data.time_seconds - lag  # at this point the lag is about 100 ms
 
-    # cut off first 19 seconds to make sure there will be a corresponding pulse
+    # cut off first n seconds to make sure there will be a corresponding pulse
     ephys_start, bonsai_start = trim_arrays_find_starts(sync_data_ephys_downsampled, spatial_data)
     trimmed_ephys_time = sync_data_ephys_downsampled.time.values[ephys_start:]
     trimmed_ephys_pulses = ephys[ephys_start:len(trimmed_ephys_time)]
@@ -133,19 +137,26 @@ def calculate_lag(sync_data_ephys, spatial_data, output_path):
     bonsai_rising_edge_time = trimmed_bonsai_time[bonsai_rising_edge_index]
 
     lag2 = ephys_rising_edge_time - bonsai_rising_edge_time
+    if np.abs(lag2)<1: # i.e. a sensible adjustment for the rising edge
+        spatial_data['synced_time'] = spatial_data.synced_time_estimate + lag2
+    else: # if too big then just use correlative lag
+        spatial_data['synced_time'] = spatial_data.synced_time_estimate
+
     print(f'Rising edge lag is {lag2}')
+    save_plots_of_pulses(bonsai=trimmed_bonsai_pulses, ephys=trimmed_ephys_pulses,
+                         output_path=output_path, lag=lag2, name='pulses_after_processing')
+    return spatial_data
 
-    save_plots_of_pulses(trimmed_bonsai_pulses, trimmed_ephys_pulses, output_path, lag2, name='pulses_after_processing')
-    return lag2
-
-def save_plots_of_pulses(bonsai, ephys, output_path, lag, name):
+def save_plots_of_pulses(bonsai=None, ephys=None, output_path=None, lag=np.nan, name=""):
     save_path = output_path + '/Figures/Sync_test/'
     if os.path.exists(save_path) is False:
         os.makedirs(save_path)
     plt.figure()
-    bonsai_norm = bonsai / np.linalg.norm(bonsai)
-    plt.plot(ephys, color='red', label='open ephys')
-    plt.plot(bonsai_norm * 3.5, color='black', label='bonsai')
+    if ephys is not None:
+        plt.plot(ephys, color='red', label='open ephys')
+    if bonsai is not None:
+        bonsai_norm = bonsai / np.linalg.norm(bonsai)
+        plt.plot(bonsai_norm * 3.5, color='black', label='bonsai')
     plt.title('lag=' + str(lag))
     plt.legend()
     plt.savefig(save_path + name + '_sync_pulses.png')
@@ -195,8 +206,7 @@ def synchronise_position_data_via_column_ttl_pulses(position_data, video_data):
     video_data = get_video_sync_on_and_off_times(video_data)
 
     # calculate lag and align the position data
-    lag = calculate_lag(position_data, video_data)
-    video_data['synced_time'] = video_data.synced_time_estimate + lag
+    video_data = adjust_for_lag(position_data, video_data)
 
     # remove negative time points
     video_data = video_data.reset_index(drop=True)
@@ -213,8 +223,7 @@ def synchronise_position_data_via_ADC_ttl_pulses(position_data, processed_folder
     position_data = get_video_sync_on_and_off_times(position_data)
 
     # calculate lag and align the position data
-    lag = calculate_lag(sync_data, position_data, output_path=recording_path+"/"+processed_folder_name)
-    position_data['synced_time'] = position_data.synced_time_estimate + lag
+    position_data = adjust_for_lag(sync_data, position_data, output_path=recording_path+"/"+processed_folder_name)
 
     # remove negative time points
     position_data = position_data.drop(position_data[position_data.synced_time < 0].index)
