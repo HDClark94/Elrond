@@ -102,23 +102,28 @@ def main():
     #recording_paths.extend([f.path for f in os.scandir("/mnt/datastore/Harry/cohort11_april2024/vr") if f.is_dir()])
     #recording_paths = ["/run/user/1000/gvfs/smb-share:server=cmvm.datastore.ed.ac.uk,share=cmvm/sbms/groups/CDBS_SIDB_storage/NolanLab/"
     #                   "ActiveProjects/Harry/Cohort11_april2024/vr/M19_D9_2024-05-04_14-07-27"]
-    recording_paths = ["/run/user/1000/gvfs/smb-share:server=cmvm.datastore.ed.ac.uk,share=cmvm/sbms/groups/CDBS_SIDB_storage/NolanLab/"
-                       "ActiveProjects/Harry/Cohort11_april2024/of/M20_D14_2024-05-13_17-40-50_OF2"]
-    #recording_paths.extend([f.path for f in os.scandir("/run/user/1000/gvfs/smb-share:server=cmvm.datastore.ed.ac.uk,share=cmvm/sbms/"
-    #                        "groups/CDBS_SIDB_storage/NolanLab/ActiveProjects/Harry/Cohort11_april2024/vr/") if f.is_dir()])
-    #recording_paths = ["/mnt/datastore/Harry/Cohort11_april2024/vr/M20_D5_2024-04-30_16-39-47"]
+
+    recording_paths.extend([f.path for f in os.scandir("/mnt/datastore/Harry/Cohort11_april2024/of/") if f.is_dir()])
+    recording_paths = ["/mnt/datastore/Harry/Cohort11_april2024/vr/M20_D14_2024-05-13_16-45-26_VR1",
+                       "/mnt/datastore/Harry/Cohort11_april2024/vr/M21_D15_2024-05-15_11-54-28_VR1",
+                       "/mnt/datastore/Harry/Cohort11_april2024/vr/M20_D15_2024-05-14_15-15-41_VR1",
+                       "/mnt/datastore/Harry/Cohort11_april2024/vr/M21_D16_2024-05-16_14-40-02_VR1",
+                       "/mnt/datastore/Harry/Cohort11_april2024/vr/M20_D16_2024-05-15_16-16-44_VR1",
+                       "/mnt/datastore/Harry/Cohort11_april2024/vr/M20_D17_2024-05-16_16-33-37_VR1"]
+    #recording_paths = ["/mnt/datastore/Harry/test_recording/of/M11_D36_2021-06-28_11-19-21"]
     process_recordings(recording_paths,
                        local_path="/home/ubuntu/to_sort/recordings/",
                        processed_folder_name="processed",
                        copy_locally=False,
-                       run_spikesorting=False,
+                       run_spikesorting=True,
                        update_results_from_phy=False,
-                       run_postprocessing=True,
-                       concat_sort=False,
+                       run_postprocessing=False,
+                       concat_sort=True,
                        postprocess_based_on_concat_sort=False,
                        save2phy=True,
                        use_dlc_to_extract_openfield_position=True,
-                       sorterName="mountainsort5")
+                       sorterName="mountainsort5",
+                       sorter_kwargs={"scheme": "3"})
 
 if __name__ == '__main__':
     main()
