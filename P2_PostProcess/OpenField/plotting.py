@@ -7,13 +7,12 @@ import math
 import numpy as np
 import pandas as pd
 from P2_PostProcess.OpenField.Scores.head_direction import get_hd_histogram
-from P2_PostProcess.Shared.plot_spike_properties import *
 
 def plot_position(position_data):
     plt.plot(position_data['position_x'], position_data['position_y'], color='black', linewidth=5)
     plt.close()
 
-def plot_spikes_on_trajectory(position_data, spike_data, output_path):
+def plot_spikes_on_trajectory(spike_data, position_data, output_path):
     print('I will make scatter plots of spikes on the trajectory of the animal.')
     save_path = output_path + '/Figures/firing_scatters'
     if os.path.exists(save_path) is False:
@@ -63,6 +62,44 @@ def plot_coverage(position_heat_map, output_path):
     plt.savefig(save_path + '/heatmap.png', dpi=300)
     # plt.savefig(save_path + '/heatmap.pdf')
     plt.close()
+
+
+def plot_firing_rate_vs_speed(spatial_firing, spatial_data, output_path):
+    sampling_rate = 30
+    print('I will plot spikes vs speed for the whole session excluding opto tagging.')
+    save_path = output_path + '/Figures/firing_properties'
+    if os.path.exists(save_path) is False:
+        os.makedirs(save_path)
+    speed = spatial_data.speed[~np.isnan(spatial_data.speed)]
+    number_of_bins = math.ceil(max(speed)) - math.floor(min(speed))
+    session_hist, bins_s = np.histogram(speed, bins=number_of_bins, range=(math.floor(min(speed)), math.ceil(max(speed))))
+
+    for cluster_index, cluster_id in enumerate(spatial_firing.cluster_id):
+
+        cluster_df = spatial_firing[(spatial_firing.cluster_id == cluster_id)] # dataframe for that cluster
+        speed_cluster = cluster_df['speed'].iloc[0]
+        speed_cluster = sorted(speed_cluster)
+        spike_hist = plt.figure()
+        spike_hist.set_size_inches(5, 5, forward=True)
+        ax = spike_hist.add_subplot(1, 1, 1)
+        speed_hist, ax = plot_utility.style_plot(ax)
+        if number_of_bins > 0:
+            hist, bins = np.histogram(speed_cluster[1:], bins=number_of_bins, range=(math.floor(min(speed)), math.ceil(max(speed))))
+            width = bins[1] - bins[0]
+            center_bin = (bins[:-1] + bins[1:]) / 2
+            center = center_bin[tuple([np.where(session_hist > sum(session_hist)*0.005)])]
+            hist = np.array(hist, dtype=float)
+            session_hist = np.array(session_hist, dtype=float)
+            rate = np.divide(hist, session_hist, out=np.zeros_like(hist), where=session_hist != 0)
+            rate = rate[tuple([np.where(session_hist[~np.isnan(session_hist)] > sum(session_hist)*0.005)])]
+            plt.bar(center[0], rate[0]*sampling_rate, align='center', width=width, color='black')
+        plt.xlabel('speed [cm/s]')
+        plt.ylabel('firing rate [Hz]')
+        plt.xlim(0, 30)
+        plt.savefig(save_path + '/' + cluster_df['session_id'].iloc[0] + '_' + str(cluster_id) + '_speed_histogram.png', dpi=300, bbox_inches='tight', pad_inches=0)
+        # plt.savefig(save_path + '/' + spatial_firing.session_id[cluster] + '_' + str(cluster + 1) + '_speed_histogram.pdf', bbox_inches='tight', pad_inches=0)
+        plt.close()
+
 
 
 def plot_firing_rate_maps(spatial_firing, output_path):
@@ -117,7 +154,7 @@ def plot_hd(spatial_firing, position_data, prm):
         plt.close()
 
 
-def plot_polar_head_direction_histogram(position_data, spatial_firing, output_path):
+def plot_polar_head_direction_histogram(spatial_firing, position_data, output_path):
     angles_whole_session = (np.array(position_data.hd) + 180) * np.pi / 180
     hd_hist = get_hd_histogram(angles_whole_session)
     hd_hist /= settings.sampling_rate
@@ -367,35 +404,13 @@ def make_combined_figure(spatial_firing, output_path):
         head_direction_polar_path = figures_path + 'head_direction_plots_polar/' + cluster_df['session_id'].iloc[0] + '_hd_polar_' + str(cluster_id) + '.png'
         head_direction_map_path = figures_path + 'head_direction_plots_2d/' + cluster_df['session_id'].iloc[0] + '_hd_map_' + str(cluster_id) + '.png'
         firing_fields_rate_map_path = figures_path + 'firing_field_plots/' + cluster_df['session_id'].iloc[0] + '_firing_fields_rate_map' + str(cluster_id) + '.png'
-        spike_histogram_path = figures_path + 'firing_properties/' + cluster_df['session_id'].iloc[0] + '_' + str(cluster_id) + '_spike_histogram.png'
         speed_histogram_path = figures_path + 'firing_properties/' + cluster_df['session_id'].iloc[0] + '_' + str(cluster_id) + '_speed_histogram.png'
         firing_field_path = figures_path + 'firing_field_plots/' + cluster_df['session_id'].iloc[0] + '_cluster_' + str(cluster_id) + '_firing_field_'
-        autocorrelograms = figures_path + 'firing_properties/' + cluster_df['session_id'].iloc[0] + '_' + str(cluster_id) + '_autocorrelograms.png'
-        waveforms_path = figures_path + 'firing_properties/' + cluster_df['session_id'].iloc[0] + '_' + str(cluster_id) + '_waveforms.png'
         rate_map_autocorrelogram_path = figures_path + 'rate_map_autocorrelogram/' + cluster_df['session_id'].iloc[0] + '_rate_map_autocorrelogram_' + str(cluster_id) + '.png'
         speed_vs_firing_rate_path = figures_path + 'firing_properties/' + cluster_df['session_id'].iloc[0] + '_' + str(cluster_id) + '_speed_vs_firing_rate.png'
 
-        number_of_firing_fields = 0
-        if 'firing_fields' in spatial_firing:
-            number_of_firing_fields = len(cluster_df['firing_fields'].iloc[0])
-        number_of_rows = math.ceil((number_of_firing_fields + 1)/6) + 2
-
+        number_of_rows = math.ceil(1/6) + 2
         grid = plt.GridSpec(number_of_rows, 5, wspace=0.025, hspace=0.05)
-        if os.path.exists(waveforms_path):
-            waveforms = mpimg.imread(waveforms_path)
-            waveforms_plot = plt.subplot(grid[0, 0])
-            waveforms_plot.axis('off')
-            waveforms_plot.imshow(waveforms)
-        if os.path.exists(spike_histogram_path):
-            spike_hist = mpimg.imread(spike_histogram_path)
-            spike_hist_plot = plt.subplot(grid[0, 2])
-            spike_hist_plot.axis('off')
-            spike_hist_plot.imshow(spike_hist)
-        if os.path.exists(autocorrelograms):
-            autocorrelogram_10 = mpimg.imread(autocorrelograms)
-            autocorrelogram_10_plot = plt.subplot(grid[0, 1])
-            autocorrelogram_10_plot.axis('off')
-            autocorrelogram_10_plot.imshow(autocorrelogram_10)
         if os.path.exists(speed_vs_firing_rate_path):
             speed_vs_rate = mpimg.imread(speed_vs_firing_rate_path)
             speed_vs_rate_plot = plt.subplot(grid[0, 3])
@@ -436,16 +451,6 @@ def make_combined_figure(spatial_firing, output_path):
             firing_fields_plot = plt.subplot(grid[2, 0])
             firing_fields_plot.axis('off')
             firing_fields_plot.imshow(firing_fields)
-        for field in range(number_of_firing_fields):
-            path = firing_field_path + str(field + 1) + '.png'
-            if os.path.exists(path):
-                firing_field_polar = mpimg.imread(path)
-                row = math.floor((field+1)/5) + 2
-                col = (field+1) % 5
-                firing_fields_polar_plot = plt.subplot(grid[row, col])
-                firing_fields_polar_plot.axis('off')
-                firing_fields_polar_plot.imshow(firing_field_polar)
-
         plt.savefig(save_path + '/' + cluster_df['session_id'].iloc[0] + '_' + str(cluster_id) + '.png', dpi=1000)
         plt.close()
 
