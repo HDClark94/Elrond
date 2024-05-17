@@ -125,6 +125,8 @@ def make_lfp_trace_summary(recording_path, processed_folder_name, n_channels_to_
     plt.savefig(recording_path+"/"+processed_folder_name+"/lfp_view/full_session_1-20Hz", dpi=300)
     plt.close()
 
+
+    """
     height_ratios = np.concatenate([[1], (np.ones(n_groups) * (40 / n_groups)).tolist()])
     # 2 second stills
     ncols=8
@@ -172,6 +174,7 @@ def make_lfp_trace_summary(recording_path, processed_folder_name, n_channels_to_
         plt.savefig(recording_path+"/"+processed_folder_name+"/lfp_view/stills_t"+str(int(start_time+((trace_duration-trace_duration_view)/2)))+
                                                                               "-"+str(int(start_time+((trace_duration-trace_duration_view)/2))+trace_duration_view), dpi=300)
         plt.close()
+    """
     return
 
 
