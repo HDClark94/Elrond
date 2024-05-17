@@ -42,13 +42,13 @@ def process(recording_path, processed_folder_name, **kwargs):
     # process and save spatial spike data
     spike_data_path = recording_path+"/"+processed_folder_name+"/"+settings.sorterName+"/firing.pkl"
     if os.path.exists(spike_data_path):
+        position_data = synchronise_position_data_via_ADC_ttl_pulses(position_data, processed_folder_name, recording_path)
         spike_data = pd.read_pickle(spike_data_path)
         spike_data = add_location_and_task_variables(spike_data, position_data, processed_position_data, track_length)
         spike_data.to_pickle(spike_data_path)
 
         #plot
         plot_track_firing(spike_data, processed_position_data, output_path=recording_path+"/"+processed_folder_name, track_length=track_length)
-        plot_firing_properties(spike_data, output_path=recording_path+"/"+processed_folder_name)
     else:
         print("I couldn't find spike data at ", spike_data_path)
     return
