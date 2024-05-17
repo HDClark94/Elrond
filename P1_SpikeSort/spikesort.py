@@ -7,16 +7,17 @@ from P1_SpikeSort.waveforms import extract_waveforms, get_waveforms
 from P1_SpikeSort.auto_curate import auto_curate
 
 
-def save_spikes_to_dataframe(sorters, waveforms, quality_metrics, recording_paths, processed_folder_name, spike_data=None):
-    for sorter, waveform, recording_path in zip(sorters, waveforms, recording_paths):
+def save_spikes_to_dataframe(sorters, recordings, waveforms, quality_metrics, recording_paths, processed_folder_name, sorterName, spike_data=None):
+    for sorter, recording, waveform, recording_path in zip(sorters, recordings, waveforms, recording_paths):
         recording_name = os.path.basename(recording_path)
 
         new_spike_data = pd.DataFrame()
         for i, id in enumerate(sorter.get_unit_ids()):
             cluster_df = pd.DataFrame()
             cluster_df['session_id'] = [recording_name]                      # str
-            cluster_df['cluster_id'] = [id]                                   # int
-            cluster_df['firing_times'] = [sorter.get_unit_spike_train(id)]    # np.array(n_spikes)
+            cluster_df['cluster_id'] = [id]                                  # int
+            cluster_df['firing_times'] = [sorter.get_unit_spike_train(id)]   # np.array(n_spikes)
+            cluster_df['mean_firing_rate'] = [len(sorter.get_unit_spike_train(id))/recording.get_duration()]
             cluster_df['waveforms'] = [waveform[i]]                          # np.array(n_spikes, n_samples, n_channels)
             if spike_data is not None:
                 cluster_df['shank_id'] = [spike_data[spike_data["cluster_id"] == id]['shank_id'].iloc[0]] # int
@@ -31,7 +32,7 @@ def save_spikes_to_dataframe(sorters, waveforms, quality_metrics, recording_path
         processed_path = recording_path + "/" + processed_folder_name
         if not os.path.exists(processed_path):
             os.mkdir(processed_path)
-        sorter_path = processed_path + "/" + settings.sorterName
+        sorter_path = processed_path + "/" + sorterName
         if not os.path.exists(sorter_path):
             os.mkdir(sorter_path)
 
@@ -62,7 +63,7 @@ def update_from_phy(recording_path, local_path, processed_folder_name, **kwargs)
     print("I found " + str(len(sorting_mono.unit_ids)) + " clusters")
 
     # Extract the waveforms and quality metrics from across all recordings to the extractor
-    we, quality_metrics = extract_waveforms(recording_mono, sorting_mono, recording_path, processed_folder_name)
+    we, quality_metrics = extract_waveforms(recording_mono, sorting_mono, recording_path, processed_folder_name, sorterName)
     quality_metrics["cluster_id"] = sorting_mono.get_unit_ids()
 
     # assign a new automatic curation label based on the quality metrics
@@ -75,7 +76,7 @@ def update_from_phy(recording_path, local_path, processed_folder_name, **kwargs)
     recordings = si.split_recording(recording_mono)
 
     # save spike times and waveform information for further analysis
-    save_spikes_to_dataframe(sorters, waveforms, quality_metrics, recording_paths, processed_folder_name, spike_data=spike_data)
+    save_spikes_to_dataframe(sorters, recordings, waveforms, quality_metrics, recording_paths, processed_folder_name, spike_data=spike_data)
 
     # Optionally
     if "save2phy" in kwargs:
@@ -105,7 +106,11 @@ def spikesort(recording_path, local_path, processed_folder_name, **kwargs):
     # preprocess and ammend preprocessing parameters for presorting
     params = si.get_default_sorter_params(sorterName)
     recording_mono = preprocess(recording_mono)
-    #params = ammend_preprocessing_parameters(params)
+    params = ammend_preprocessing_parameters(params, **kwargs)
+
+    # note for using kilosort4 https://github.com/MouseLand/Kilosort/issues/606
+    # suggests ammending these parameters but error still occurs with all NP recordings as of 12/05/2024
+    # params["dminx"] = 400; params["nearest_templates"] = 20
 
     # Run spike sorting
     sorting_mono = si.run_sorter_by_property(sorter_name=sorterName,
@@ -119,7 +124,7 @@ def spikesort(recording_path, local_path, processed_folder_name, **kwargs):
     print("I found " + str(len(sorting_mono.unit_ids)) + " clusters")
 
     # Extract the waveforms and quality metrics from across all recordings to the extractor
-    we, quality_metrics = extract_waveforms(recording_mono, sorting_mono, recording_path, processed_folder_name)
+    we, quality_metrics = extract_waveforms(recording_mono, sorting_mono, recording_path, processed_folder_name, sorterName)
     quality_metrics["cluster_id"] = sorting_mono.get_unit_ids()
 
     # assign an automatic curation label based on the quality metrics
@@ -127,13 +132,11 @@ def spikesort(recording_path, local_path, processed_folder_name, **kwargs):
 
     # split our extractors back
     recordings = si.split_recording(recording_mono)
-    #sorters = si.split_sorting(sorting_mono, recordings)
-    #sorters = [si.select_segment_sorting(sorters, i) for i in range(len(recordings))] # turn it into a list of sorters
     sorters = [si.select_segment_sorting(sorting_mono, i) for i in range(len(recordings))] # turn it into a list of sorters
     waveforms = get_waveforms(we, sorters)
 
     # save spike times and waveform information for further analysis
-    save_spikes_to_dataframe(sorters, waveforms, quality_metrics, recording_paths, processed_folder_name)
+    save_spikes_to_dataframe(sorters, recordings, waveforms, quality_metrics, recording_paths, processed_folder_name, sorterName)
 
     # Optionally
     if "save2phy" in kwargs:

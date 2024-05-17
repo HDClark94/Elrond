@@ -16,7 +16,7 @@ def generate_position_data_from_blender_file(recording_path, processed_folder_na
                                names=["Time", "Position-X", "Speed", "Speed/gain_mod", "Reward_received",
                                       "Reward_failed", "Lick_detected", "Tone_played", "Position-Y",
                                       "Tot trial", "gain_mod", "rz_start", "rz_end", "sync_pulse"])
-
+    blender_data.dropna()
     position_data = pd.DataFrame()
     position_data["x_position_cm"] = blender_data["Position-X"]*10 # assumes 10 cm per virtual unit
     position_data["trial_number"] = blender_data["Tot trial"]
@@ -25,6 +25,7 @@ def generate_position_data_from_blender_file(recording_path, processed_folder_na
     position_data["speed_as_read_by_blender"] = blender_data["Speed"]
     position_data["Reward_received_as_read_by_blender"] = blender_data["Reward_received"]
     position_data["Tone_played_as_read_by_blender"] = blender_data["Tone_played"]
+    position_data["sync_pulse"] = blender_data["sync_pulse"]
 
     save_path = recording_path+"/"+processed_folder_name+"/position_data.csv"
     position_data.to_csv(save_path)

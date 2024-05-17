@@ -97,8 +97,9 @@ def add_probe_geometry(recording, recording_path, probe_manufacturer, probe_name
             probe.move([i * 2000, 0])
             probegroup.add_probe(probe)
     elif (probe_manufacturer == "neuropixel") and (probe_name == "np2.0_4shank"):
-        channel_map_files = [f for f in Path(recording_path).iterdir() if "channel_map" in f.name and f.is_file()]
+        channel_map_files = [f for f in Path(recording_path).iterdir() if ".json" in f.name and f.is_file()]
         if len(channel_map_files) == 1:
+            print("I am loading probe data from a channel map .json file at", channel_map_files[0])
             probegroup = io.read_probeinterface(channel_map_files[0])
         else:
             raise AssertionError("There are more than one channel map files, I only need one!")

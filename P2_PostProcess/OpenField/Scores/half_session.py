@@ -7,11 +7,18 @@ import pandas as pd
 
 
 def make_trajectory_heat_maps(whole_trajectory, trajectory_1, trajectory_2):
-    min_dwell, min_dwell_distance_cm = get_dwell(whole_trajectory)
+    min_dwell, min_dwell_distance_pixels = get_dwell(whole_trajectory)
     number_of_bins_x, number_of_bins_y = get_number_of_bins(whole_trajectory)
-    bin_size_cm = get_bin_size()
-    position_heat_map_first = get_position_heatmap(trajectory_1, number_of_bins_x, number_of_bins_y, bin_size_cm, min_dwell_distance_cm, min_dwell)
-    position_heat_map_second = get_position_heatmap(trajectory_2, number_of_bins_x, number_of_bins_y, bin_size_cm, min_dwell_distance_cm, min_dwell)
+    position_heat_map_first = get_position_heatmap(trajectory_1,
+                                                   number_of_bins_x=number_of_bins_x,
+                                                   number_of_bins_y=number_of_bins_y,
+                                                   min_dwell_distance_pixels=min_dwell_distance_pixels,
+                                                   min_dwell=min_dwell)
+    position_heat_map_second = get_position_heatmap(trajectory_2,
+                                                    number_of_bins_x=number_of_bins_x,
+                                                    number_of_bins_y=number_of_bins_y,
+                                                    min_dwell_distance_pixels=min_dwell_distance_pixels,
+                                                    min_dwell=min_dwell)
     print('Made trajectory heatmaps for both halves.')
     return position_heat_map_first, position_heat_map_second
 
@@ -25,19 +32,18 @@ def make_same_sized_rate_maps(trajectory_1, trajectory_2, cluster_spatial_firing
     smooth = 5 / 100 * settings.pixel_ratio
     bin_size_pixels = get_bin_size()
     min_dwell, min_dwell_distance_pixels = get_dwell(whole_trajectory)
+
     if settings.use_vectorised_rate_map_function:
         rate_map_1, _ = rate_map_vectorised(cluster_id, smooth, cluster_spatial_firing_1,trajectory_1.position_x_pixels.values,
+                                            trajectory_1.position_y_pixels.values, number_of_bins_x, number_of_bins_y,
+                                            bin_size_pixels, min_dwell, min_dwell_distance_pixels, dt_position_ms)
+        rate_map_2, _ = rate_map_vectorised(cluster_id, smooth, cluster_spatial_firing_1,trajectory_1.position_x_pixels.values,
                                             trajectory_1.position_y_pixels.values, number_of_bins_x, number_of_bins_y,
                                             bin_size_pixels, min_dwell, min_dwell_distance_pixels, dt_position_ms)
     else:
         rate_map_1, _ = rate_map(cluster_id, smooth, cluster_spatial_firing_1,trajectory_1.position_x_pixels.values,
                                  trajectory_1.position_y_pixels.values, number_of_bins_x, number_of_bins_y,
                                  bin_size_pixels, min_dwell, min_dwell_distance_pixels, dt_position_ms)
-    if settings.use_vectorised_rate_map_function:
-        rate_map_2, _ = rate_map_vectorised(cluster_id, smooth, cluster_spatial_firing_1,trajectory_1.position_x_pixels.values,
-                                            trajectory_1.position_y_pixels.values, number_of_bins_x, number_of_bins_y,
-                                            bin_size_pixels, min_dwell, min_dwell_distance_pixels, dt_position_ms)
-    else:
         rate_map_2, _ = rate_map(cluster_id, smooth, cluster_spatial_firing_2,trajectory_2.position_x_pixels.values,
                                  trajectory_2.position_y_pixels.values, number_of_bins_x, number_of_bins_y,
                                  bin_size_pixels, min_dwell, min_dwell_distance_pixels, dt_position_ms)

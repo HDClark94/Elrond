@@ -8,6 +8,46 @@ from astropy.convolution import convolve, Gaussian1DKernel
 import Helpers.metadata_extraction as metadata_extraction
 import matplotlib.pylab as plt
 from neuroconv.utils.dict import load_dict_from_file
+import csv
+from scipy.interpolate import interp1d
+import glob
+
+def read_bonsai_file(bonsai_csv_path):
+    bonsai_df = pd.read_csv(bonsai_csv_path, header=None, names=["frame_id", "timestamp", "syncLED", "empty1", "empty2", "empty3"])
+    #del bonsai_df["frame_id"]
+    del bonsai_df["empty1"]
+    del bonsai_df["empty2"]
+    del bonsai_df["empty3"]
+    # assume timestamps use DateTimeOffset i.e. the number of ticks (where each tick is 100 ns)
+    # since 12:00 midnight, January 1, 0001 A.D. (C.E.)
+    bonsai_df["time_seconds"] = np.asarray(bonsai_df["timestamp"], dtype=np.int64)/1000000000
+    bonsai_df["time_seconds"] = bonsai_df["time_seconds"]-min(bonsai_df["time_seconds"])
+    del bonsai_df["timestamp"]
+    return bonsai_df
+
+def resample_bonsai_data(bonsai_df, fs):
+    '''
+    Resample position data so FPS is consistent.
+    Sometimes the FPS of the camera is not stable,
+    which may lead to error in syncing.
+    Assume pos has a time_seconds column
+    '''
+
+    t = bonsai_df.time_seconds.values
+    t = t-min(t)
+    t2 = np.arange(0,t[-1],1/fs)
+
+    print('I will now resample the data at ',str(fs), ' Hz')
+    print("Mean frame rate:", str(len(bonsai_df)/(t[-1]-t[0])), "FPS")
+    print("SD of frame rate:", str(np.nanstd(1 / np.diff(t))), "FPS")
+
+    df=pd.DataFrame()
+    for col in bonsai_df.columns:
+        f = interp1d(t, bonsai_df[col].values)
+        df[col] = f(t2)
+    df['time_seconds'] = t2
+    bonsai_df = df.copy()
+    return df
 
 
 def get_track_length(recording_path):
@@ -130,18 +170,34 @@ def bin_in_space(position_data, processed_position_data, track_length, smoothen=
     x_position_cm = np.array(position_data['x_position_cm'], dtype="float64")
     x_position_elapsed_cm = (track_length*(trial_numbers-1))+x_position_cm
 
+    # add the optional variables
+    if ("eye_radius" in position_data):
+        eye_radi = np.array(position_data['eye_radius'], dtype="float64")
+        eye_centroids_x = np.array(position_data['eye_centroid_x'], dtype="float64")
+        eye_centroids_y = np.array(position_data['eye_centroid_y'], dtype="float64")
+    else:  # add nan values if not present
+        eye_radi = np.array(position_data['time_seconds'], dtype="float64");eye_radi[:] = np.nan
+        eye_centroids_x = np.array(position_data['time_seconds'], dtype="float64");eye_centroids_x[:] = np.nan
+        eye_centroids_y = np.array(position_data['time_seconds'], dtype="float64");eye_centroids_y[:] = np.nan
+
     # calculate the average speed and position in each 1cm spatial bin
     spatial_bins = np.arange(0, (n_trials*track_length)+1, settings.vr_bin_size_cm) # 1 cm bins
     speed_space_bin_means = (np.histogram(x_position_elapsed_cm, spatial_bins, weights = speeds)[0] / np.histogram(x_position_elapsed_cm, spatial_bins)[0])
     pos_space_bin_means = (np.histogram(x_position_elapsed_cm, spatial_bins, weights = x_position_elapsed_cm)[0] / np.histogram(x_position_elapsed_cm, spatial_bins)[0])
     tn_space_bin_means = (((0.5*(spatial_bins[1:]+spatial_bins[:-1]))//track_length)+1).astype(np.int64) # uncomment to get nan values for portions of first and last trial
+    radi_space_bin_means = (np.histogram(x_position_elapsed_cm, spatial_bins, weights = eye_radi)[0] / np.histogram(x_position_elapsed_cm, spatial_bins)[0])
+    centroid_x_space_bin_means = (np.histogram(x_position_elapsed_cm, spatial_bins, weights = eye_centroids_x)[0] / np.histogram(x_position_elapsed_cm, spatial_bins)[0])
+    centroid_y_space_bin_means = (np.histogram(x_position_elapsed_cm, spatial_bins, weights = eye_centroids_y)[0] / np.histogram(x_position_elapsed_cm, spatial_bins)[0])
 
     # and smooth
     if smoothen:
         speed_space_bin_means = convolve(speed_space_bin_means, gauss_kernel, boundary="extend")
         pos_space_bin_means = convolve(pos_space_bin_means, gauss_kernel, boundary="extend")
+        radi_space_bin_means = convolve(radi_space_bin_means, gauss_kernel, boundary="extend")
+        centroid_x_space_bin_means = convolve(centroid_x_space_bin_means, gauss_kernel, boundary="extend")
+        centroid_y_space_bin_means = convolve(centroid_y_space_bin_means, gauss_kernel, boundary="extend")
 
-    # calculate the acceleration from the smoothed speed
+    # calculate the acceleration from the speed
     acceleration_space_bin_means = np.diff(np.array(speed_space_bin_means))
     acceleration_space_bin_means = np.hstack((0, acceleration_space_bin_means))
 
@@ -150,15 +206,22 @@ def bin_in_space(position_data, processed_position_data, track_length, smoothen=
 
     # create empty lists to be filled and put into processed_position_data
     speeds_binned_in_space = []; pos_binned_in_space = []; acc_binned_in_space = []
+    radi_binned_in_space = []; centroid_x_binned_in_space = []; centroid_y_binned_in_space = []
 
     for trial_number in range(1, n_trials+1):
         speeds_binned_in_space.append(speed_space_bin_means[tn_space_bin_means == trial_number].tolist())
         pos_binned_in_space.append(pos_space_bin_means[tn_space_bin_means == trial_number].tolist())
         acc_binned_in_space.append(acceleration_space_bin_means[tn_space_bin_means == trial_number].tolist())
+        radi_binned_in_space.append(radi_space_bin_means[tn_space_bin_means == trial_number].tolist())
+        centroid_x_binned_in_space.append(centroid_x_space_bin_means[tn_space_bin_means == trial_number].tolist())
+        centroid_y_binned_in_space.append(centroid_y_space_bin_means[tn_space_bin_means == trial_number].tolist())
 
     processed_position_data["speeds_binned_in_space"+suffix] = speeds_binned_in_space
     processed_position_data["pos_binned_in_space"+suffix] = pos_binned_in_space
     processed_position_data["acc_binned_in_space"+suffix] = acc_binned_in_space
+    processed_position_data["radi_binned_in_space" + suffix] = radi_binned_in_space
+    processed_position_data["centroid_x_binned_in_space" + suffix] = centroid_x_binned_in_space
+    processed_position_data["centroid_y_binned_in_space" + suffix] = centroid_y_binned_in_space
 
     return processed_position_data
 
@@ -179,18 +242,34 @@ def bin_in_time(position_data, processed_position_data, track_length, smoothen=T
     x_position_cm = np.array(position_data['x_position_cm'], dtype="float64")
     x_position_elapsed_cm = (track_length*(trial_numbers-1))+x_position_cm
 
+    # add the optional variables
+    if ("eye_radius" in position_data):
+        eye_radi = np.array(position_data['eye_radius'], dtype="float64")
+        eye_centroids_x = np.array(position_data['eye_centroid_x'], dtype="float64")
+        eye_centroids_y = np.array(position_data['eye_centroid_y'], dtype="float64")
+    else: # add nan values if not present
+        eye_radi = np.array(position_data['time_seconds'], dtype="float64"); eye_radi[:] = np.nan
+        eye_centroids_x = np.array(position_data['time_seconds'], dtype="float64"); eye_centroids_x[:] = np.nan
+        eye_centroids_y = np.array(position_data['time_seconds'], dtype="float64"); eye_centroids_y[:] = np.nan
+
     # calculate the average speed and position in each 100ms time bin
     time_bins = np.arange(min(times), max(times), settings.time_bin_size) # 100ms time bins
     speed_time_bin_means = (np.histogram(times, time_bins, weights = speeds)[0] / np.histogram(times, time_bins)[0])
     pos_time_bin_means = (np.histogram(times, time_bins, weights = x_position_elapsed_cm)[0] / np.histogram(times, time_bins)[0])
     tn_time_bin_means = (np.histogram(times, time_bins, weights = trial_numbers)[0] / np.histogram(times, time_bins)[0]).astype(np.int64)
+    radi_time_bin_means = (np.histogram(times, time_bins, weights = eye_radi)[0] / np.histogram(times, time_bins)[0])
+    centroid_x_time_bin_means = (np.histogram(times, time_bins, weights= eye_centroids_x)[0] / np.histogram(times, time_bins)[0])
+    centroid_y_time_bin_means = (np.histogram(times, time_bins, weights=eye_centroids_y)[0] / np.histogram(times, time_bins)[0])
 
     # and smooth
     if smoothen:
         speed_time_bin_means = convolve(speed_time_bin_means, gauss_kernel, boundary="extend")
         pos_time_bin_means = convolve(pos_time_bin_means, gauss_kernel, boundary="extend")
+        radi_time_bin_means = convolve(radi_time_bin_means, gauss_kernel, boundary="extend")
+        centroid_x_time_bin_means = convolve(centroid_x_time_bin_means, gauss_kernel, boundary="extend")
+        centroid_y_time_bin_means = convolve(centroid_y_time_bin_means, gauss_kernel, boundary="extend")
 
-    # calculate the acceleration from the smoothed speed
+    # calculate the acceleration from the speed
     acceleration_time_bin_means = np.diff(np.array(speed_time_bin_means))
     acceleration_time_bin_means = np.hstack((0, acceleration_time_bin_means))
 
@@ -199,15 +278,22 @@ def bin_in_time(position_data, processed_position_data, track_length, smoothen=T
 
     # create empty lists to be filled and put into processed_position_data
     speeds_binned_in_time = []; pos_binned_in_time = []; acc_binned_in_time = []
+    radi_binned_in_time = []; centroids_x_binned_in_time = []; centroids_y_binned_in_time = []
 
     for trial_number in range(1, n_trials+1):
         speeds_binned_in_time.append(speed_time_bin_means[tn_time_bin_means == trial_number].tolist())
         pos_binned_in_time.append(pos_time_bin_means[tn_time_bin_means == trial_number].tolist())
         acc_binned_in_time.append(acceleration_time_bin_means[tn_time_bin_means == trial_number].tolist())
+        radi_binned_in_time.append(radi_time_bin_means[tn_time_bin_means == trial_number].tolist())
+        centroids_x_binned_in_time.append(centroid_x_time_bin_means[tn_time_bin_means == trial_number].tolist())
+        centroids_y_binned_in_time.append(centroid_y_time_bin_means[tn_time_bin_means == trial_number].tolist())
 
     processed_position_data["speeds_binned_in_time"+suffix] = speeds_binned_in_time
     processed_position_data["pos_binned_in_time"+suffix] = pos_binned_in_time
     processed_position_data["acc_binned_in_time"+suffix] = acc_binned_in_time
+    processed_position_data["radi_binned_in_time" + suffix] = radi_binned_in_time
+    processed_position_data["centroids_x_binned_in_time" + suffix] = centroids_x_binned_in_time
+    processed_position_data["centroids_y_binned_in_time" + suffix] = centroids_y_binned_in_time
     return processed_position_data
 
 

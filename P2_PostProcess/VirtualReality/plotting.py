@@ -7,7 +7,72 @@ import settings
 from Helpers import plot_utility
 from Helpers.array_utility import pandas_collumn_to_numpy_array, pandas_collumn_to_2d_numpy_array
 
-from P2_PostProcess.Shared.plot_spike_properties import *
+def plot_eye(processed_position_data, output_path="", track_length=200):
+    save_path = output_path+'/Figures/behaviour'
+    if os.path.exists(save_path) is False:
+        os.makedirs(save_path)
+
+    x_max = len(processed_position_data)
+    fig = plt.figure(figsize=(6,6))
+    ax = fig.add_subplot(1, 1, 1)  # specify (nrows, ncols, axnum)
+    trial_radi = pandas_collumn_to_2d_numpy_array(processed_position_data["radi_binned_in_space"])
+
+    # remove values that aren't consisent with the radius of the eye changes, changes by a factor of 10 are insane
+    median_val = np.nanmedian(trial_radi) # use this as a reference for a sensible radius picked up
+    trial_radi[trial_radi > median_val*10] = np.nan
+    trial_radi[trial_radi < median_val/10] = np.nan
+
+    where_are_NaNs = np.isnan(trial_radi)
+    #trial_radi[where_are_NaNs] = 0
+    locations = np.arange(0, len(trial_radi[0]))
+    ordered = np.arange(0, len(trial_radi), 1)
+    X, Y = np.meshgrid(locations, ordered)
+    cmap = plt.cm.get_cmap("cool")
+    cmap.set_bad("white")
+    pcm = ax.pcolormesh(X, Y, trial_radi, cmap=cmap, shading="auto")
+    cbar = fig.colorbar(pcm, ax=ax, fraction=0.046, pad=0.14)
+    cbar.mappable.set_clim(0, np.nanpercentile(trial_radi, 99))
+    cbar.outline.set_visible(False)
+    #cbar.set_ticks([0,100])
+    #cbar.set_ticklabels(["0", "100"])
+    cbar.ax.tick_params(labelsize=20)
+    cbar.set_label('Eye radius (pixels)', fontsize=20, rotation=270)
+    plt.ylabel('Trial Number', fontsize=25, labelpad = 10)
+    plt.xlabel('Location (cm)', fontsize=25, labelpad = 10)
+    plt.xlim(0, track_length)
+    plt.ylim(0, len(processed_position_data))
+    ax.yaxis.set_major_locator(ticker.MultipleLocator(100))
+    ax.tick_params(axis='both', which='major', labelsize=20)
+    ax.yaxis.set_ticks_position('left')
+    ax.xaxis.set_ticks_position('bottom')
+    plot_utility.style_vr_plot(ax, x_max)
+    plt.subplots_adjust(hspace = .35, wspace = .35,  bottom = 0.2, left = 0.2, right = 0.87, top = 0.92)
+    plt.savefig(save_path + '/eye_heat_map.png', dpi=200)
+    plt.close()
+
+    fig = plt.figure(figsize=(6,6))
+    ax = fig.add_subplot(1, 1, 1)  # specify (nrows, ncols, axnum)
+    trial_radi = pandas_collumn_to_2d_numpy_array(processed_position_data["radi_binned_in_space"])
+    trial_radi_sem = stats.sem(trial_radi, axis=0, nan_policy="omit")
+    trial_radi_avg = np.nanmean(trial_radi, axis=0)
+    bin_centres = np.array(processed_position_data["position_bin_centres"].iloc[0])
+    ax.fill_between(bin_centres, trial_radi_avg-trial_radi_sem, trial_radi_avg+trial_radi_sem, color="black", alpha=0.2)
+    ax.plot(bin_centres, trial_radi_avg, color="black", linewidth=3)
+    plt.xlim(0,track_length)
+    #ax.set_yticks([0, 50, 100])
+    ax.yaxis.set_ticks_position('left')
+    ax.xaxis.set_ticks_position('bottom')
+    plot_utility.style_track_plot(ax, track_length)
+    plt.ylabel('Eye radius (pixels)', fontsize=25, labelpad = 10)
+    plt.xlabel('Location (cm)', fontsize=25, labelpad = 10)
+    ax.xaxis.set_major_locator(ticker.MultipleLocator(100))
+    #ax.yaxis.set_major_locator(ticker.MultipleLocator(100))
+    ax.tick_params(axis='both', which='major', labelsize=20)
+    plot_utility.style_vr_plot(ax, x_max=None)
+    plt.subplots_adjust(hspace = .35, wspace = .35,  bottom = 0.2, left = 0.2, right = 0.87, top = 0.92)
+    plt.savefig(save_path + '/eye_radius_vs_track_position.png', dpi=200)
+    plt.close()
+
 
 
 def plot_speed_heat_map(processed_position_data, output_path="", track_length=200):
@@ -253,14 +318,12 @@ def plot_speed_histogram(processed_position_data, output_path="", track_length=2
             bin_centres = np.array(processed_position_data["position_bin_centres"].iloc[0])
             ax.plot(bin_centres, trial_speeds_avg, color=c, linewidth=4)
 
-    plt.ylabel('Speed (cm/s)', fontsize=25, labelpad = 10)
-    plt.xlabel('Location (cm)', fontsize=25, labelpad = 10)
     plt.xlim(0,track_length)
     ax.set_yticks([0, 50, 100])
     ax.yaxis.set_ticks_position('left')
     ax.xaxis.set_ticks_position('bottom')
     plot_utility.style_track_plot(ax, track_length)
-    plt.ylabel('Trial Number', fontsize=25, labelpad = 10)
+    plt.ylabel('Speed (cm/s)', fontsize=25, labelpad = 10)
     plt.xlabel('Location (cm)', fontsize=25, labelpad = 10)
     ax.xaxis.set_major_locator(ticker.MultipleLocator(100))
     ax.yaxis.set_major_locator(ticker.MultipleLocator(100))
@@ -380,7 +443,7 @@ def plot_behaviour(position_data, processed_position_data, output_path, track_le
     plot_stop_histogram(processed_position_data, output_path, track_length=track_length)
     plot_speed_histogram(processed_position_data, output_path, track_length=track_length)
     plot_speed_heat_map(processed_position_data, output_path, track_length=track_length)
-
+    plot_eye(processed_position_data, output_path, track_length=track_length)
 
 def plot_track_firing(spike_data, processed_position_data, output_path, track_length):
     plot_firing_rate_maps(spike_data, processed_position_data, output_path, track_length=track_length)

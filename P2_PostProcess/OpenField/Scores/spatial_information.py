@@ -49,6 +49,7 @@ def calculate_spatial_information_scores(spike_data):
 
         spatial_information_Isec_scores.append(Isec)
         spatial_information_Ispike_scores.append(Ispike)
+        print("Spatial info for cluster", str(cluster_id), ": Ispike-", str(np.round(Ispike, decimals=2)), ", ISec-", str(np.round(Isec, decimals=2)))
 
     spike_data["spatial_information_Isec_score"] = spatial_information_Isec_scores
     spike_data["spatial_information_Ispike_score"] = spatial_information_Ispike_scores

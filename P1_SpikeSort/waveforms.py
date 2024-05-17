@@ -11,9 +11,9 @@ def get_waveforms(we, sorters):
     return waveforms
 
 
-def extract_waveforms(recording, sorting, recording_path, processed_folder_name):
+def extract_waveforms(recording, sorting, recording_path, processed_folder_name, sorterName):
     we = si.extract_waveforms(recording, sorting, folder=recording_path +
-                              "/" + processed_folder_name + "/" + settings.sorterName + "/waveforms",
+                              "/" + processed_folder_name + "/" + sorterName + "/waveforms",
                               ms_before=1, ms_after=2, load_if_exists=False,
                               overwrite=True, return_scaled=False, max_spikes_per_unit=250)
     sparsity = si.compute_sparsity(we, method="radius")

@@ -1,18 +1,21 @@
 import os
 import glob
+import spikeinterface.full as si
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from Helpers import open_ephys_IO
 from Helpers.array_utility import *
 import settings
+from neuroconv.utils.dict import load_dict_from_file, dict_deep_update
 
 
-def get_video_sync_on_and_off_times(spatial_data):
-    threshold = np.median(spatial_data['syncLED']) + 4 * np.std(spatial_data['syncLED'])
-    spatial_data['sync_pulse_on'] = spatial_data['syncLED'] > threshold
-    spatial_data['sync_pulse_on_diff'] = np.append([None], np.diff(spatial_data['sync_pulse_on'].values))
-    return spatial_data
 
+def get_video_sync_on_and_off_times(video_data):
+    threshold = np.median(video_data['syncLED']) + 4 * np.std(video_data['syncLED'])
+    video_data['sync_pulse_on'] = video_data['syncLED'] > threshold
+    video_data['sync_pulse_on_diff'] = np.append([None], np.diff(video_data['sync_pulse_on'].values))
+    return video_data
 
 def get_ephys_sync_on_and_off_times(sync_data_ephys):
     sync_data_ephys['on_index'] = sync_data_ephys['sync_pulse'] > 0.5
@@ -20,6 +23,11 @@ def get_ephys_sync_on_and_off_times(sync_data_ephys):
     sync_data_ephys['time'] = sync_data_ephys.index / settings.sampling_rate
     return sync_data_ephys
 
+def get_behaviour_sync_on_and_off_times(position_data):
+    position_data['on_index'] = position_data['sync_pulse'] > 0.5
+    position_data['on_index_diff'] = np.append([None], np.diff(position_data['on_index'].values))  # true when light turns on
+    position_data['time'] = position_data["time_seconds"]
+    return position_data
 
 def reduce_noise(pulses, threshold, high_level=5):
     '''
@@ -47,13 +55,14 @@ def downsample_ephys_data(sync_data_ephys, spatial_data):
 
 
 # this is to remove any extra pulses that one dataset has but not the other
-def trim_arrays_find_starts(sync_data_ephys_downsampled, spatial_data):
+def trim_arrays_find_starts(sync_data_ephys_downsampled, spatial_data, trim_time_seconds=60):
     ephys_time = sync_data_ephys_downsampled.time
-    bonsai_time = spatial_data.synced_time_estimate
-    ephys_start_index = 19*30  # bonsai sampling rate times 19 seconds
-    ephys_start_time = ephys_time.values[19*30]
-    bonsai_start_index = find_nearest(bonsai_time.values, ephys_start_time)
-    return ephys_start_index, bonsai_start_index
+    spatial_time = spatial_data.synced_time_estimate
+    spatial_data_sampling_rate = float(1/spatial_data['time_seconds'].diff().mean())
+    ephys_start_index = int(trim_time_seconds*spatial_data_sampling_rate)  # bonsai sampling rate times trim_time in seconds
+    ephys_start_time = ephys_time.values[int(trim_time_seconds*spatial_data_sampling_rate)]
+    spatial_start_index = find_nearest(spatial_time.values, ephys_start_time)
+    return ephys_start_index, spatial_start_index
 
 
 #  this is needed for finding the rising edge of the pulse to by synced
@@ -70,7 +79,7 @@ def detect_last_zero(signal):
     return last_zero_index
 
 
-def calculate_lag(sync_data_ephys, spatial_data):
+def adjust_for_lag(sync_data_ephys, spatial_data, output_path):
     """
     The ephys and spatial data is synchronized based on sync pulses sent both to the open ephys and bonsai systems.
     The open ephys GUI receives TTL pulses. Bonsai detects intensity from an LED that lights up whenever the TTL is
@@ -100,15 +109,21 @@ def calculate_lag(sync_data_ephys, spatial_data):
     sync_data_ephys_downsampled = downsample_ephys_data(sync_data_ephys, spatial_data)
     bonsai = np.append(0, np.diff(spatial_data['syncLED'].values)) # step to remove human error-caused light intensity jumps
     ephys = sync_data_ephys_downsampled.sync_pulse.values
+    save_plots_of_pulses(bonsai=bonsai, output_path=output_path, lag=np.nan, name='bonsai')
+    save_plots_of_pulses(ephys=ephys,   output_path=output_path, lag=np.nan, name='ephys')
+
     bonsai = reduce_noise(bonsai, np.median(bonsai) + 6 * np.std(bonsai))
-    ephys = reduce_noise(ephys, 2)
+    if max(ephys)>1:
+        ephys = reduce_noise(ephys, 2)
+    save_plots_of_pulses(bonsai=bonsai, ephys=ephys, output_path=output_path, lag=np.nan, name='pulses_before_processing')
+
     bonsai, ephys = pad_shorter_array_with_0s(bonsai, ephys)
     corr = np.correlate(bonsai, ephys, "full")  # this is the correlation array between the sync pulse series
     avg_sampling_rate_bonsai = float(1 / spatial_data['time_seconds'].diff().mean())
     lag = (np.argmax(corr) - (corr.size + 1)/2)/avg_sampling_rate_bonsai  # lag between sync pulses is based on max correlation
     spatial_data['synced_time_estimate'] = spatial_data.time_seconds - lag  # at this point the lag is about 100 ms
 
-    # cut off first 19 seconds to make sure there will be a corresponding pulse
+    # cut off first n seconds to make sure there will be a corresponding pulse
     ephys_start, bonsai_start = trim_arrays_find_starts(sync_data_ephys_downsampled, spatial_data)
     trimmed_ephys_time = sync_data_ephys_downsampled.time.values[ephys_start:]
     trimmed_ephys_pulses = ephys[ephys_start:len(trimmed_ephys_time)]
@@ -122,9 +137,30 @@ def calculate_lag(sync_data_ephys, spatial_data):
     bonsai_rising_edge_time = trimmed_bonsai_time[bonsai_rising_edge_index]
 
     lag2 = ephys_rising_edge_time - bonsai_rising_edge_time
-    print(f'Rising edge lag is {lag2}')
-    return lag2
+    if np.abs(lag2)<1: # i.e. a sensible adjustment for the rising edge
+        spatial_data['synced_time'] = spatial_data.synced_time_estimate + lag2
+    else: # if too big then just use correlative lag
+        spatial_data['synced_time'] = spatial_data.synced_time_estimate
 
+    print(f'Rising edge lag is {lag2}')
+    save_plots_of_pulses(bonsai=trimmed_bonsai_pulses, ephys=trimmed_ephys_pulses,
+                         output_path=output_path, lag=lag2, name='pulses_after_processing')
+    return spatial_data
+
+def save_plots_of_pulses(bonsai=None, ephys=None, output_path=None, lag=np.nan, name=""):
+    save_path = output_path + '/Figures/Sync_test/'
+    if os.path.exists(save_path) is False:
+        os.makedirs(save_path)
+    plt.figure()
+    if ephys is not None:
+        plt.plot(ephys, color='red', label='open ephys')
+    if bonsai is not None:
+        bonsai_norm = bonsai / np.linalg.norm(bonsai)
+        plt.plot(bonsai_norm * 3.5, color='black', label='bonsai')
+    plt.title('lag=' + str(lag))
+    plt.legend()
+    plt.savefig(save_path + name + '_sync_pulses.png')
+    plt.close()
 
 def search_for_file(folder_to_search_in, string_to_find):
     matches = []
@@ -133,35 +169,61 @@ def search_for_file(folder_to_search_in, string_to_find):
             matches.append(file_path)
     return matches
 
-def get_ttl_pulse_array(recording_path):
-    # first look in the paramfile
-    # TODO
+def get_ttl_pulse_array_in_column(df):
+    if "syncLED" in df.columns:
+        ttl_pulses = pd.DataFrame(df["syncLED"])
+    elif "sync_pulse" in df.columns:
+        ttl_pulses = pd.DataFrame(df["sync_pulse"])
+    ttl_pulses.columns = ['sync_pulse']
+    return ttl_pulses
+
+def get_ttl_pulse_array_in_ADC_channel(recording_path):
+    # retrieve TTL sync pulses from recording
+
+    if os.path.exists(recording_path + "/params.yml"):
+        params = load_dict_from_file(recording_path + "/params.yml")
+        if ("probe_manufacturer" in params.keys()) and ("recording_aquisition" in params.keys()):
+            if (params["probe_manufacturer"] == 'neuropixel') and (params["recording_aquisition"] == 'openephys'):
+                recording = si.read_openephys(recording_path, load_sync_channel=True)
+                ttl_pulses = recording.get_traces(channel_ids=[recording.get_channel_ids()[-1]])
+                ttl_pulses = np.asarray(ttl_pulses)[:,0]
+                ttl_pulses = pd.DataFrame(ttl_pulses)
+                ttl_pulses.columns = ['sync_pulse']
+                return ttl_pulses
 
     # if still not found, use what is in the settings
     ttl_pulse_channel_paths = search_for_file(recording_path, settings.ttl_pulse_channel)
     assert len(ttl_pulse_channel_paths) == 1
     ttl_pulse_channel_path = ttl_pulse_channel_paths[0]
+    ttl_pulses = open_ephys_IO.get_data_continuous(ttl_pulse_channel_path)
+    ttl_pulses = pd.DataFrame(ttl_pulses)
+    ttl_pulses.columns = ['sync_pulse']
+    return ttl_pulses
 
-    if ttl_pulse_channel_path.endswith(".continuous"):
-        ttl_pulses = open_ephys_IO.get_data_continuous(ttl_pulse_channel_path)
-        ttl_pulses = pd.DataFrame(ttl_pulses)
-        ttl_pulses.columns = ['sync_pulse']
-        return ttl_pulses
-    else:
-        print("I don't know how to handle this ttl pulse file")
-        return ""
+def synchronise_position_data_via_column_ttl_pulses(position_data, video_data):
+    # get on and off times for ttl pulse
+    position_data = get_behaviour_sync_on_and_off_times(position_data)
+    video_data = get_video_sync_on_and_off_times(video_data)
 
-def synchronise_position_data_via_ttl_pulses(position_data, recording_path):
+    # calculate lag and align the position data
+    video_data = adjust_for_lag(position_data, video_data)
+
+    # remove negative time points
+    video_data = video_data.reset_index(drop=True)
+    del position_data["on_index_diff"]
+    del position_data["on_index"]
+    return position_data, video_data
+
+def synchronise_position_data_via_ADC_ttl_pulses(position_data, processed_folder_name, recording_path):
     # get array for the ttl pulses in the ephys data
-    sync_data = get_ttl_pulse_array(recording_path)
+    sync_data = get_ttl_pulse_array_in_ADC_channel(recording_path)
 
     # get on and off times for ttl pulse
     sync_data = get_ephys_sync_on_and_off_times(sync_data)
     position_data = get_video_sync_on_and_off_times(position_data)
 
     # calculate lag and align the position data
-    lag = calculate_lag(sync_data, position_data)
-    position_data['synced_time'] = position_data.synced_time_estimate + lag
+    position_data = adjust_for_lag(sync_data, position_data, output_path=recording_path+"/"+processed_folder_name)
 
     # remove negative time points
     position_data = position_data.drop(position_data[position_data.synced_time < 0].index)

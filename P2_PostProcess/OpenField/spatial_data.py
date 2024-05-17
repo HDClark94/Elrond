@@ -5,8 +5,13 @@ import settings
 import numpy as np
 import pandas as pd
 import csv
-from scipy.interpolate import interp1d
+import shutil
+import deeplabcut as dlc
+import math
 
+
+from pathlib import Path
+from scipy.interpolate import interp1d
 from Helpers import math_utility
 
 def read_bonsai_file(recording_folder):
@@ -199,10 +204,16 @@ def get_number_of_bins(spatial_data):
     return number_of_bins_x, number_of_bins_y
 
 
-def get_position_heatmap(spatial_data):
-    min_dwell, min_dwell_distance_pixels = get_dwell(spatial_data)
+def get_position_heatmap(spatial_data,
+                         number_of_bins_x=None,
+                         number_of_bins_y=None,
+                         min_dwell_distance_pixels=None,
+                         min_dwell=None):
+    if number_of_bins_x is None:
+        number_of_bins_x, number_of_bins_y = get_number_of_bins(spatial_data)
+    if min_dwell is None:
+        min_dwell, min_dwell_distance_pixels = get_dwell(spatial_data)
     bin_size_pixels = get_bin_size()
-    number_of_bins_x, number_of_bins_y = get_number_of_bins(spatial_data)
 
     position_heat_map = np.zeros((number_of_bins_x, number_of_bins_y))
     # find value for each bin for heatmap
@@ -222,9 +233,83 @@ def get_position_heatmap(spatial_data):
     return position_heat_map
 
 
-def process_position_data(recording_path):
+def extract_position_from_dlc(recording_path, processed_folder_name, model_path):
+    dlc_position_data = pd.DataFrame()
+    avi_paths = [os.path.abspath(os.path.join(recording_path, filename)) for filename in os.listdir(recording_path) if filename.endswith(".avi")]
+    if (len(avi_paths) == 1):
+        video_path = avi_paths[0]
+        config_path = model_path + "/config.yaml"
+
+        save_path = recording_path + "/" + processed_folder_name + "/video"
+        if not os.path.exists(save_path):
+            os.mkdir(save_path)
+
+        # add columns to position_data using markers as set in the dlc model
+        video_filename = video_path.split("/")[-1]
+        new_videopath = save_path + "/" + video_filename
+
+        _ = shutil.copyfile(video_path, new_videopath)
+        dlc.analyze_videos(config_path, [new_videopath], save_as_csv=True, destfolder=save_path)
+        dlc.filterpredictions(config_path, [new_videopath])
+        dlc.create_labeled_video(config_path, [new_videopath], save_frames=False)
+        dlc.plot_trajectories(config_path, [new_videopath])
+        csv_path = [os.path.abspath(os.path.join(save_path, filename)) for filename in os.listdir(save_path) if filename.endswith(".csv")]
+        dlc_position_data = pd.read_csv(csv_path[0], header=[1, 2], index_col=0)  # ignore the scorer column
+        os.remove(new_videopath)
+
+        return dlc_position_data
+    return dlc_position_data
+
+def calculate_left_and_right_coordinates(head, shoulders, length_from_midline=3):
+    # length from midline has units of pixels, so set this low
+
+    # Coordinates of head and shoulders
+    x1, y1 = head
+    x2, y2 = shoulders
+    # Midpoint between head and shoulders
+    mid_x = (x1 + x2) / 2
+    mid_y = (y1 + y2) / 2
+    # Direction vector from shoulders to head
+    dir_x = x1 - x2
+    dir_y = y1 - y2
+    # Length of the direction vector
+    length = math.sqrt(dir_x ** 2 + dir_y ** 2)
+    # Normalize the direction vector
+    dir_x /= length
+    dir_y /= length
+    # Rotate the direction vector by 90 degrees to get the perpendicular vector
+    perp_x = -dir_y
+    perp_y = dir_x
+    # Scale the perpendicular vector by distance A
+    perp_x *= length_from_midline
+    perp_y *= length_from_midline
+    # Calculate the coordinates of the left and right shoulders
+    left = (mid_x + perp_x, mid_y + perp_y)
+    right = (mid_x - perp_x, mid_y - perp_y)
+    return left, right
+
+def add_dlc_markers(position_data, dlc_position_data):
+    position_data.reset_index(drop=True)
+    for i in range(len(position_data)):
+        head = (dlc_position_data[('head', 'x')][i], dlc_position_data[('head', 'y')][i])
+        shoulders = (dlc_position_data[('shoulders', 'x')][i], dlc_position_data[('shoulders', 'y')][i])
+        left, right = calculate_left_and_right_coordinates(head, shoulders)
+        position_data["x_left"].iloc[i] = left[0]
+        position_data["y_left"].iloc[i] = left[1]
+        position_data["x_right"].iloc[i] = right[0]
+        position_data["y_right"].iloc[i] = right[1]
+    return position_data
+
+def process_position_data(recording_path, processed_folder_name, **kwargs):
     bonsai_position_data = read_bonsai_file(recording_path)
     position_data = proces_bonsai_position(bonsai_position_data)
+
+    if "use_dlc_to_extract_openfield_position" in kwargs:
+        if kwargs["use_dlc_to_extract_openfield_position"]:
+            dlc_position_data = extract_position_from_dlc(recording_path, processed_folder_name, model_path=settings.of_deeplabcut_project_path)
+            if len(dlc_position_data) == len(position_data):
+                position_data = add_dlc_markers(position_data, dlc_position_data)
+
     position_data = resample_position_data(position_data, 30)
 
     position_data = calculate_speed(position_data)

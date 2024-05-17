@@ -9,6 +9,8 @@ processed_folder = "/processed"
 dead_channel_file_name = "/dead_channels.txt"
 temp_storage_path = '/home/ubuntu/to_sort/recordings/tmp'
 PIL_fontstyle_path = '/home/ubuntu/Elrond_code/Additional_files/Arial.ttf'
+#PIL_fontstyle_path = ('/run/user/1000/gvfs/smb-share:server=cmvm.datastore.ed.ac.uk,share=cmvm/'
+#                      'sbms/groups/CDBS_SIDB_storage/NolanLab/ActiveProjects/Harry/Arial.ttf')
 
 ##########
 # Recording setting
@@ -18,8 +20,8 @@ down_sampled_rate = 1000
 #########
 # Sorter Configuration
 sorterName = 'mountainsort4'
-list_of_named_sorters = ['MountainSort', 'mountainsort4','klusta','tridesclous','hdsort','ironclust',
-                         'kilosort','kilosort2', 'spykingcircus','herdingspikes','waveclus']
+list_of_named_sorters = ['MountainSort', 'mountainsort4','mountainsort5','klusta','tridesclous','hdsort','ironclust',
+                         'kilosort','kilosort2', 'kilosort3', 'kilosort4', 'spykingcircus','herdingspikes','waveclus']
 
 whiten = True
 common_reference = True
@@ -41,6 +43,9 @@ auto_curation_thresholds = [('snr', '>', 1),
 ##########
 # VR
 
+vr_deeplabcut_project_path = "/mnt/datastore/Harry/deeplabcut/vr-hc-2024-03-14"
+#vr_deeplabcut_project_path = ("/run/user/1000/gvfs/smb-share:server=cmvm.datastore.ed.ac.uk,share=cmvm/"
+#                           "sbms/groups/CDBS_SIDB_storage/NolanLab/ActiveProjects/Harry/deeplabcut/vr-hc-2024-03-14")
 vr_bin_size_cm = 1
 time_bin_size = 0.1 # seconds
 guassian_std_for_smoothing_in_time_seconds = 0.2 # seconds
@@ -52,6 +57,10 @@ hit_try_run_speed_threshold = 10 # cm/seconds
 pixel_ratio = 440
 gauss_sd_for_speed_score = 250
 open_field_bin_size_cm = 2.5 # cm
+
+of_deeplabcut_project_path = "/mnt/datastore/Harry/deeplabcut/openfield_pose-Harry Clark-2024-05-13"
+#of_deeplabcut_project_path = ("/run/user/1000/gvfs/smb-share:server=cmvm.datastore.ed.ac.uk,share=cmvm/"
+#                           "sbms/groups/CDBS_SIDB_storage/NolanLab/ActiveProjects/Harry/deeplabcut/openfield_pose-Harry Clark-2024-05-13")
 
 use_vectorised_rate_map_function = True
 impose_num_cores = False
