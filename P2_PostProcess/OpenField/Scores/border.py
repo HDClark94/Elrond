@@ -40,7 +40,7 @@ def calculate_border_scores(spike_data):
         firing_fields = put_firing_rates_back(firing_fields, firing_rate_map)
         border_score = calculate_border_score(firing_fields, bin_size_cm=2.5)
         border_scores.append(border_score)
-        print("Border score for cluster", str(cluster), ":", str(np.round(border_score, decimals=2)))
+        print("Border score for cluster", str(cluster.cluster_id), ":", str(np.round(border_score, decimals=2)))
     spike_data['border_score'] = border_scores
     return spike_data
 
