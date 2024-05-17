@@ -7,8 +7,6 @@ import settings
 from Helpers import plot_utility
 from Helpers.array_utility import pandas_collumn_to_numpy_array, pandas_collumn_to_2d_numpy_array
 
-from P2_PostProcess.Shared.plot_spike_properties import *
-
 def plot_eye(processed_position_data, output_path="", track_length=200):
     save_path = output_path+'/Figures/behaviour'
     if os.path.exists(save_path) is False:
