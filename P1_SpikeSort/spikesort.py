@@ -88,6 +88,13 @@ def update_from_phy(recording_path, local_path, processed_folder_name, **kwargs)
 
 
 def spikesort(recording_path, local_path, processed_folder_name, **kwargs):
+    
+    # set spike interface job kwargs. Will use the same number of workers as
+    # the sorting does.
+    n_sorting_workers = settings.n_sorting_workers
+    global_job_kwargs = dict(n_jobs=n_sorting_workers)
+    si.set_global_job_kwargs(**global_job_kwargs)
+
     # create recording extractor
     recording_paths = get_recordings_to_sort(recording_path, local_path, **kwargs)
     recording_formats = get_recording_formats(recording_paths)
@@ -123,9 +130,35 @@ def spikesort(recording_path, local_path, processed_folder_name, **kwargs):
     print("Spike sorting is finished!")
     print("I found " + str(len(sorting_mono.unit_ids)) + " clusters")
 
+    # Make a sorting analyzer
+    analyzer = si.create_sorting_analyzer(
+        recording = recording_mono, 
+        sorting = sorting_mono,
+        format="binary_folder"
+        folder = processed_folder_name
+    )
+
+    extension_to_compute = {
+        "random_spikes": {},
+        "waveforms": {},
+        "templates": {},
+        "spike_amplitudes": {},
+        "principal_components": {n_components: 3},
+        "correlograms": {},
+        "unit_locations": {},
+        "template_similarity": {},
+         "quality_metrics": {
+             'metric_names': settings.list_of_quality_metrics,
+             'skip_pc_metrics': True
+         }
+    }
+
+    analyzer.compute(extension_to_compute)
+    quality_metrics = analyzer.get_extension("quality_metrics").get_data()
+
     # Extract the waveforms and quality metrics from across all recordings to the extractor
-    we, quality_metrics = extract_waveforms(recording_mono, sorting_mono, recording_path, processed_folder_name, sorterName)
-    quality_metrics["cluster_id"] = sorting_mono.get_unit_ids()
+    # we, quality_metrics = extract_waveforms(recording_mono, sorting_mono, recording_path, processed_folder_name, sorterName)
+    # quality_metrics["cluster_id"] = sorting_mono.get_unit_ids()
 
     # assign an automatic curation label based on the quality metrics
     quality_metrics = auto_curate(quality_metrics)
@@ -133,10 +166,18 @@ def spikesort(recording_path, local_path, processed_folder_name, **kwargs):
     # split our extractors back
     recordings = si.split_recording(recording_mono)
     sorters = [si.select_segment_sorting(sorting_mono, i) for i in range(len(recordings))] # turn it into a list of sorters
-    waveforms = get_waveforms(we, sorters)
+    #waveforms = get_waveforms(we, sorters)
 
     # save spike times and waveform information for further analysis
-    save_spikes_to_dataframe(sorters, recordings, waveforms, quality_metrics, recording_paths, processed_folder_name, sorterName)
+    save_spikes_to_dataframe(
+        sorters, 
+        recordings, 
+        analyzer.get_extension("waveforms").get_data(), 
+        quality_metrics, 
+        recording_paths, 
+        processed_folder_name, 
+        sorterName
+    )
 
     # Optionally
     if "save2phy" in kwargs:
