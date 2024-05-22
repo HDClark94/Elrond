@@ -27,7 +27,8 @@ def load_recording(recording_path, recording_format):
     else:
         raise AssertionError("I don't recognise the recording format,"
                         "Current options are open_ephys, spikeglx and nwb")
-    # recording = recording.frame_slice(start_frame=0, end_frame=int(15 * 30000))  # debugging purposes
+
+    #recording = recording.frame_slice(start_frame=0, end_frame=int(15 * 30000))  # debugging purposes
     return recording
 
 
