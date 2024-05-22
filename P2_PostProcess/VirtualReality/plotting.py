@@ -4,8 +4,10 @@ import numpy as np
 from scipy import stats
 import matplotlib.ticker as ticker
 import settings
+from astropy.nddata import block_reduce
 from Helpers import plot_utility
 from Helpers.array_utility import pandas_collumn_to_numpy_array, pandas_collumn_to_2d_numpy_array
+from astropy.convolution import convolve, Gaussian1DKernel
 
 def plot_eye(processed_position_data, output_path="", track_length=200):
     save_path = output_path+'/Figures/behaviour'
@@ -346,8 +348,11 @@ def plot_spikes_on_track(spike_data, processed_position_data, output_path, track
     for cluster_index, cluster_id in enumerate(spike_data.cluster_id):
         cluster_spike_data = spike_data[spike_data["cluster_id"] == cluster_id]
         firing_times_cluster = cluster_spike_data.firing_times.iloc[0]
-        if len(firing_times_cluster)>1:
+        x_position_cm = np.array(cluster_spike_data.x_position_cm.iloc[0])
+        trial_numbers = np.array(cluster_spike_data.trial_number.iloc[0])
+        trial_types = np.array(cluster_spike_data.trial_type.iloc[0])
 
+        if len(firing_times_cluster)>1:
             x_max = len(processed_position_data)+1
             if x_max>100:
                 spikes_on_track = plt.figure(figsize=(4,(x_max/32)))
@@ -355,14 +360,12 @@ def plot_spikes_on_track(spike_data, processed_position_data, output_path, track
                 spikes_on_track = plt.figure(figsize=(4,(x_max/20)))
 
             ax = spikes_on_track.add_subplot(1, 1, 1)  # specify (nrows, ncols, axnum)
-
             if "beaconed" in plot_trials:
-                ax.plot(cluster_spike_data.iloc[0].beaconed_position_cm, cluster_spike_data.iloc[0].beaconed_trial_number, '|', color='Black', markersize=4)
+                ax.plot(x_position_cm[trial_types==0], trial_numbers[trial_types==0], '|', color='Black', markersize=4)
             if "non_beaconed" in plot_trials:
-                ax.plot(cluster_spike_data.iloc[0].nonbeaconed_position_cm, cluster_spike_data.iloc[0].nonbeaconed_trial_number, '|', color='Red', markersize=4)
+                ax.plot(x_position_cm[trial_types==1], trial_numbers[trial_types==1], '|', color='Red', markersize=4)
             if "probe" in plot_trials:
-                ax.plot(cluster_spike_data.iloc[0].probe_position_cm, cluster_spike_data.iloc[0].probe_trial_number, '|', color='Blue', markersize=4)
-
+                ax.plot(x_position_cm[trial_types==2], trial_numbers[trial_types==2], '|', color='Blue', markersize=4)
             plt.ylabel('Spikes on trials', fontsize=20, labelpad = 10)
             plt.xlabel('Location (cm)', fontsize=20, labelpad = 10)
             plt.xlim(0,track_length)
@@ -372,15 +375,13 @@ def plot_spikes_on_track(spike_data, processed_position_data, output_path, track
             plot_utility.style_track_plot(ax, track_length)
             plot_utility.style_vr_plot(ax, x_max)
             plt.locator_params(axis = 'y', nbins  = 4)
-            try:
-                plt.tight_layout(pad=0.4, w_pad=0.5, h_pad=1.0)
-            except ValueError:
-                continue
+            plt.tight_layout(pad=0.4, w_pad=0.5, h_pad=1.0)
             if len(plot_trials)<3:
                 plt.savefig(save_path + '/' + spike_data.session_id.iloc[cluster_index] + '_track_firing_Cluster_' + str(cluster_id) + "_" + str("_".join(plot_trials)) + '.png', dpi=200)
             else:
                 plt.savefig(save_path + '/' + spike_data.session_id.iloc[cluster_index] + '_track_firing_Cluster_' + str(cluster_id) + '.png', dpi=200)
             plt.close()
+    return
 
 
 def plot_firing_rate_maps(spike_data, processed_position_data, output_path, track_length=200):
@@ -389,17 +390,21 @@ def plot_firing_rate_maps(spike_data, processed_position_data, output_path, trac
     if os.path.exists(save_path) is False:
         os.makedirs(save_path)
 
+    rate_maps_beaconed = []
+    rate_maps_non_beaconed = []
     for cluster_index, cluster_id in enumerate(spike_data.cluster_id):
         cluster_spike_data = spike_data[spike_data["cluster_id"] == cluster_id]
         firing_times_cluster = np.array(cluster_spike_data["firing_times"].iloc[0])
 
         if len(firing_times_cluster)>1:
-            if "fr_binned_in_space" in list(cluster_spike_data):
-                fr_column = "fr_binned_in_space"
-            elif "fr_binned_in_space_smoothed" in list(cluster_spike_data):
+            if "fr_binned_in_space_smoothed" in list(cluster_spike_data):
                 fr_column = "fr_binned_in_space_smoothed"
+            elif "fr_binned_in_space" in list(cluster_spike_data):
+                fr_column = "fr_binned_in_space"
             fr_binned_in_space = np.array(cluster_spike_data[fr_column].iloc[0])
             fr_binned_in_space_bin_centres = np.array(cluster_spike_data['fr_binned_in_space_bin_centres'].iloc[0])[0]
+            fr_binned_in_space[np.isnan(fr_binned_in_space)] = 0
+            fr_binned_in_space[np.isinf(fr_binned_in_space)] = 0
 
             spikes_on_track = plt.figure()
             spikes_on_track.set_size_inches(5, 5, forward=True)
@@ -413,10 +418,14 @@ def plot_firing_rate_maps(spike_data, processed_position_data, output_path, trac
                 tt_fr_binned_in_space = fr_binned_in_space[tt_trial_numbers-1]
                 ax.fill_between(fr_binned_in_space_bin_centres, np.nanmean(tt_fr_binned_in_space, axis=0)-stats.sem(tt_fr_binned_in_space, axis=0), np.nanmean(tt_fr_binned_in_space, axis=0)+stats.sem(tt_fr_binned_in_space, axis=0), color=c, alpha=0.3)
                 ax.plot(fr_binned_in_space_bin_centres, np.nanmean(tt_fr_binned_in_space, axis=0), color=c)
-
                 fr_max = max(np.nanmean(tt_fr_binned_in_space, axis=0)+stats.sem(tt_fr_binned_in_space, axis=0))
                 y_max = max([y_max, fr_max])
                 y_max = np.ceil(y_max)
+
+                if tt == 0:
+                    rate_maps_beaconed.append(np.nanmean(tt_fr_binned_in_space, axis=0))
+                elif tt == 1:
+                    rate_maps_non_beaconed.append(np.nanmean(tt_fr_binned_in_space, axis=0))
 
             plt.ylabel('Firing Rate (Hz)', fontsize=20, labelpad = 20)
             plt.xlabel('Location (cm)', fontsize=20, labelpad = 20)
@@ -434,8 +443,121 @@ def plot_firing_rate_maps(spike_data, processed_position_data, output_path, trac
             plt.savefig(save_path + '/' + spike_data.session_id.iloc[cluster_index] + '_rate_map_Cluster_' + str(cluster_id) + '.png', dpi=300)
             plt.close()
 
-    return spike_data
+    gauss_kernel = Gaussian1DKernel(settings.guassian_std_for_smoothing_in_space_cm/settings.vr_bin_size_cm)
+    nrows = int(np.ceil(np.sqrt(len(spike_data))))
+    ncols = nrows; i=0; j=0;
+    fig, ax = plt.subplots(ncols=ncols, nrows=nrows, figsize=(20, 20), squeeze=False)
+    for rate_map_b, rate_map_nb in zip(rate_maps_beaconed, rate_maps_non_beaconed):
+        rate_map_b = convolve(rate_map_b, gauss_kernel, boundary="extend")
+        rate_map_nb = convolve(rate_map_nb, gauss_kernel, boundary="extend")
+        ax[j, i].plot(fr_binned_in_space_bin_centres, rate_map_b, color="black")
+        ax[j, i].plot(fr_binned_in_space_bin_centres, rate_map_nb, color="red")
+        i+=1
+        if i==ncols:
+            i=0; j+=1
+    for j in range(nrows):
+        for i in range(ncols):
+            plot_utility.style_track_plot(ax[j, i], track_length)
+            plot_utility.style_vr_plot(ax[j, i])
+            ax[j, i].spines['top'].set_visible(False)
+            ax[j, i].spines['right'].set_visible(False)
+            ax[j, i].spines['bottom'].set_visible(False)
+            ax[j, i].spines['left'].set_visible(False)
+            ax[j, i].set_xticks([])
+            ax[j, i].set_yticks([])
+            ax[j, i].xaxis.set_tick_params(labelbottom=False)
+            ax[j, i].yaxis.set_tick_params(labelleft=False)
+    plt.subplots_adjust(hspace=.1, wspace=.1, bottom=None, left=None, right=None, top=None)
+    plt.savefig(save_path + '/all_firing_rates.png', dpi=400)
+    plt.close()
 
+
+
+
+
+
+def plot_firing_rate_maps_per_trial(spike_data, processed_position_data, output_path, track_length):
+    save_path = output_path + '/Figures/rate_maps_by_trial'
+    if os.path.exists(save_path) is False:
+        os.makedirs(save_path)
+
+    rate_maps = []
+    for cluster_index, cluster_id in enumerate(spike_data.cluster_id):
+        firing_times_cluster = spike_data["firing_times"].iloc[cluster_index]
+
+        if len(firing_times_cluster)>1:
+            cluster_firing_maps = np.array(spike_data['fr_binned_in_space_smoothed'].iloc[cluster_index])
+            cluster_firing_maps[np.isnan(cluster_firing_maps)] = 0
+            cluster_firing_maps[np.isinf(cluster_firing_maps)] = 0
+            percentile_99th_display = np.nanpercentile(cluster_firing_maps, 95);
+            cluster_firing_maps = min_max_normalize(cluster_firing_maps)
+            percentile_99th = np.nanpercentile(cluster_firing_maps, 95); cluster_firing_maps = np.clip(cluster_firing_maps, a_min=0, a_max=percentile_99th)
+            vmin, vmax = get_vmin_vmax(cluster_firing_maps)
+            rate_maps.append(cluster_firing_maps)
+
+            spikes_on_track = plt.figure()
+            spikes_on_track.set_size_inches(5, 5, forward=True)
+            ax = spikes_on_track.add_subplot(1, 1, 1)
+            locations = np.arange(0, len(cluster_firing_maps[0]))
+            ordered = np.arange(0, len(processed_position_data), 1)
+            X, Y = np.meshgrid(locations, ordered)
+            cmap = plt.cm.get_cmap("viridis")
+            ax.pcolormesh(X, Y, cluster_firing_maps, cmap=cmap, shading="auto", vmin=vmin, vmax=vmax)
+            plt.title(str(np.round(percentile_99th_display, decimals=1))+" Hz", fontsize=20)
+            plt.ylabel('Trial Number', fontsize=20, labelpad = 20)
+            plt.xlabel('Location (cm)', fontsize=20, labelpad = 20)
+            plt.xlim(0, track_length)
+            ax.tick_params(axis='both', which='both', labelsize=20)
+            ax.set_xlim([0, track_length])
+            ax.set_ylim([0, len(processed_position_data)-1])
+            ax.spines['top'].set_visible(False)
+            ax.spines['right'].set_visible(False)
+            tick_spacing = 100
+            plt.locator_params(axis='y', nbins=3)
+            ax.xaxis.set_major_locator(ticker.MultipleLocator(tick_spacing))
+            ax.yaxis.set_ticks_position('left')
+            ax.xaxis.set_ticks_position('bottom')
+            spikes_on_track.tight_layout(pad=2.0)
+            plt.subplots_adjust(hspace = .35, wspace = .35,  bottom = 0.2, left = 0.2, right = 0.87, top = 0.92)
+            #cbar = spikes_on_track.colorbar(c, ax=ax, fraction=0.046, pad=0.04)
+            #cbar.set_label('Firing Rate (Hz)', rotation=270, fontsize=20)
+            #cbar.set_ticks([0,np.max(cluster_firing_maps)])
+            #cbar.set_ticklabels(["0", "Max"])
+            #cbar.ax.tick_params(labelsize=20)
+            plt.savefig(save_path + '/firing_rate_map_trials_' + spike_data.session_id.iloc[cluster_index] + '_' + str(int(cluster_id)) + '.png', dpi=300)
+            plt.close()
+
+    nrows = int(np.ceil(np.sqrt(len(spike_data))))
+    ncols = nrows; i=0; j=0;
+    fig, ax = plt.subplots(ncols=ncols, nrows=nrows, figsize=(20, 20), squeeze=False)
+    for rate_map in rate_maps:
+        vmin, vmax = get_vmin_vmax(rate_map)
+        ax[j, i].pcolormesh(X, Y, rate_map, cmap=cmap, shading="auto", vmin=vmin, vmax=vmax)
+        i+=1
+        if i==ncols:
+            i=0; j+=1
+    for j in range(nrows):
+        for i in range(ncols):
+            ax[j, i].spines['top'].set_visible(False)
+            ax[j, i].spines['right'].set_visible(False)
+            ax[j, i].spines['bottom'].set_visible(False)
+            ax[j, i].spines['left'].set_visible(False)
+            ax[j, i].set_xticks([])
+            ax[j, i].set_yticks([])
+            ax[j, i].xaxis.set_tick_params(labelbottom=False)
+            ax[j, i].yaxis.set_tick_params(labelleft=False)
+    plt.subplots_adjust(hspace=.1, wspace=.1, bottom=None, left=None, right=None, top=None)
+    plt.savefig(save_path + '/all_firing_rates.png', dpi=400)
+    plt.close()
+
+def get_vmin_vmax(cluster_firing_maps, bin_cm=8):
+    cluster_firing_maps_reduced = []
+    for i in range(len(cluster_firing_maps)):
+        cluster_firing_maps_reduced.append(block_reduce(cluster_firing_maps[i], bin_cm, func=np.mean))
+    cluster_firing_maps_reduced = np.array(cluster_firing_maps_reduced)
+    vmin= 0
+    vmax= np.max(cluster_firing_maps_reduced)
+    return vmin, vmax
 
 def plot_behaviour(position_data, processed_position_data, output_path, track_length):
     plot_variables(position_data, output_path)
@@ -447,8 +569,8 @@ def plot_behaviour(position_data, processed_position_data, output_path, track_le
 
 def plot_track_firing(spike_data, processed_position_data, output_path, track_length):
     plot_firing_rate_maps(spike_data, processed_position_data, output_path, track_length=track_length)
-    plot_spikes_on_track(spike_data, processed_position_data, output_path, track_length=track_length,
-                         plot_trials=["beaconed", "non_beaconed", "probe"])
+    plot_firing_rate_maps_per_trial(spike_data, processed_position_data, output_path, track_length=track_length)
+    plot_spikes_on_track(spike_data, processed_position_data, output_path, track_length=track_length)
 
 
 #  this is here for testing

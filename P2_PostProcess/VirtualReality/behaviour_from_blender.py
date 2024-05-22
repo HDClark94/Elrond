@@ -26,6 +26,7 @@ def generate_position_data_from_blender_file(recording_path, processed_folder_na
     position_data["Reward_received_as_read_by_blender"] = blender_data["Reward_received"]
     position_data["Tone_played_as_read_by_blender"] = blender_data["Tone_played"]
     position_data["sync_pulse"] = blender_data["sync_pulse"]
+    position_data["dwell_time_ms"] = np.append(0, np.diff(position_data["time_seconds"]))
 
     save_path = recording_path+"/"+processed_folder_name+"/position_data.csv"
     position_data.to_csv(save_path)

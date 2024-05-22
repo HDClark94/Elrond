@@ -30,6 +30,7 @@ def process_recordings(recording_paths, local_path="", processed_folder_name="",
         postprocess_based_on_concat_sort: flag whether to post process potentially multiple recordings
         based on the concat_sort flag and the linked recordings in the param.yl of the original recording
         save2phy: flag whether to export_to_phy after spike sorting (useful for manual curation)
+        export_report: flag whether to export a cluster report with spike property plots
         use_dlc_to_extract_openfield_position: flag whether to ignore any processed output from bonsai and instead use
         deeplabcut to extract openfield position from the raw video
         postprocess_behaviour_only: flag whether to postprocess only the behavioural data
@@ -90,21 +91,47 @@ def main():
     # to grab a whole directory of recordings
 
     recording_paths = []
-    recording_paths.extend([f.path for f in os.scandir("/run/user/1000/gvfs/smb-share:server=cmvm.datastore.ed.ac.uk,"
-                                                       "share=cmvm/sbms/groups/CDBS_SIDB_storage/NolanLab/ActiveProjects/"
-                                                       "Harry/Cohort11_april2024/of") if f.is_dir()])
-
+    #recording_paths.extend([f.path for f in os.scandir("/run/user/1000/gvfs/smb-share:server=cmvm.datastore.ed.ac.uk,"
+    #                                                   "share=cmvm/sbms/groups/CDBS_SIDB_storage/NolanLab/ActiveProjects/"
+    #                                                   "Harry/Cohort11_april2024/of") if f.is_dir()])
+    recording_paths = ["/mnt/datastore/Harry/Cohort11_april2024/vr/M21_D15_2024-05-15_11-54-28_VR1",
+                       "/mnt/datastore/Harry/Cohort11_april2024/vr/M21_D16_2024-05-16_14-40-02_VR1",
+                       "/mnt/datastore/Harry/Cohort11_april2024/vr/M21_D17_2024-05-17_15-49-55_VR1",
+                       "/mnt/datastore/Harry/Cohort11_april2024/vr/M20_D14_2024-05-13_16-45-26_VR1",
+                       "/mnt/datastore/Harry/Cohort11_april2024/vr/M20_D15_2024-05-14_15-15-41_VR1",
+                       "/mnt/datastore/Harry/Cohort11_april2024/vr/M20_D16_2024-05-15_16-16-44_VR1",
+                       "/mnt/datastore/Harry/Cohort11_april2024/vr/M20_D17_2024-05-16_16-33-37_VR1",
+                       "/mnt/datastore/Harry/Cohort11_april2024/vr/M20_D18_2024-05-17_14-10-46_VR1"]
+    recording_paths = ["/mnt/datastore/Harry/Cohort11_april2024/vr/M20_D14_2024-05-13_16-45-26_VR1",
+                       "/mnt/datastore/Harry/Cohort11_april2024/vr/M21_D16_2024-05-16_14-40-02_VR1",
+                       "/mnt/datastore/Harry/Cohort11_april2024/vr/M21_D17_2024-05-17_15-49-55_VR1"]
+    #recording_paths = ["/mnt/datastore/Harry/Cohort11_april2024/of/M20_D14_2024-05-13_16-10-35_OF1"]
+    #recording_paths = ["/mnt/datastore/Harry/Cohort11_april2024/of/M20_D14_2024-05-13_16-10-35_OF1",
+    #                   "/mnt/datastore/Harry/Cohort11_april2024/of/M20_D14_2024-05-13_17-40-50_OF2",
+    #                   "/mnt/datastore/Harry/Cohort11_april2024/of/M20_D15_2024-05-14_14-47-48_OF1",
+    #                   "/mnt/datastore/Harry/Cohort11_april2024/of/M20_D15_2024-05-14_16-04-54_OF2"]
+    #recording_paths = ["/mnt/datastore/Harry/Cohort11_april2024/vr/M20_D18_2024-05-17_14-10-46_VR1",
+    #                   "/mnt/datastore/Harry/Cohort11_april2024/vr/M20_D17_2024-05-16_16-33-37_VR1",
+    #                   "/mnt/datastore/Harry/Cohort11_april2024/vr/M20_D16_2024-05-15_16-16-44_VR1",
+    #                   "/mnt/datastore/Harry/Cohort11_april2024/vr/M20_D15_2024-05-14_15-15-41_VR1",
+    #                   "/mnt/datastore/Harry/Cohort11_april2024/vr/M21_D16_2024-05-16_14-40-02_VR1",
+    #                   "/mnt/datastore/Harry/Cohort11_april2024/vr/M21_D17_2024-05-17_15-49-55_VR1"]
+    #recording_paths = ["/mnt/datastore/Harry/test_recording/of/M11_D36_2021-06-28_11-19-21"]
+    recording_paths = ["/mnt/datastore/Harry/Cohort11_april2024/vr/M20_D20_2024-05-21_14-15-08_VR1",
+                       "/mnt/datastore/Harry/Cohort11_april2024/vr/M21_D19_2024-05-21_15-55-06_VR1",
+                       "/mnt/datastore/Harry/Cohort11_april2024/vr/M21_D18_2024-05-20_16-00-25_VR1"]
     process_recordings(recording_paths,
                        local_path="/home/ubuntu/to_sort/recordings/",
                        processed_folder_name="processed",
                        copy_locally=False,
-                       run_spikesorting=False,
+                       run_spikesorting=True,
                        update_results_from_phy=False,
-                       run_postprocessing=True,
-                       concat_sort=False,
-                       postprocess_based_on_concat_sort=False,
-                       postprocess_behaviour_only=True,
-                       save2phy=False,
+                       run_postprocessing=False,
+                       concat_sort=True,
+                       postprocess_based_on_concat_sort=True,
+                       postprocess_behaviour_only=False,
+                       export_report=True,
+                       save2phy=True,
                        use_dlc_to_extract_openfield_position=True,
                        sorterName="mountainsort5",
                        sorter_kwargs={"scheme": "3"})

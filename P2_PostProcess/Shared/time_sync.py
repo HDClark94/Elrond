@@ -48,7 +48,7 @@ def downsample_ephys_data(sync_data_ephys, spatial_data):
     sampling_rate_rate = avg_sampling_rate_open_ephys/avg_sampling_rate_bonsai
     length = int(len(sync_data_ephys['time']) / sampling_rate_rate)
     indices = (np.arange(length) * sampling_rate_rate).astype(int)
-    sync_data_ephys_downsampled = sync_data_ephys['time'][indices]
+    sync_data_ephys_downsampled = pd.DataFrame()
     sync_data_ephys_downsampled['sync_pulse'] = sync_data_ephys['sync_pulse'][indices]
     sync_data_ephys_downsampled['time'] = sync_data_ephys['time'][indices]
     return sync_data_ephys_downsampled
@@ -229,5 +229,6 @@ def synchronise_position_data_via_ADC_ttl_pulses(position_data, processed_folder
     position_data = position_data.drop(position_data[position_data.synced_time < 0].index)
     position_data = position_data.reset_index(drop=True)
 
+    position_data["time_seconds"] = position_data["synced_time"]
     return position_data
 
