@@ -6,6 +6,8 @@ from Helpers import plot_utility
 import math
 import numpy as np
 import pandas as pd
+import settings
+
 from P2_PostProcess.OpenField.Scores.head_direction import get_hd_histogram
 
 def plot_position(position_data):
@@ -17,6 +19,14 @@ def plot_spikes_on_trajectory(spike_data, position_data, output_path):
     save_path = output_path + '/Figures/firing_scatters'
     if os.path.exists(save_path) is False:
         os.makedirs(save_path)
+
+    raw_trajectory = plt.figure()
+    raw_trajectory.set_size_inches(5, 5, forward=True)
+    ax = raw_trajectory.add_subplot(1, 1, 1)  # specify (nrows, ncols, axnum)
+    ax.plot(position_data['position_x'], position_data['position_y'], color='black', linewidth=2, zorder=1, alpha=0.7)
+    plt.title('Trajectory', y=1.08, fontsize=24)
+    plt.savefig(save_path + '/trajectory.png',dpi=300, bbox_inches='tight', pad_inches=0)
+    plt.close()
 
     for cluster_index, cluster_id in enumerate(spike_data.cluster_id):
         cluster_df = spike_data[(spike_data.cluster_id == cluster_id)] # dataframe for that cluster
@@ -97,7 +107,6 @@ def plot_firing_rate_vs_speed(spatial_firing, spatial_data, output_path):
         plt.ylabel('firing rate [Hz]')
         plt.xlim(0, 30)
         plt.savefig(save_path + '/' + cluster_df['session_id'].iloc[0] + '_' + str(cluster_id) + '_speed_histogram.png', dpi=300, bbox_inches='tight', pad_inches=0)
-        # plt.savefig(save_path + '/' + spatial_firing.session_id[cluster] + '_' + str(cluster + 1) + '_speed_histogram.pdf', bbox_inches='tight', pad_inches=0)
         plt.close()
 
 
@@ -108,6 +117,7 @@ def plot_firing_rate_maps(spatial_firing, output_path):
     if os.path.exists(save_path) is False:
         os.makedirs(save_path)
 
+    rate_maps = []
     for cluster_index, cluster_id in enumerate(spatial_firing.cluster_id):
         cluster_df = spatial_firing[(spatial_firing.cluster_id == cluster_id)] # dataframe for that cluster
         firing_rate_map_original = cluster_df['firing_maps'].iloc[0]
@@ -122,12 +132,37 @@ def plot_firing_rate_maps(spatial_firing, output_path):
         cmap.set_bad("white")
         rate_map_img = ax.imshow(firing_rate_map, cmap=cmap, interpolation='nearest')
         firing_rate_map_fig.colorbar(rate_map_img)
+        rate_maps.append(firing_rate_map)
         #plt.title('Firing rate map \n max fr: ' + str(round(cluster_df['max_firing_rate'].iloc[0], 2)) +
         #          ' Hz \n HS r: ' + str(round(cluster_df['rate_map_correlation_first_vs_second_half'].iloc[0], 2)) +
         #          ', % bins: ' + str(100-round(cluster_df['percent_excluded_bins_rate_map_correlation_first_vs_second_half_p'].iloc[0], 2)), y=1.08, fontsize=15)
         plt.savefig(save_path + '/' + cluster_df['session_id'].iloc[0] + '_rate_map_' + str(cluster_id) + '.png', dpi=300)
         # plt.savefig(save_path + '/' + spatial_firing.session_id[cluster] + '_rate_map_' + str(cluster + 1) + '.pdf')
         plt.close()
+
+
+    nrows = int(np.ceil(np.sqrt(len(spatial_firing))))
+    ncols = nrows; i=0; j=0;
+    fig, ax = plt.subplots(ncols=ncols, nrows=nrows, figsize=(20, 20), squeeze=False)
+    for rate_map in rate_maps:
+        ax[j, i].imshow(rate_map, cmap=cmap, interpolation='nearest')
+        i+=1
+        if i==ncols:
+            i=0; j+=1
+    for j in range(nrows):
+        for i in range(ncols):
+            ax[j, i].spines['top'].set_visible(False)
+            ax[j, i].spines['right'].set_visible(False)
+            ax[j, i].spines['bottom'].set_visible(False)
+            ax[j, i].spines['left'].set_visible(False)
+            ax[j, i].set_xticks([])
+            ax[j, i].set_yticks([])
+            ax[j, i].xaxis.set_tick_params(labelbottom=False)
+            ax[j, i].yaxis.set_tick_params(labelleft=False)
+    plt.subplots_adjust(hspace=.1, wspace=.1, bottom=None, left=None, right=None, top=None)
+    plt.savefig(save_path + '/all_firing_rates.png', dpi=400)
+    plt.close()
+
 
 
 def plot_hd(spatial_firing, position_data, prm):

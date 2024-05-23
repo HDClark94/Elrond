@@ -13,9 +13,8 @@ def process(recording_path, processed_folder_name, **kwargs):
     make_spike_trace_summary(recording_path, processed_folder_name)
     #make_channel_trace_summary(recording_path, processed_folder_name, filtered=False)
     #make_channel_trace_summary(recording_path, processed_folder_name, filtered=True)
-    if "plot_lfp" in kwargs.keys():
-        if kwargs["plot_lfp"] == True:
-            make_lfp_trace_summary(recording_path, processed_folder_name)
+    if "plot_lfp" in kwargs.keys() and kwargs["plot_lfp"] == True:
+        make_lfp_trace_summary(recording_path, processed_folder_name)
 
     make_pdf_from_recording(recording_path, processed_folder_name)
     return

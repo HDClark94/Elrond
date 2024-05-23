@@ -19,7 +19,7 @@ def process(recording_path, processed_folder_name, **kwargs):
         sorterName = settings.sorterName
 
     spike_data_path = recording_path+"/"+processed_folder_name+"/"+sorterName+"/spikes.pkl"
-    if os.path.exists(spike_data_path):
+    if os.path.exists(spike_data_path) and not ("postprocess_behaviour_only" in kwargs and kwargs["postprocess_behaviour_only"]):
         spike_data = pd.read_pickle(spike_data_path)
         spike_data = add_spatial_variables(spike_data, position_data)
         spike_data = add_scores(spike_data, position_data)

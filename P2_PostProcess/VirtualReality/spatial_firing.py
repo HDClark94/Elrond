@@ -6,38 +6,28 @@ import traceback
 import os
 
 
-def add_speed(spike_data, position_data):
-    speed_per200ms = []
-    for cluster_index, cluster_id in enumerate(spike_data.cluster_id):
-        cluster_firing_indices = np.asarray(spike_data[spike_data.cluster_id == cluster_id].firing_times)[0]
-        speed_per200ms.append(position_data["speed_per200ms"][cluster_firing_indices].to_list())
-    spike_data["speed_per200ms"] = speed_per200ms
-    return spike_data
+def add_kinematics(spike_data, position_data):
+    if "speed_as_read_by_blender" in list(position_data):
+        position_data["speed_per200ms"] = position_data["speed_as_read_by_blender"]
+    position_sampling_rate = float(1/np.mean(np.diff(position_data["time_seconds"])))
 
-
-def add_position_x(spike_data, position_data):
     x_position_cm = []
-    for cluster_index, cluster_id in enumerate(spike_data.cluster_id):
-        cluster_firing_indices = np.asarray(spike_data[spike_data.cluster_id == cluster_id].firing_times)[0]
-        x_position_cm.append(position_data["x_position_cm"][cluster_firing_indices].to_list())
-    spike_data["x_position_cm"] = x_position_cm
-    return spike_data
-
-
-def add_trial_number(spike_data, position_data):
+    speed_per200ms = []
     trial_number = []
-    for cluster_index, cluster_id in enumerate(spike_data.cluster_id):
-        cluster_firing_indices = np.asarray(spike_data[spike_data.cluster_id == cluster_id].firing_times)[0]
-        trial_number.append(position_data["trial_number"][cluster_firing_indices].to_list())
-    spike_data["trial_number"] = trial_number
-    return spike_data
-
-
-def add_trial_type(spike_data, position_data):
     trial_type = []
     for cluster_index, cluster_id in enumerate(spike_data.cluster_id):
         cluster_firing_indices = np.asarray(spike_data[spike_data.cluster_id == cluster_id].firing_times)[0]
-        trial_type.append(position_data["trial_type"][cluster_firing_indices].to_list())
+        cluster_firing_seconds = cluster_firing_indices/settings.sampling_rate
+        cluster_firing_position_data_indices = np.array(np.round(cluster_firing_seconds*position_sampling_rate), dtype=np.int64)
+
+        x_position_cm.append(position_data["x_position_cm"][cluster_firing_position_data_indices].to_list())
+        speed_per200ms.append(position_data["speed_per200ms"][cluster_firing_position_data_indices].to_list())
+        trial_number.append(position_data["trial_number"][cluster_firing_position_data_indices].to_list())
+        trial_type.append(position_data["trial_type"][cluster_firing_position_data_indices].to_list())
+
+    spike_data["speed_per200ms"] = speed_per200ms
+    spike_data["x_position_cm"] = x_position_cm
+    spike_data["trial_number"] = trial_number
     spike_data["trial_type"] = trial_type
     return spike_data
 
@@ -168,15 +158,12 @@ def add_stops(spike_data, processed_position_data, track_length):
 
 
 def add_location_and_task_variables(spike_data, position_data, processed_position_data, track_length):
-    spike_data = add_speed(spike_data, position_data)
-    spike_data = add_position_x(spike_data, position_data)
-    spike_data = add_trial_number(spike_data, position_data)
-    spike_data = add_trial_type(spike_data, position_data)
+    spike_data = add_kinematics(spike_data, position_data)
     spike_data = add_stops(spike_data, processed_position_data, track_length)
-    spike_data = bin_fr_in_time(spike_data, position_data, smoothen=True)
-    spike_data = bin_fr_in_time(spike_data, position_data, smoothen=False)
     spike_data = bin_fr_in_space(spike_data, position_data, track_length, smoothen=True)
-    spike_data = bin_fr_in_space(spike_data, position_data, track_length, smoothen=False)
+    #spike_data = bin_fr_in_space(spike_data, position_data, track_length, smoothen=False)
+    #spike_data = bin_fr_in_time(spike_data, position_data, smoothen=True)
+    #spike_data = bin_fr_in_time(spike_data, position_data, smoothen=False)
     return spike_data
 
 #  for testing

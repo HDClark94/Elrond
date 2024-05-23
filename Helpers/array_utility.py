@@ -7,10 +7,10 @@ def find_nearest(array, value):
 
 
 def pad_shorter_array_with_0s(array1, array2):
-    if len(array1) < len(array2):
-        array1 = np.pad(array1, (0, len(array2)-len(array1)), 'constant')
-    if len(array2) < len(array1):
-        array2 = np.pad(array2, (0, len(array1)-len(array2)), 'constant')
+    if len(array1) > len(array2):
+        array2 = np.concatenate([array2, np.zeros(len(array1) - len(array2))])
+    elif len(array2) > len(array1):
+        array1 = np.concatenate([array1, np.zeros(len(array2) - len(array1))])
     return array1, array2
 
 

@@ -27,6 +27,6 @@ def postprocess(working_recording_path, local_path, processed_folder_name, **kwa
             sleep.process(recording_path, processed_folder_name, **kwargs)
         else:
             print(type, " isn't a recognised recording type in postprocessing")
-        shared.process(recording_path, processed_folder_name, **kwargs)
+        #shared.process(recording_path, processed_folder_name, **kwargs)
 
     print("Finished post-processing...")
