@@ -107,7 +107,7 @@ def process_video(recording_path, processed_folder_name, position_data):
     video_data = add_eye_stats(video_data)
 
     # syncrhonise position data and video data
-    position_data, video_data = synchronise_position_data_via_column_ttl_pulses(position_data, video_data)
+    position_data, video_data = synchronise_position_data_via_column_ttl_pulses(position_data, video_data, processed_folder_name, recording_path)
     # now video data contains a synced_time column which is relative to the start of the time column in position_data
     position_data = add_synced_videodata_to_position_data(position_data, video_data)
 
