@@ -69,14 +69,15 @@ def add_spatial_variables(spike_data, spatial_data):
     spike_data = calculate_rate_maps(spike_data, spatial_data)
     return spike_data
 
-def add_scores(spike_data, spatial_data):
+def add_scores(spike_data, spatial_data, position_heat_map):
     """
     :param spike_data: data frame containing firing times where each row is a neuron
     :param spatial_data: data frame containing position of animal (x, y, hd, time)
+    :param position_heat_map: 2D numpy array containing the proportion time spent in bin
     :return: spike_data: updated dataframe containing firing times where each row is a neuron
     with rate maps
     """
-    spike_data = calculate_spatial_information_scores(spike_data)
+    spike_data = calculate_spatial_information_scores(spike_data, position_heat_map)
     spike_data = calculate_head_direction_scores(spike_data, spatial_data)
     spike_data = calculate_border_scores(spike_data)
     spike_data = calculate_grid_scores(spike_data)
