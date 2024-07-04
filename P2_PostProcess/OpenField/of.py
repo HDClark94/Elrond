@@ -22,7 +22,7 @@ def process(recording_path, processed_folder_name, **kwargs):
     if os.path.exists(spike_data_path) and not ("postprocess_behaviour_only" in kwargs and kwargs["postprocess_behaviour_only"]):
         spike_data = pd.read_pickle(spike_data_path)
         spike_data = add_spatial_variables(spike_data, position_data)
-        spike_data = add_scores(spike_data, position_data)
+        spike_data = add_scores(spike_data, position_data, position_heat_map)
         spike_data.to_pickle(spike_data_path)
 
         # make plots

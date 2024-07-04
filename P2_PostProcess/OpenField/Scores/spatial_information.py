@@ -1,6 +1,6 @@
 import numpy as np
 
-def calculate_spatial_information_scores(spike_data):
+def calculate_spatial_information_scores(spike_data, position_heat_map):
     '''
     Calculates the spatial information score in bits per spike as in Skaggs et al.,
     1996, 1993).
@@ -32,9 +32,9 @@ def calculate_spatial_information_scores(spike_data):
 
         mean_firing_rate = cluster_df.iloc[0]["mean_firing_rate"] # λ
         firing_rate_map = cluster_df.iloc[0]["firing_maps"] # λj
-        occupancy_probability_map = cluster_df.iloc[0]["occupancy_maps"] # Pj
-        occupancy_probability_map[np.isnan(occupancy_probability_map)] = 0
-        occupancy_probability_map = occupancy_probability_map/np.sum(occupancy_probability_map) # Pj
+
+        position_heat_map[np.isnan(position_heat_map)] = 0
+        occupancy_probability_map = position_heat_map/np.sum(position_heat_map) # Pj
 
         if mean_firing_rate > 0:
             Isec = np.sum(occupancy_probability_map * firing_rate_map *
