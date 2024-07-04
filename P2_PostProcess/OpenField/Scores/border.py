@@ -33,12 +33,13 @@ def calculate_border_scores(spike_data):
     threshold = 0.3
     border_scores = []
     for index, cluster in spike_data.iterrows():
+        cluster_firing_rate_map_original = cluster.firing_maps.copy()
         cluster_firing_rate_map = cluster.firing_maps.copy()
         clipped_firing_rate_map = putative_border_fields_clip_by_firing_rate(cluster_firing_rate_map, threshold=threshold)
         firing_fields = get_firing_field_data(cluster_firing_rate_map, threshold=threshold)
         firing_fields = fields2map(firing_fields, clipped_firing_rate_map)
         firing_fields = clip_fields_by_size(firing_fields, bin_size_cm=2.5)
-        firing_fields = put_firing_rates_back(firing_fields, clipped_firing_rate_map)
+        firing_fields = put_firing_rates_back(firing_fields, cluster_firing_rate_map_original)
         border_score = calculate_border_score(firing_fields, bin_size_cm=2.5)
         border_scores.append(border_score)
         print("Border score for cluster", str(cluster.cluster_id), ":", str(np.round(border_score, decimals=2)))
@@ -167,7 +168,7 @@ def putative_border_fields_clip_by_firing_rate(firing_rate_map, threshold):
     :return: firing_rate_map clipped by 0.3x max firing rate
     '''
     max_firing = np.max(firing_rate_map)
-    firing_rate_map[firing_rate_map < threshold * max_firing] = 0
+    firing_rate_map[firing_rate_map < (threshold * max_firing)] = 0
     return firing_rate_map
 
 
