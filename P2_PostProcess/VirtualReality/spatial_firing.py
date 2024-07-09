@@ -32,7 +32,7 @@ def add_kinematics(spike_data, position_data):
     return spike_data
 
 
-def bin_fr_in_time(spike_data, position_data, smoothen=True):
+def bin_fr_in_time(spike_data, position_data, track_length, smoothen=True):
     if smoothen:
         suffix="_smoothed"
     else:
@@ -43,14 +43,18 @@ def bin_fr_in_time(spike_data, position_data, smoothen=True):
 
     # make an empty list of list for all firing rates binned in time for each cluster
     fr_binned_in_time = [[] for x in range(len(spike_data))]
+    fr_binned_in_time_bin_centres = [[] for x in range(len(spike_data))]
 
     # extract spatial variables from position
     times = np.array(position_data['time_seconds'], dtype="float64")
     trial_numbers_raw = np.array(position_data['trial_number'], dtype=np.int64)
+    x_position_elapsed_cm = (track_length*(trial_numbers_raw-1))+np.array(position_data['x_position_cm'], dtype="float64")
 
     # calculate the average fr in each 100ms time bin
     time_bins = np.arange(min(times), max(times), settings.time_bin_size) # 100ms time bins
     tn_time_bin_means = (np.histogram(times, time_bins, weights = trial_numbers_raw)[0] / np.histogram(times, time_bins)[0]).astype(np.int64)
+    x_elapsed_bin_means = (np.histogram(times, time_bins, weights = x_position_elapsed_cm)[0] / np.histogram(times, time_bins)[0])
+    x_bin_means = x_elapsed_bin_means%track_length
 
     for i, cluster_id in enumerate(spike_data.cluster_id):
         if len(time_bins)>1:
@@ -67,13 +71,18 @@ def bin_fr_in_time(spike_data, position_data, smoothen=True):
 
             # fill in firing rate array by trial
             fr_binned_in_time_cluster = []
+            fr_binned_in_time_bin_centres_cluster = []
             for trial_number in range(1, n_trials+1):
                 fr_binned_in_time_cluster.append(fr_time_bin_means[tn_time_bin_means == trial_number].tolist())
+                fr_binned_in_time_bin_centres_cluster.append(x_bin_means[tn_time_bin_means == trial_number].tolist())
             fr_binned_in_time[i] = fr_binned_in_time_cluster
+            fr_binned_in_time_bin_centres[i] = fr_binned_in_time_bin_centres_cluster
         else:
             fr_binned_in_time[i] = []
+            fr_binned_in_time_bin_centres[i] = []
 
     spike_data["fr_time_binned"+suffix] = fr_binned_in_time
+    spike_data["fr_time_binned_bin_centres"] = fr_binned_in_time_bin_centres
     return spike_data
 
 
@@ -160,10 +169,10 @@ def add_stops(spike_data, processed_position_data, track_length):
 def add_location_and_task_variables(spike_data, position_data, processed_position_data, track_length):
     spike_data = add_kinematics(spike_data, position_data)
     spike_data = add_stops(spike_data, processed_position_data, track_length)
+    spike_data = bin_fr_in_time(spike_data, position_data, track_length, smoothen=True)
+    spike_data = bin_fr_in_time(spike_data, position_data, track_length, smoothen=False)
     spike_data = bin_fr_in_space(spike_data, position_data, track_length, smoothen=True)
-    #spike_data = bin_fr_in_space(spike_data, position_data, track_length, smoothen=False)
-    #spike_data = bin_fr_in_time(spike_data, position_data, smoothen=True)
-    #spike_data = bin_fr_in_time(spike_data, position_data, smoothen=False)
+    spike_data = bin_fr_in_space(spike_data, position_data, track_length, smoothen=False)
     return spike_data
 
 #  for testing
