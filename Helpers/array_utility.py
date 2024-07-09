@@ -107,6 +107,13 @@ def pandas_collumn_to_numpy_array(pandas_series):
     return np.array(new_array)
 
 
+def list_of_list_to_1d_numpy_array(list_of_lists):
+    new_array = []
+    for i in range(len(list_of_lists)):
+        for j in range(len(list_of_lists[i])):
+            new_array.append(list_of_lists[i][j])
+    return np.array(new_array)
+
 def pandas_collumn_to_2d_numpy_array(pandas_series):
     new_array = []
     for i in range(len(pandas_series)):
