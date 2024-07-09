@@ -1,13 +1,10 @@
-from P2_PostProcess.VirtualReality.behaviour_from_blender import *
-from P2_PostProcess.VirtualReality.behaviour_from_ADC_channels import *
-from P2_PostProcess.VirtualReality.spatial_firing import *
-from P2_PostProcess.VirtualReality.plotting import *
-from P2_PostProcess.VirtualReality.video import *
+from P2_PostProcess.ABOVisualCoding.behaviour_from_blender import *
+
+#from P2_PostProcess.VirtualReality.spatial_firing import *
+#from P2_PostProcess.VirtualReality.plotting import *
+#from P2_PostProcess.VirtualReality.video import *
 
 def process(recording_path, processed_folder_name, **kwargs):
-    track_length = get_track_length(recording_path)
-    stop_threshold = get_stop_threshold(recording_path)
-
     # process and save spatial spike data
     if "sorterName" in kwargs.keys():
         sorterName = kwargs["sorterName"]
@@ -18,11 +15,7 @@ def process(recording_path, processed_folder_name, **kwargs):
     files = [f for f in Path(recording_path).iterdir()]
     if np.any(["blender.csv" in f.name and f.is_file() for f in files]):
         position_data = generate_position_data_from_blender_file(recording_path, processed_folder_name)
-    elif np.any([".continuous" in f.name and f.is_file() for f in files]):
-        position_data = generate_position_data_from_ADC_channels(recording_path, processed_folder_name)
-    else:
-        print("I couldn't find any source of position data")
-        return
+    print("I couldn't find any source of position data")
 
     print("I am using position data with an avg sampling rate of ", str(1/np.nanmean(np.diff(position_data["time_seconds"]))), "Hz")
 
