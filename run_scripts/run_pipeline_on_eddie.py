@@ -3,17 +3,16 @@ import subprocess
 import sys
 
 recording_to_process = sys.argv[1]
-# something like /exports/cmvm/datastore/sbms/groups/CDBS_SIDB_storage/NolanLab/
-# ActiveProjects/Harry/Cohort11_april2024/vr/M20_D14_2024-05-13_16-45-26_VR1
+# something like /exports/cmvm/datastore/sbms/groups/CDBS_SIDB_storage/NolanLab/ActiveProjects/Harry/Cohort11_april2024/vr/M20_D14_2024-05-13_16-45-26_VR1
 
 LOCAL_SCRATCH_PATH = '/exports/eddie/scratch/hclark3/recordings'
 STAGEIN_PATH = '/home/hclark3/Elrond/Helpers/Eddie_scripts/eddie_stagein.sh'
 STAGEOUT_PATH = '/home/hclark3/Elrond/Helpers/Eddie_scripts/eddie_stageout.sh'
 PIPELINE_PATH = '/home/hclark3/Elrond/Helpers/Eddie_scripts/eddie_pipeline.sh'
 
-download_job_name = os.path.basename(recording_to_process)+"_download"
-pipeline_job_name = os.path.basename(recording_to_process)+"_pipeline"
-upload_job_name = os.path.basename(recording_to_process)+"_upload"
+download_job_name = os.path.basename(recording_to_process)[:7]+"_DL"
+pipeline_job_name = os.path.basename(recording_to_process)[:7]+"_PL"
+upload_job_name = os.path.basename(recording_to_process)[:7]+"_UL"
 
 subprocess.check_call(f'qsub -N {download_job_name} '
                       f'-v RECORDING_PATH={recording_to_process} '
