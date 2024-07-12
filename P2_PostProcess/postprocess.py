@@ -5,6 +5,7 @@ from P2_PostProcess.VirtualReality import vr as vr
 from P2_PostProcess.OpenField import of as of
 from P2_PostProcess.Opto import opto as opto
 from P2_PostProcess.Sleep import sleep as sleep
+from P2_PostProcess.ABOVisualCoding import visual_coding
 
 def postprocess(working_recording_path, local_path, processed_folder_name, **kwargs):
     # process behaviour and spike data based on the recording type
@@ -25,6 +26,9 @@ def postprocess(working_recording_path, local_path, processed_folder_name, **kwa
             opto.process(recording_path, processed_folder_name, **kwargs)
         elif type == "sleep":
             sleep.process(recording_path, processed_folder_name, **kwargs)
+        elif type == "allen_brain_observatory_visual_coding":
+            visual_coding.process(recording_path, processed_folder_name, **kwargs)
+
         else:
             print(type, " isn't a recognised recording type in postprocessing")
         #shared.process(recording_path, processed_folder_name, **kwargs)

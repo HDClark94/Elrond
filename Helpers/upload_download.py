@@ -45,17 +45,15 @@ def get_recordings_to_postprocess(recording_path, local_path, **kwargs):
     This is influenced by concat_sort which is a flag for concatenating recordings before sorting
     """
     recordings_to_sort = [recording_path]
-    if ('concat_sort' in kwargs) and ('postprocess_based_on_concat_sort' in kwargs):
-        if (kwargs["concat_sort"] == True) and \
-                (kwargs["postprocess_based_on_concat_sort"] == True):
-            matched_recording_paths = get_matched_recording_paths(recording_path)
-            for matched_recording_path in matched_recording_paths:
-                matched_recording_name = os.path.basename(matched_recording_path)
-                matched_working_recording_path = matched_recording_path
-                if local_path in recording_path:
-                    matched_working_recording_path = local_path+matched_recording_name
-                recordings_to_sort.append(matched_working_recording_path)
-                assert os.path.exists(matched_working_recording_path)
+    if ("concat_sort" in kwargs and kwargs["concat_sort"] == True):
+        matched_recording_paths = get_matched_recording_paths(recording_path)
+        for matched_recording_path in matched_recording_paths:
+            matched_recording_name = os.path.basename(matched_recording_path)
+            matched_working_recording_path = matched_recording_path
+            if local_path in recording_path:
+                matched_working_recording_path = local_path+matched_recording_name
+            recordings_to_sort.append(matched_working_recording_path)
+            assert os.path.exists(matched_working_recording_path)
     return recordings_to_sort
 
 
@@ -65,16 +63,14 @@ def get_recordings_to_sort(recording_path, local_path, **kwargs):
     This is influenced by concat_sort which is a flag for concatenating recordings before sorting
     """
     recordings_to_sort = [recording_path]
-    if 'concat_sort' in kwargs:
-        if kwargs["concat_sort"] == True:
-            matched_recording_paths = get_matched_recording_paths(recording_path)
-            for matched_recording_path in matched_recording_paths:
-                matched_recording_name = os.path.basename(matched_recording_path)
-                matched_working_recording_path = matched_recording_path
-                if local_path in recording_path:
-                    matched_working_recording_path = local_path+matched_recording_name
-                recordings_to_sort.append(matched_working_recording_path)
-                assert os.path.exists(matched_working_recording_path)
+    if ("concat_sort" in kwargs and kwargs["concat_sort"] == True):
+        matched_recording_paths = get_matched_recording_paths(recording_path)
+        for matched_recording_path in matched_recording_paths:
+            matched_recording_name = os.path.basename(matched_recording_path)
+            matched_working_recording_path = matched_recording_path
+            if local_path in recording_path:
+                matched_working_recording_path = local_path+matched_recording_name
+            recordings_to_sort.append(matched_working_recording_path)
     return recordings_to_sort
 
 
