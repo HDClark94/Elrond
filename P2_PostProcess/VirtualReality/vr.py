@@ -28,9 +28,6 @@ def process(recording_path, processed_folder_name, **kwargs):
 
     # process video
     #position_data = process_video(recording_path, processed_folder_name, position_data)
-    for column in list(position_data):
-        if "Unnamed" in column:
-            del position_data[column]
 
     position_data_path = recording_path + "/" + processed_folder_name + "/position_data.csv"
     processed_position_data_path = recording_path + "/" + processed_folder_name + "/processed_position_data.pkl"

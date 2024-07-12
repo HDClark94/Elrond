@@ -79,8 +79,7 @@ def update_from_phy(recording_path, local_path, processed_folder_name, **kwargs)
                              recording_paths, processed_folder_name, sorterName, spike_data=spike_data)
 
     # Optionally
-    if ("export_report" in kwargs) and (kwargs["export_report"] == True):
-            si.export_report(we, output_folder=recording_path + "/" + processed_folder_name + "/" + sorterName +
+    si.export_report(we, output_folder=recording_path + "/" + processed_folder_name + "/" + sorterName +
                                                "/manually_curated_report", remove_if_exists=True)
     return
 
@@ -106,10 +105,6 @@ def spikesort(recording_path, local_path, processed_folder_name, **kwargs):
     recording_mono = preprocess(recording_mono)
     params = ammend_preprocessing_parameters(params, **kwargs)
 
-    # note for using kilosort4 https://github.com/MouseLand/Kilosort/issues/606
-    # suggests ammending these parameters but error still occurs with all NP recordings as of 12/05/2024
-    # params["dminx"] = 400; params["nearest_templates"] = 20
-
     # Run spike sorting
     sorting_mono = si.run_sorter_by_property(sorter_name=sorterName,
                                              recording=recording_mono,
@@ -133,12 +128,8 @@ def spikesort(recording_path, local_path, processed_folder_name, **kwargs):
     sorters = [si.select_segment_sorting(sorters, i) for i in range(len(recordings))] # turn it into a list of sorters
 
     # save spike times and waveform information for further analysis
-    save_spikes_to_dataframe(sorters, recordings, quality_metrics,
-                             recording_paths, processed_folder_name, sorterName)
+    save_spikes_to_dataframe(sorters, recordings, quality_metrics, recording_paths, processed_folder_name, sorterName)
 
-    # Optionally
-    if ("save2phy" in kwargs) and (kwargs["save2phy"] == True):
-        si.export_to_phy(we, output_folder=recording_path + "/" + processed_folder_name + "/" + sorterName + "/phy", remove_if_exists=True, copy_binary=True)
-    if ("export_report" in kwargs) and (kwargs["export_report"] == True):
-        si.export_report(we, output_folder=recording_path + "/" + processed_folder_name + "/" + sorterName + "/uncurated_report", remove_if_exists=True)
+    si.export_to_phy(we, output_folder=recording_path + "/" + processed_folder_name + "/" + sorterName + "/phy", remove_if_exists=True, copy_binary=True)
+    si.export_report(we, output_folder=recording_path + "/" + processed_folder_name + "/" + sorterName + "/uncurated_report", remove_if_exists=True)
     return
