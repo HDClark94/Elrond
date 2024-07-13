@@ -11,5 +11,7 @@ for recording_to_download in recordings_to_download:
 
     SOURCE = recording_to_download
     DESTINATION = local_scratch_path+"/"
+    print("SOURCE = ", SOURCE)
+    print("DESTINATION = ", DESTINATION)
     subprocess.check_call(f'rsync -r {SOURCE} {DESTINATION}', shell=True)
 
