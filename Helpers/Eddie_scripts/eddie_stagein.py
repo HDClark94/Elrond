@@ -3,6 +3,9 @@ import subprocess
 recording_path = os.environ['RECORDING_PATH']
 local_scratch_path = os.environ['LOCAL_SCRATCH_PATH']
 
+import sys
+print(sys.version)
+
 recording_forepath = os.path.dirname(recording_path)
 recordings_to_download = get_recordings_to_sort(recording_path=recording_path, local_path=local_scratch_path, concat_sort=True)
 
