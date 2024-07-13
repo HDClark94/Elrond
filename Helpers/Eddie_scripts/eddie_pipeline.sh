@@ -8,9 +8,8 @@ Grid Engine options go here, e.g.:
 . /etc/profile.d/modules.sh
 
 # Load modules if required
-# e.g. module load <name>/<version>
-module load anaconda/2024.02
-conda activate /exports/eddie/scratch/hclark3/anaconda/envs/si
+module load anaconda
+conda activate si
 
 # append the python path
 export PYTHONPATH="/home/hclark3/Elrond"

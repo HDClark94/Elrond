@@ -1,4 +1,4 @@
-#from Helpers.upload_download import *
+from Helpers.upload_download import *
 import subprocess
 import os
 recording_path = os.environ['RECORDING_PATH']
@@ -17,5 +17,5 @@ for recording_to_download in recordings_to_download:
     DESTINATION = local_scratch_path+"/"
     print("SOURCE = ", SOURCE)
     print("DESTINATION = ", DESTINATION)
-    #subprocess.check_call(f'rsync -r {SOURCE} {DESTINATION}', shell=True)
+    subprocess.check_call(f'rsync -r {SOURCE} {DESTINATION}', shell=True)
 
