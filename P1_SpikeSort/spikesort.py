@@ -125,7 +125,7 @@ def spikesort(recording_path, local_path, processed_folder_name, **kwargs):
         sorting = sorting_mono, 
         recording=recording_mono,
         format="binary_folder",
-        folder=processed_folder_name
+        folder=sorting_analyzer_path
     )
 
     # compute sorting analyzer extensions. Kwargs go in {}
