@@ -106,19 +106,44 @@ def spikesort(recording_path, local_path, processed_folder_name, **kwargs):
     params = ammend_preprocessing_parameters(params, **kwargs)
 
     # Run spike sorting
-    sorting_mono = si.run_sorter_by_property(sorter_name=sorterName,
-                                             recording=recording_mono,
-                                             grouping_property='group',
-                                             working_folder='sorting_tmp',
-                                             remove_existing_folder=True,
-                                             verbose=False, **params)
+    sorting_mono = si.run_sorter_by_property(
+        sorter_name=sorterName,
+        recording=recording_mono,
+        grouping_property='group',
+        working_folder='sorting_tmp',
+        remove_existing_folder=True,
+        verbose=False, 
+        **params
+    )
     # There seems to be an warning for filtering but no filtering has been applied!
     print("Spike sorting is finished!")
     print("I found " + str(len(sorting_mono.unit_ids)) + " clusters")
 
-    # Extract the waveforms and quality metrics from across all recordings to the extractor
-    we, quality_metrics = extract_waveforms(recording_mono, sorting_mono, recording_path, processed_folder_name, sorterName)
-    quality_metrics["cluster_id"] = sorting_mono.get_unit_ids()
+    # make sorting analyzer
+    sorting_analyzer_path = recording_path + "/" + processed_folder_name + "/" + sorterName + "/sorting_analyzer"
+    sorting_analyzer = si.create_sorting_analyzer(
+        sorting = sorting_mono, 
+        recording=recording_mono,
+        format="binary_folder",
+        folder=processed_folder_name
+    )
+
+    # compute sorting analyzer extensions. Kwargs go in {}
+    sorting_analyzer.compute({
+        "random_spikes": {},
+        "noise_levels": {},
+        "waveforms": {},
+        "templates": {},
+        "correlograms": {},
+        "spike_locations": {},
+        "spike_amplitudes": {},
+        "quality_metrics": {},
+        "template_similarity": {},
+        "template_metrics": {}
+    })
+
+    quality_metrics = sorting_analyzer.get_extension("quality_metrics").get_data()
+    quality_metrics['cluster_id'] = sorting_analyzer.sorting_mono.get_unit_ids()
 
     # assign an automatic curation label based on the quality metrics
     quality_metrics = auto_curate(quality_metrics)
@@ -128,8 +153,13 @@ def spikesort(recording_path, local_path, processed_folder_name, **kwargs):
     sorters = [si.select_segment_sorting(sorters, i) for i in range(len(recordings))] # turn it into a list of sorters
 
     # save spike times and waveform information for further analysis
+    save_spikes_to_dataframe(sorters, recordings, quality_metrics,
+                             recording_paths, processed_folder_name, sorterName)
+
+    # save spike times and waveform information for further analysis
     save_spikes_to_dataframe(sorters, recordings, quality_metrics, recording_paths, processed_folder_name, sorterName)
 
-    si.export_to_phy(we, output_folder=recording_path + "/" + processed_folder_name + "/" + sorterName + "/phy", remove_if_exists=True, copy_binary=True)
-    si.export_report(we, output_folder=recording_path + "/" + processed_folder_name + "/" + sorterName + "/uncurated_report", remove_if_exists=True)
+    si.export_to_phy(sorting_analyzer, output_folder=recording_path + "/" + processed_folder_name + "/" + sorterName + "/phy", remove_if_exists=True, copy_binary=True)
+    si.export_report(sorting_analyzer, output_folder=recording_path + "/" + processed_folder_name + "/" + sorterName + "/uncurated_report", remove_if_exists=True)
+        
     return
