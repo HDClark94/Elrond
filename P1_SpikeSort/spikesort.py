@@ -84,7 +84,29 @@ def update_from_phy(recording_path, local_path, processed_folder_name, **kwargs)
     return
 
 
-def spikesort(recording_path, local_path, processed_folder_name, **kwargs):
+def spikesort(
+        recording_path, 
+        local_path, 
+        processed_folder_name, 
+        do_spike_sorting = True,
+        do_spike_postprocessing = True,
+        make_report = True,
+        make_phy_output = True,
+        curate_using_phy = True,
+        auto_curate = False,
+        sorting_analyzer_path = None,
+        phy_path = None,
+        report_path = None,
+        **kwargs
+    ):
+
+    if sorting_analyzer_path is None:
+        sorting_analyzer_path = recording_path + "/" + processed_folder_name + "/" + sorterName + "/sorting_analyzer"
+    if phy_path is None:
+        phy_path = recording_path+"/"+processed_folder_name +"/"+sorterName+"/phy"
+    if report_path is None:
+        report_path = recording_path + "/" + processed_folder_name + "/" + sorterName + "/uncurated_report"
+
     # create recording extractor
     recording_paths = get_recordings_to_sort(recording_path, local_path, **kwargs)
     recording_formats = get_recording_formats(recording_paths)
@@ -105,61 +127,73 @@ def spikesort(recording_path, local_path, processed_folder_name, **kwargs):
     recording_mono = preprocess(recording_mono)
     params = ammend_preprocessing_parameters(params, **kwargs)
 
-    # Run spike sorting
-    sorting_mono = si.run_sorter_by_property(
-        sorter_name=sorterName,
-        recording=recording_mono,
-        grouping_property='group',
-        working_folder='sorting_tmp',
-        remove_existing_folder=True,
-        verbose=False, 
-        **params
-    )
-    # There seems to be an warning for filtering but no filtering has been applied!
-    print("Spike sorting is finished!")
-    print("I found " + str(len(sorting_mono.unit_ids)) + " clusters")
+    if do_spike_sorting:
+        # Run spike sorting
+        sorting_mono = si.run_sorter_by_property(
+            sorter_name=sorterName,
+            recording=recording_mono,
+            grouping_property='group',
+            folder='sorting_tmp',
+            remove_existing_folder=True,
+            verbose=False, 
+            **params
+        )
+        # There seems to be an warning for filtering but no filtering has been applied!
+        print("Spike sorting is finished!")
+        print("I found " + str(len(sorting_mono.unit_ids)) + " clusters")
 
-    # make sorting analyzer
-    sorting_analyzer_path = recording_path + "/" + processed_folder_name + "/" + sorterName + "/sorting_analyzer"
-    sorting_analyzer = si.create_sorting_analyzer(
-        sorting = sorting_mono, 
-        recording=recording_mono,
-        format="binary_folder",
-        folder=sorting_analyzer_path
-    )
+        # make sorting analyzer
+        
+        sorting_analyzer = si.create_sorting_analyzer(
+            sorting = sorting_mono, 
+            recording=recording_mono,
+            format="binary_folder",
+            folder=sorting_analyzer_path
+        )
+    else:
+        sorting_analyzer = si.load_sorting_analyzer(sorting_analyzer_path)
+        sorting_analyzer._recording = recording_mono
 
-    # compute sorting analyzer extensions. Kwargs go in {}
-    sorting_analyzer.compute({
-        "random_spikes": {},
-        "noise_levels": {},
-        "waveforms": {},
-        "templates": {},
-        "correlograms": {},
-        "spike_locations": {},
-        "spike_amplitudes": {},
-        "quality_metrics": {},
-        "template_similarity": {},
-        "template_metrics": {}
-    })
+    if do_spike_postprocessing or make_phy_output or make_report:
 
-    quality_metrics = sorting_analyzer.get_extension("quality_metrics").get_data()
-    quality_metrics['cluster_id'] = sorting_analyzer.sorting_mono.get_unit_ids()
+        # compute sorting analyzer extensions. Kwargs go in {}
+        sorting_analyzer.compute({
+            "random_spikes": {},
+            "noise_levels": {},
+            "waveforms": {},
+            "templates": {},
+            "correlograms": {},
+            "spike_locations": {},
+            "spike_amplitudes": {},
+            "quality_metrics": {},
+            "template_similarity": {},
+            "template_metrics": {}
+        })
 
-    # assign an automatic curation label based on the quality metrics
-    quality_metrics = auto_curate(quality_metrics)
+    if auto_curate:
+
+        quality_metrics = sorting_analyzer.get_extension("quality_metrics").get_data()
+        quality_metrics['cluster_id'] = sorting_analyzer.sorting_mono.get_unit_ids()
+
+        # assign an automatic curation label based on the quality metrics
+        quality_metrics = auto_curate(quality_metrics)
+
+    # this should replace the update_from_phy function - test when we do manual curation
+    if curate_using_phy:
+        sorting_mono = si.read_phy(phy_path, exclude_cluster_groups=["noise", "mua"])
+        sorting_analyzer._sorting = sorting_mono
+
+    if make_phy_output and not curate_using_phy:
+        si.export_to_phy(sorting_analyzer, output_folder=phy_path, remove_if_exists=True, copy_binary=True)
+    if make_report:
+        si.export_report(sorting_analyzer, output_folder=report_path, remove_if_exists=True)
+        
 
     # split our extractors back
     sorters = si.split_sorting(sorting_mono, recordings)
     sorters = [si.select_segment_sorting(sorters, i) for i in range(len(recordings))] # turn it into a list of sorters
 
     # save spike times and waveform information for further analysis
-    save_spikes_to_dataframe(sorters, recordings, quality_metrics,
-                             recording_paths, processed_folder_name, sorterName)
-
-    # save spike times and waveform information for further analysis
     save_spikes_to_dataframe(sorters, recordings, quality_metrics, recording_paths, processed_folder_name, sorterName)
 
-    si.export_to_phy(sorting_analyzer, output_folder=recording_path + "/" + processed_folder_name + "/" + sorterName + "/phy", remove_if_exists=True, copy_binary=True)
-    si.export_report(sorting_analyzer, output_folder=recording_path + "/" + processed_folder_name + "/" + sorterName + "/uncurated_report", remove_if_exists=True)
-        
     return
