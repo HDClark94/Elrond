@@ -100,6 +100,12 @@ def spikesort(
         **kwargs
     ):
 
+    if "sorterName" in kwargs:
+        sorterName = kwargs["sorterName"]
+    else:
+        sorterName = settings.sorterName
+    
+
     if sorting_analyzer_path is None:
         sorting_analyzer_path = recording_path + "/" + processed_folder_name + "/" + sorterName + "/sorting_analyzer"
     if phy_path is None:
@@ -116,18 +122,13 @@ def spikesort(
 
     #recording_mono = recording_mono.frame_slice(start_frame=0, end_frame=int(30 * 30000))  # debugging purposes
 
-    if "sorterName" in kwargs:
-        sorterName = kwargs["sorterName"]
-    else:
-        sorterName = settings.sorterName
-    print("I will sort using", sorterName)
-
     # preprocess and ammend preprocessing parameters for presorting
     params = si.get_default_sorter_params(sorterName)
     recording_mono = preprocess(recording_mono)
     params = ammend_preprocessing_parameters(params, **kwargs)
 
     if do_spike_sorting:
+        print("I will sort using", sorterName)
         # Run spike sorting
         sorting_mono = si.run_sorter_by_property(
             sorter_name=sorterName,
