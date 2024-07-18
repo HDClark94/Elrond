@@ -6,13 +6,14 @@ from P1_SpikeSort.probe import add_probe
 from P1_SpikeSort.waveforms import extract_waveforms, get_waveforms
 from P1_SpikeSort.auto_curate import auto_curate
 
-si.set_global_job_kwargs(n_jobs=-1)
+from os.path import expanduser
+si.set_global_job_kwargs(n_jobs=1)
 
-def save_spikes_to_dataframe(sorters, recordings, quality_metrics,
-                             recording_paths, processed_folder_name, sorterName, spike_data=None):
+def save_spikes_to_dataframe(sorters, quality_metrics,
+                             rec_samples, recording_paths, processed_folder_name, sorterName, spike_data=None):
 
-    for sorter, recording, recording_path in zip(sorters, recordings, recording_paths):
-        recording_name = os.path.basename(recording_path)
+    for sorter, rec_sample, recording_path in zip(sorters, rec_samples, recording_paths):
+        recording_name = recording_path.split('/')[-1]
 
         new_spike_data = pd.DataFrame()
         for i, id in enumerate(sorter.get_unit_ids()):
@@ -20,7 +21,7 @@ def save_spikes_to_dataframe(sorters, recordings, quality_metrics,
             cluster_df['session_id'] = [recording_name]                      # str
             cluster_df['cluster_id'] = [id]                                  # int
             cluster_df['firing_times'] = [sorter.get_unit_spike_train(id)]   # np.array(n_spikes)
-            cluster_df['mean_firing_rate'] = [len(sorter.get_unit_spike_train(id))/recording.get_duration()]
+            cluster_df['mean_firing_rate'] = [len(sorter.get_unit_spike_train(id))/(rec_sample/30000)]
             if spike_data is not None:
                 cluster_df['shank_id'] = [spike_data[spike_data["cluster_id"] == id]['shank_id'].iloc[0]] # int
             else:
@@ -85,10 +86,10 @@ def update_from_phy(recording_path, local_path, processed_folder_name, **kwargs)
 
 
 def spikesort(
-        recording_path, 
-        local_path, 
-        processed_folder_name, 
-        do_spike_sorting = True,
+        recording_paths,
+        local_path,
+        processed_folder_name,
+        do_spike_sorting = False,
         do_spike_postprocessing = True,
         make_report = True,
         make_phy_output = True,
@@ -104,29 +105,22 @@ def spikesort(
         sorterName = kwargs["sorterName"]
     else:
         sorterName = settings.sorterName
-    
 
     if sorting_analyzer_path is None:
-        sorting_analyzer_path = recording_path + "/" + processed_folder_name + "/" + sorterName + "/sorting_analyzer"
+        sorting_analyzer_path = recording_paths[0] + "/" + processed_folder_name + "/" + sorterName + "/sorting_analyzer"
     if phy_path is None:
-        phy_path = recording_path+"/"+processed_folder_name +"/"+sorterName+"/phy"
+        phy_path = recording_paths[0]+"/"+processed_folder_name +"/"+sorterName+"/phy"
     if report_path is None:
-        report_path = recording_path + "/" + processed_folder_name + "/" + sorterName + "/uncurated_report"
+        report_path = recording_paths[0] + "/" + processed_folder_name + "/" + sorterName + "/uncurated_report"
 
-    # create recording extractor
-    recording_paths = get_recordings_to_sort(recording_path, local_path, **kwargs)
-    recording_formats = get_recording_formats(recording_paths)
-    recordings = load_recordings(recording_paths, recording_formats)
-    recording_mono = si.concatenate_recordings(recordings)
-    recording_mono, probe = add_probe(recording_mono, recording_path)
-
-    #recording_mono = recording_mono.frame_slice(start_frame=0, end_frame=int(30 * 30000))  # debugging purposes
+    recording_mono, rec_samples = make_recording_from_paths_and_get_times(recording_paths)
 
     # preprocess and ammend preprocessing parameters for presorting
     params = si.get_default_sorter_params(sorterName)
     recording_mono = preprocess(recording_mono)
     params = ammend_preprocessing_parameters(params, **kwargs)
 
+    sorting_mono=None
     if do_spike_sorting:
         print("I will sort using", sorterName)
         # Run spike sorting
@@ -136,23 +130,23 @@ def spikesort(
             grouping_property='group',
             folder='sorting_tmp',
             remove_existing_folder=True,
-            verbose=False, 
+            verbose=False,
             **params
         )
-        # There seems to be an warning for filtering but no filtering has been applied!
+
         print("Spike sorting is finished!")
         print("I found " + str(len(sorting_mono.unit_ids)) + " clusters")
 
         # make sorting analyzer
-        
+
         sorting_analyzer = si.create_sorting_analyzer(
-            sorting = sorting_mono, 
+            sorting = sorting_mono,
             recording=recording_mono,
             format="binary_folder",
             folder=sorting_analyzer_path
         )
     else:
-        sorting_analyzer = si.load_sorting_analyzer(sorting_analyzer_path)
+        sorting_analyzer = si.load_sorting_analyzer(sorting_analyzer_path, load_extensions=True)
         sorting_analyzer._recording = recording_mono
 
     if do_spike_postprocessing or make_phy_output or make_report:
@@ -171,10 +165,10 @@ def spikesort(
             "template_metrics": {}
         })
 
-    if auto_curate:
+    quality_metrics = sorting_analyzer.get_extension("quality_metrics").get_data()
+    quality_metrics['cluster_id'] = sorting_analyzer.sorting.get_unit_ids()
 
-        quality_metrics = sorting_analyzer.get_extension("quality_metrics").get_data()
-        quality_metrics['cluster_id'] = sorting_analyzer.sorting_mono.get_unit_ids()
+    if auto_curate:
 
         # assign an automatic curation label based on the quality metrics
         quality_metrics = auto_curate(quality_metrics)
@@ -188,13 +182,29 @@ def spikesort(
         si.export_to_phy(sorting_analyzer, output_folder=phy_path, remove_if_exists=True, copy_binary=True)
     if make_report:
         si.export_report(sorting_analyzer, output_folder=report_path, remove_if_exists=True)
-        
 
     # split our extractors back
-    sorters = si.split_sorting(sorting_mono, recordings)
-    sorters = [si.select_segment_sorting(sorters, i) for i in range(len(recordings))] # turn it into a list of sorters
+    cum_rec_samples = np.insert(np.cumsum(rec_samples),0,0)
+    sorters = [sorting_analyzer.sorting.frame_slice(start_frame=cum_rec_samples[a], end_frame=cum_rec_samples[a+1] ) for a in range(len(recording_paths))] # get list of sorters
 
     # save spike times and waveform information for further analysis
-    save_spikes_to_dataframe(sorters, recordings, quality_metrics, recording_paths, processed_folder_name, sorterName)
+    save_spikes_to_dataframe(sorters, quality_metrics, rec_samples, recording_paths, processed_folder_name, sorterName)
 
     return
+
+def make_recording_from_paths_and_get_times(recording_paths):
+
+    rec_times = []
+    temp_recording = None
+    mono_recording = None
+    home_path = expanduser('~')
+    for recording_path in recording_paths:
+        temp_recording = si.read_openephys(recording_path)
+        rec_times.append(temp_recording.get_total_samples())
+        if mono_recording is None:
+            mono_recording = temp_recording
+        else:
+            mono_recording = si.concatenate_recordings([mono_recording, temp_recording])
+    temp_recording = None
+
+    return mono_recording, rec_times

@@ -8,6 +8,17 @@ import spikeinterface.full as si
 from neuroconv.utils.dict import load_dict_from_file, dict_deep_update
 
 
+def get_recording_paths(project_path, mouse, day):
+    """
+    Get recording paths based on mouse and day.
+    """
+    data_path = project_path + "data/M"+str(mouse)+"_D"+str(day)+"/"
+    recording_paths = [ data_path + "of/" + os.listdir(data_path + "of/")[a] for a in range(0,2)]
+    recording_paths.append(data_path + "vr/" + os.listdir(data_path + "vr/")[0])
+
+    print(recording_paths)
+    return recording_paths
+
 def load_recording(recording_path, recording_format):
     # load recording channels but don't load ADC channels
 
