@@ -4,9 +4,10 @@ import traceback
 import warnings
 import settings
 
+from pathlib import Path
 from os.path import expanduser
 
-from Helpers.upload_download import copy_from_local, copy_to_local, empty_recording_folder_from_local, get_recording_paths
+from Helpers.upload_download import copy_from_local, copy_to_local, empty_recording_folder_from_local, get_recording_paths, get_processed_paths
 from P1_SpikeSort.spikesort import spikesort, update_from_phy
 from P2_PostProcess.postprocess import postprocess
 
@@ -16,6 +17,7 @@ def process_recordings(recording_paths, local_path="", processed_folder_name="",
         sorting_analyzer_path=None,
         phy_path=None,
         report_path=None,
+        base_processed_path=None,
         **kwargs):
     # TODO add checks that the requested flags make sense?
     """
@@ -66,6 +68,9 @@ def process_recordings(recording_paths, local_path="", processed_folder_name="",
             traceback.print_tb(exc_traceback)
             print("")
 
+        processed_paths = get_processed_paths(base_processed_path, recording_paths)
+        for processed_path in processed_paths: Path(processed_path).mkdir(parents=True, exist_ok=True)
+        print(recording_paths, processed_paths) 
         #========== spike sorting==============#
         if run_spikesorting:
             print("I will now try to spike sort")
@@ -83,13 +88,14 @@ def process_recordings(recording_paths, local_path="", processed_folder_name="",
                 sorting_analyzer_path=sorting_analyzer_path,
                 phy_path = phy_path,
                 report_path = report_path,
+                processed_paths = processed_paths,
                 **kwargs
             )
         #======================================#
 
         if run_postprocessing:
             print("I will now try to postprocess")
-            postprocess(working_recording_path, local_path, processed_folder_name, recording_paths=recording_paths, **kwargs)
+            postprocess(working_recording_path, local_path, processed_folder_name, processed_paths, recording_paths=recording_paths, **kwargs)
 
     for recording_path in recording_paths:
         try:
@@ -121,7 +127,7 @@ def main():
     # to grab a whole directory of recordings
 
     mouse = 21
-    day = 16
+    day = 21
     home_path = expanduser("~")
     project_path = home_path + "/../../../exports/eddie/scratch/chalcrow/harry_project/"
     recording_paths = get_recording_paths(project_path, mouse, day)
@@ -131,7 +137,7 @@ def main():
     process_recordings(
         recording_paths,
         local_path="/home/ubuntu/to_sort/recordings/",
-        processed_folder_name="processed",
+        processed_folder_name="processed/",
         copy_locally=False,
         run_spikesorting=False,
         update_results_from_phy=False,
@@ -139,10 +145,11 @@ def main():
         concat_sort=False,
         use_dlc_to_extract_openfield_position=False,
         sorting_analyzer_path= ephys_path + "sorting_analyzer/",
-        phy_path = ephys_path + "phy/"
-        report_path = ephys_path + "report/"
+        phy_path = ephys_path + "phy/",
+        report_path = ephys_path + "report/",
+    #    base_processed_path = project_path + "derivatives/M"+str(mouse)+"/D"+str(day)+"/plain/",
         sorterName="kilosort4",
-        sorter_kwargs={}
+        sorter_kwargs={'do_CAR': False, 'do_correction': True}
     )
 
 if __name__ == '__main__':
