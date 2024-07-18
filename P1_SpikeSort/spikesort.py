@@ -10,9 +10,17 @@ from os.path import expanduser
 si.set_global_job_kwargs(n_jobs=1)
 
 def save_spikes_to_dataframe(sorters, quality_metrics,
-                             rec_samples, recording_paths, processed_folder_name, sorterName, spike_data=None):
+                             rec_samples, recording_paths, base_pkl_path, sorterName, spike_data=None):
 
-    for sorter, rec_sample, recording_path in zip(sorters, rec_samples, recording_paths):
+    if base_pkl_path is None:
+        base_pkl_path = '/'.join(recording_paths[0].split('/')[:-2]) 
+
+    pkl_paths = []
+    for recording_path in recording_paths:
+        relative_recording_path = '/'.join(recording_path.split('/')[-2:])
+        pkl_paths.append(base_pkl_path + relative_recording_path) 
+
+    for sorter, rec_sample, pkl_path, recording_path in zip(sorters, rec_samples, pkl_paths, recording_paths):
         recording_name = recording_path.split('/')[-1]
 
         new_spike_data = pd.DataFrame()
@@ -32,15 +40,15 @@ def save_spikes_to_dataframe(sorters, quality_metrics,
         # add quality metrics, these are shared across all recordings
         new_spike_data = new_spike_data.merge(quality_metrics, on='cluster_id')
 
-        processed_path = recording_path + "/" + processed_folder_name
-        if not os.path.exists(processed_path):
-            os.mkdir(processed_path)
-        sorter_path = processed_path + "/" + sorterName
-        if not os.path.exists(sorter_path):
-            os.mkdir(sorter_path)
+        if not os.path.exists(pkl_path):
+            os.mkdir(pkl_path)
+        # spike_folder = pkl_path + recording_name + "/"
+        # if not os.path.exists(spike_folder):
+        #     os.mkdir(spike_folder)
 
-        print("I am saving the spike dataframe for ", recording_path, " at ", sorter_path,  "/spikes.pkl")
-        new_spike_data.to_pickle(sorter_path + "/spikes.pkl")
+        spike_file_path = pkl_path + "spikes.pkl"
+        print("I am saving the spike dataframe for ", recording_path, " at ", spike_file_path)
+        new_spike_data.to_pickle(spike_file_path)
 
 
 def update_from_phy(recording_path, local_path, processed_folder_name, **kwargs):
@@ -98,6 +106,7 @@ def spikesort(
         sorting_analyzer_path = None,
         phy_path = None,
         report_path = None,
+        pkl_path = None,
         **kwargs
     ):
 
@@ -188,7 +197,7 @@ def spikesort(
     sorters = [sorting_analyzer.sorting.frame_slice(start_frame=cum_rec_samples[a], end_frame=cum_rec_samples[a+1] ) for a in range(len(recording_paths))] # get list of sorters
 
     # save spike times and waveform information for further analysis
-    save_spikes_to_dataframe(sorters, quality_metrics, rec_samples, recording_paths, processed_folder_name, sorterName)
+    save_spikes_to_dataframe(sorters, quality_metrics, rec_samples, recording_paths, processed_folder_name, pkl_path, sorterName)
 
     return
 
