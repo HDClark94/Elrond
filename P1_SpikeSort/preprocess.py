@@ -3,8 +3,8 @@ import numpy as np
 import spikeinterface.full as si
 
 def ammend_preprocessing_parameters(params, **kwargs):
-    params["whiten"] = settings.whiten
-    params["filter"] = not settings.bandpass_filter
+#    params["whiten"] = settings.whiten
+#    params["filter"] = not settings.bandpass_filter
     if "sorter_kwargs" in kwargs.keys():
         for key, value in kwargs["sorter_kwargs"].items():
             params[key] = value

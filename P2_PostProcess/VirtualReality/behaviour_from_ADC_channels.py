@@ -307,7 +307,7 @@ def extract_position_data(recording_path, track_length):
     return raw_position_data, down_sampled_position_data
 
 
-def generate_position_data_from_ADC_channels(recording_path, processed_folder_name):
+def generate_position_data_from_ADC_channels(recording_path, processed_path):
     print("I will attempt to use ADC channel information")
 
     # recording type needs to be vr
@@ -318,7 +318,7 @@ def generate_position_data_from_ADC_channels(recording_path, processed_folder_na
 
     # extract and process position data
     raw_position_data, downsampled_position_data = extract_position_data(recording_path, track_length)
-    save_path = recording_path+"/"+processed_folder_name+"/position_data.csv"
+    save_path = processed_path + "position_data.csv"
     downsampled_position_data.to_csv(save_path)
     print("downsampled position data has been extracted from ADC channels and saved at ", save_path)
     return downsampled_position_data

@@ -10,7 +10,7 @@ from neuroconv.utils.dict import load_dict_from_file, dict_deep_update
 def get_processed_paths(base_processed_path, recording_paths):
 
     if base_processed_path is None:
-        base_processed_path = '/'.join(recording_path.split('/')[:-2]) + '/'
+        base_processed_path = '/'.join(recording_paths[0].split('/')[:-2]) + '/'
 
     processed_paths = []
     for recording_path in recording_paths:
