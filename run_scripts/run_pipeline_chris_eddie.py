@@ -79,9 +79,9 @@ def process_recordings(recording_paths, local_path="", processed_folder_name="",
                 recording_paths,
                 local_path,
                 processed_folder_name,
-                do_spike_sorting = False,
-                do_spike_postprocessing = False,
-                make_report = False,
+                do_spike_sorting = True,
+                do_spike_postprocessing = True,
+                make_report = True,
                 make_phy_output = False,
                 curate_using_phy = False,
                 auto_curate = False,
@@ -126,10 +126,12 @@ def main():
     #      recording_paths.extend([f.path for f in os.scandir("/mnt/datastore/Harry/test_recording/vr") if f.is_dir()])
     # to grab a whole directory of recordings
 
-    mouse = 21
-    day = 21
+
+    mouse = sys.argv[1]
+    day = sys.argv[2]
+
     home_path = expanduser("~")
-    project_path = home_path + "/../../../exports/eddie/scratch/chalcrow/harry_project/"
+    project_path = home_path + "/../../../exports/eddie/scratch/hclark3/harry_project/"
     recording_paths = get_recording_paths(project_path, mouse, day)
     ephys_path = project_path + "derivatives/M"+str(mouse)+"/D"+str(day)+"/ephys/"
 
@@ -139,7 +141,7 @@ def main():
         local_path="/home/ubuntu/to_sort/recordings/",
         processed_folder_name="processed/",
         copy_locally=False,
-        run_spikesorting=False,
+        run_spikesorting=True,
         update_results_from_phy=False,
         run_postprocessing=True,
         concat_sort=False,
@@ -147,7 +149,7 @@ def main():
         sorting_analyzer_path= ephys_path + "sorting_analyzer/",
         phy_path = ephys_path + "phy/",
         report_path = ephys_path + "report/",
-    #    base_processed_path = project_path + "derivatives/M"+str(mouse)+"/D"+str(day)+"/plain/",
+        base_processed_path = project_path + "derivatives/M"+str(mouse)+"/D"+str(day)+"/",
         sorterName="kilosort4",
         sorter_kwargs={'do_CAR': False, 'do_correction': True}
     )
