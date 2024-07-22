@@ -1,17 +1,13 @@
-import settings
 import pandas as pd
 from Helpers.upload_download import *
 from P1_SpikeSort.preprocess import preprocess, ammend_preprocessing_parameters
-from P1_SpikeSort.probe import add_probe
-from P1_SpikeSort.waveforms import extract_waveforms, get_waveforms
-from P1_SpikeSort.auto_curate import auto_curate
+from P1_SpikeSort.auto_curate import auto_curation
 
 from os.path import expanduser
 si.set_global_job_kwargs(n_jobs=1)
 
 def save_spikes_to_dataframe(sorters, quality_metrics,
-                             rec_samples, recording_paths, processed_paths, sorterName, spike_data=None):
-
+                             rec_samples, recording_paths, processed_paths, sorterName):
 
     for sorter, rec_sample, processed_path, recording_path in zip(sorters, rec_samples, processed_paths, recording_paths):
         recording_name = recording_path.split('/')[-1]
@@ -23,11 +19,7 @@ def save_spikes_to_dataframe(sorters, quality_metrics,
             cluster_df['cluster_id'] = [id]                                  # int
             cluster_df['firing_times'] = [sorter.get_unit_spike_train(id)]   # np.array(n_spikes)
             cluster_df['mean_firing_rate'] = [len(sorter.get_unit_spike_train(id))/(rec_sample/30000)]
-            if spike_data is not None:
-               pass# cluster_df['shank_id'] = [spike_data[spike_data["cluster_id"] == id]['shank_id'].iloc[0]] # int
-            else:
-                cluster_df['shank_id'] = [sorter.get_unit_property(id, 'group')]  # int
-
+            cluster_df['shank_id'] = [sorter.get_unit_property(id, 'group')]  # int
             new_spike_data = pd.concat([new_spike_data, cluster_df], ignore_index=True)
 
         # add quality metrics, these are shared across all recordings
@@ -38,48 +30,6 @@ def save_spikes_to_dataframe(sorters, quality_metrics,
         Path(pkl_folder).mkdir(parents=True, exist_ok=True)
         print("I am saving the spike dataframe for ", recording_path, " in ", pkl_folder)
         new_spike_data.to_pickle(pkl_folder + "spikes.pkl")
-
-
-def update_from_phy(recording_path, local_path, processed_folder_name, **kwargs):
-    # create recording extractor
-    recording_paths = get_recordings_to_sort(recording_path, local_path, **kwargs)
-    recording_formats = get_recording_formats(recording_paths)
-    recordings = load_recordings(recording_paths, recording_formats)
-    recording_mono = si.concatenate_recordings(recordings)
-    recording_mono = preprocess(recording_mono)
-    recording_mono, probe = add_probe(recording_mono, recording_path)
-    if "sorterName" in kwargs:
-        sorterName = kwargs["sorterName"]
-    else:
-        sorterName = settings.sorterName
-    print("I will use sorted results from", sorterName)
-
-    spike_data = pd.read_pickle(recording_paths[0]+"/"+processed_folder_name +"/"+sorterName+"/spikes.pkl")
-
-    # create sorting extractor from first primarly recording phy folder
-    phy_path = recording_paths[0]+"/"+processed_folder_name +"/"+sorterName+"/phy"
-    sorting_mono = si.read_phy(phy_path, exclude_cluster_groups=["noise", "mua"])
-    print("I found " + str(len(sorting_mono.unit_ids)) + " clusters")
-
-    # Extract the waveforms and quality metrics from across all recordings to the extractor
-    we, quality_metrics = extract_waveforms(recording_mono, sorting_mono, recording_path, processed_folder_name, sorterName)
-    quality_metrics["cluster_id"] = sorting_mono.get_unit_ids()
-
-    # assign a new automatic curation label based on the quality metrics
-    quality_metrics = auto_curate(quality_metrics)
-
-    # split our extractors back
-    sorters = si.split_sorting(sorting_mono, recordings)
-    sorters = [si.select_segment_sorting(sorters, i) for i in range(len(recordings))] # turn it into a list of sorters
-
-    # save spike times and waveform information for further analysis
-    save_spikes_to_dataframe(sorters, recordings, quality_metrics,
-                             recording_paths, processed_folder_name, sorterName, spike_data=spike_data)
-
-    # Optionally
-    si.export_report(we, output_folder=recording_path + "/" + processed_folder_name + "/" + sorterName +
-                                               "/manually_curated_report", remove_if_exists=True)
-    return
 
 
 def spikesort(
@@ -136,7 +86,6 @@ def spikesort(
         print("I found " + str(len(sorting_mono.unit_ids)) + " clusters")
 
         # make sorting analyzer
-
         sorting_analyzer = si.create_sorting_analyzer(
             sorting = sorting_mono,
             recording=recording_mono,
@@ -169,7 +118,7 @@ def spikesort(
     if auto_curate:
 
         # assign an automatic curation label based on the quality metrics
-        quality_metrics = auto_curate(quality_metrics)
+        quality_metrics = auto_curation(quality_metrics)
 
     # this should replace the update_from_phy function - test when we do manual curation
     if curate_using_phy:
