@@ -233,20 +233,20 @@ def get_position_heatmap(spatial_data,
     return position_heat_map
 
 
-def extract_position_from_dlc(recording_path, processed_folder_name, model_path):
+def extract_position_from_dlc(recording_path, processed_path, model_path):
     dlc_position_data = pd.DataFrame()
     avi_paths = [os.path.abspath(os.path.join(recording_path, filename)) for filename in os.listdir(recording_path) if filename.endswith(".avi")]
     if (len(avi_paths) == 1):
         video_path = avi_paths[0]
         config_path = model_path + "/config.yaml"
 
-        save_path = recording_path + "/" + processed_folder_name + "/video"
+        save_path = processed_path + "video/"
         if not os.path.exists(save_path):
             os.mkdir(save_path)
 
         # add columns to position_data using markers as set in the dlc model
         video_filename = video_path.split("/")[-1]
-        new_videopath = save_path + "/" + video_filename
+        new_videopath = save_path + video_filename
 
         _ = shutil.copyfile(video_path, new_videopath)
         dlc.analyze_videos(config_path, [new_videopath], save_as_csv=True, destfolder=save_path)
@@ -300,13 +300,13 @@ def add_dlc_markers(position_data, dlc_position_data):
         position_data["y_right"].iloc[i] = right[1]
     return position_data
 
-def process_position_data(recording_path, processed_folder_name, **kwargs):
+def process_position_data(recording_path, processed_path, **kwargs):
     bonsai_position_data = read_bonsai_file(recording_path)
     position_data = proces_bonsai_position(bonsai_position_data)
 
     if "use_dlc_to_extract_openfield_position" in kwargs:
         if kwargs["use_dlc_to_extract_openfield_position"]:
-            dlc_position_data = extract_position_from_dlc(recording_path, processed_folder_name, model_path=settings.of_deeplabcut_project_path)
+            dlc_position_data = extract_position_from_dlc(recording_path, processed_path, model_path=settings.of_deeplabcut_project_path)
             if len(dlc_position_data) == len(position_data):
                 position_data = add_dlc_markers(position_data, dlc_position_data)
 

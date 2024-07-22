@@ -10,7 +10,7 @@ from Helpers.array_utility import pandas_collumn_to_numpy_array, pandas_collumn_
 from astropy.convolution import convolve, Gaussian1DKernel
 
 def plot_eye(processed_position_data, output_path="", track_length=200):
-    save_path = output_path+'/Figures/behaviour'
+    save_path = output_path+'Figures/behaviour'
     if os.path.exists(save_path) is False:
         os.makedirs(save_path)
 
@@ -78,7 +78,7 @@ def plot_eye(processed_position_data, output_path="", track_length=200):
 
 
 def plot_speed_heat_map(processed_position_data, output_path="", track_length=200):
-    save_path = output_path+'/Figures/behaviour'
+    save_path = output_path+'Figures/behaviour'
     if os.path.exists(save_path) is False:
         os.makedirs(save_path)
 
@@ -118,7 +118,7 @@ def plot_speed_heat_map(processed_position_data, output_path="", track_length=20
 
 # plot the raw movement channel to check all is good
 def plot_movement_channel(location, output_path):
-    save_path = output_path + '/Figures'
+    save_path = output_path + 'Figures'
     if os.path.exists(save_path) is False:
         os.makedirs(save_path)
     plt.plot(location)
@@ -127,7 +127,7 @@ def plot_movement_channel(location, output_path):
 
 # plot the trials to check all is good
 def plot_trials(trials, output_path):
-    save_path = output_path + '/Figures'
+    save_path = output_path + 'Figures'
     if os.path.exists(save_path) is False:
         os.makedirs(save_path)
     plt.plot(trials)
@@ -135,7 +135,7 @@ def plot_trials(trials, output_path):
     plt.close()
 
 def plot_velocity(velocity, output_path):
-    save_path = output_path + '/Figures'
+    save_path = output_path + 'Figures'
     if os.path.exists(save_path) is False:
         os.makedirs(save_path)
     plt.plot(velocity)
@@ -143,7 +143,7 @@ def plot_velocity(velocity, output_path):
     plt.close()
 
 def plot_running_mean_velocity(velocity, output_path):
-    save_path = output_path + '/Figures'
+    save_path = output_path + 'Figures'
     if os.path.exists(save_path) is False:
         os.makedirs(save_path)
     plt.plot(velocity)
@@ -153,10 +153,10 @@ def plot_running_mean_velocity(velocity, output_path):
 # plot the raw trial channels to check all is good
 def plot_trial_channels(trial1, trial2, output_path):
     plt.plot(trial1[0,:])
-    plt.savefig(output_path + '/Figures/trial_type1.png')
+    plt.savefig(output_path + 'Figures/trial_type1.png')
     plt.close()
     plt.plot(trial2[0,:])
-    plt.savefig(output_path + '/Figures/trial_type2.png')
+    plt.savefig(output_path + 'Figures/trial_type2.png')
     plt.close()
 
 
@@ -182,7 +182,7 @@ def get_trial_color(trial_type):
 
 def plot_stops_on_track(processed_position_data, output_path, track_length=200):
     print('I am plotting stop rasta...')
-    save_path = output_path+'/Figures/behaviour'
+    save_path = output_path+'Figures/behaviour'
     if os.path.exists(save_path) is False:
         os.makedirs(save_path)
     fig = plt.figure(figsize=(6,6))
@@ -214,7 +214,7 @@ def plot_stops_on_track(processed_position_data, output_path, track_length=200):
     plt.close()
 
 def plot_variables(position_data, output_path): # can be raw or downsampled
-    save_path = output_path+'/Figures/behaviour'
+    save_path = output_path+'Figures/behaviour'
     if os.path.exists(save_path) is False:
         os.makedirs(save_path)
 
@@ -252,8 +252,8 @@ def curate_stops(stop_locations, stop_trial_numbers, track_length):
 
 def plot_stop_histogram(processed_position_data, output_path="", track_length=200):
     # TODO test this
-    print('plotting stop histogram...')
-    save_path = output_path+'/Figures/behaviour'
+    save_path = output_path+'Figures/behaviour'
+    print("saveing at...", save_path)
     if os.path.exists(save_path) is False:
         os.makedirs(save_path)
     fig = plt.figure(figsize=(6,6))
@@ -305,7 +305,7 @@ def min_max_normalize(x):
 
 def plot_speed_histogram(processed_position_data, output_path="", track_length=200):
     # TODO test this
-    save_path = output_path + '/Figures/behaviour'
+    save_path = output_path + 'Figures/behaviour'
     if os.path.exists(save_path) is False:
         os.makedirs(save_path)
 
@@ -341,7 +341,7 @@ def plot_speed_histogram(processed_position_data, output_path="", track_length=2
 def plot_spikes_on_track(spike_data, processed_position_data, output_path, track_length=200,
                          plot_trials=["beaconed", "non_beaconed", "probe"]):
     print('plotting spike rastas...')
-    save_path = output_path + '/Figures/spike_trajectories'
+    save_path = output_path + 'Figures/spike_trajectories'
     if os.path.exists(save_path) is False:
         os.makedirs(save_path)
 
@@ -386,7 +386,7 @@ def plot_spikes_on_track(spike_data, processed_position_data, output_path, track
 
 def plot_firing_rate_maps(spike_data, processed_position_data, output_path, track_length=200):
     print('I am plotting firing rate maps...')
-    save_path = output_path + '/Figures/spike_rate'
+    save_path = output_path + 'Figures/spike_rate'
     if os.path.exists(save_path) is False:
         os.makedirs(save_path)
 
@@ -477,7 +477,7 @@ def plot_firing_rate_maps(spike_data, processed_position_data, output_path, trac
 
 
 def plot_firing_rate_maps_per_trial(spike_data, processed_position_data, output_path, track_length):
-    save_path = output_path + '/Figures/rate_maps_by_trial'
+    save_path = output_path + 'Figures/rate_maps_by_trial'
     if os.path.exists(save_path) is False:
         os.makedirs(save_path)
 
