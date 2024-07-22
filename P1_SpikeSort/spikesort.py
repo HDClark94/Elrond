@@ -68,6 +68,7 @@ def spikesort(
     recording_mono = preprocess(recording_mono)
     params = ammend_preprocessing_parameters(params, **kwargs)
 
+
     sorting_mono=None
     if do_spike_sorting:
         print("I will sort using", sorterName)
