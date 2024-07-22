@@ -10,7 +10,7 @@ def process(recording_path, processed_path, **kwargs):
     position_data = synchronise_position_data_via_ADC_ttl_pulses(position_data, processed_path, recording_path)
     position_heat_map = get_position_heatmap(position_data)
     # save position data
-    position_data.to_csv(processed_path + "position_data_test.csv")
+    position_data.to_csv(processed_path + "position_data.csv")
 
     # process and save spatial spike data
     if "sorterName" in kwargs.keys():
