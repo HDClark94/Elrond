@@ -1,9 +1,8 @@
 import os
-from os.path import expanduser
-
 import sys
+import subprocess
 
-mouse= sys.argv[1]
+mouse = sys.argv[1]
 day = sys.argv[2]
 print("mouse: ", mouse)
 print("day: ", day)
@@ -22,16 +21,13 @@ active_projects_path = "/exports/cmvm/datastore/sbms/groups/CDBS_SIDB_storage/No
 source_path = active_projects_path + "Harry/Cohort11_april2024/"
 output_path = source_path + "derivatives/M" + mouse + "/D" + day + "/"
 
-
 email = "hclark3@ed.ac.uk"
 repo_path = "/home/hclark3/Elrond/"
 
 def staging_file_text(mouse, day):
-
     mouse_day_dir = "M"+mouse + "_" +"D"+ day
 
     return """#!/bin/sh
-
 # Grid Engine options can go here (always start with #$ )
 # Name job and set to use current working directory
 #$ -cwd
@@ -64,33 +60,25 @@ stagein_string = "qsub stagein_M"+mouse+"_D"+day+".sh"
 
 
 def make_compute_script(mouse, day):
-
-    mouse_day = mouse + "_" + day
-
     return """#!/bin/bash
 #Grid Engine options go here, e.g.:
 #$ -cwd
 #$ -N M"""+mouse+"""_D"""+day+"""_compute
 #$ -pe sharedmem 24 -l rl9=true,h_vmem=30G,h_rt=48:00:00
 #$ -M """ + email + """ -m e
-
 # Setup the environment modules command
 source /etc/profile.d/modules.sh
-
 # Load modules if required
 # e.g. module load <name>/<version>
 module load anaconda
 conda activate si
-
 date
 export PYTHONPATH=""" + repo_path + """
-python """ + repo_path + """run_scripts/run_pipeline_chris_eddie.py """+mouse+""" """+day+"""
+python """ + repo_path + """run_scripts/run_pipeline_eddie.py """+mouse+""" """+day+"""
 date
-
 """
 
 compute_file_path = code_path + "M"+mouse+"_D"+day+".sh"
-
 f = open(compute_file_path, "w")
 f.write(make_compute_script(mouse=mouse, day=day))
 f.close()
@@ -98,7 +86,6 @@ f.close()
 compute_string = "qsub -hold_jid stg_M"+mouse+"_D"+day+ " M"+mouse+"_D"+day+".sh"
 
 stageout_text = """
-
 # Grid Engine options start with a #$
 #$ -cwd
 # Choose the staging environment
@@ -131,7 +118,7 @@ f.close()
 stageout_string = "qsub -hold_jid M"+mouse+"_D"+day+"_compute stageout_M"+mouse+"_D"+day+".sh"
 print("qsub -hold_jid M"+mouse+"_D"+day+"_compute stageout_M"+mouse+"_D"+day+".sh")
 
-import subprocess
+
 
 os.chdir(code_path)
 
