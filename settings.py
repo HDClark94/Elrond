@@ -47,7 +47,7 @@ vr_deeplabcut_project_path = "/mnt/datastore/Harry/deeplabcut/vr-hc-2024-03-14"
 #vr_deeplabcut_project_path = ("/run/user/1000/gvfs/smb-share:server=cmvm.datastore.ed.ac.uk,share=cmvm/"
 #                           "sbms/groups/CDBS_SIDB_storage/NolanLab/ActiveProjects/Harry/deeplabcut/vr-hc-2024-03-14")
 vr_bin_size_cm = 1
-time_bin_size = 0.05 # seconds
+time_bin_size = 0.1 # seconds
 guassian_std_for_smoothing_in_time_seconds = 0.2 # seconds
 guassian_std_for_smoothing_in_space_cm = 2 # cm
 hit_try_run_speed_threshold = 10 # cm/seconds
