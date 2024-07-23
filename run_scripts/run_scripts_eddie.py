@@ -20,6 +20,7 @@ os.makedirs(ders_path, exist_ok=True)
 active_projects_path = "/exports/cmvm/datastore/sbms/groups/CDBS_SIDB_storage/NolanLab/ActiveProjects/"
 source_path = active_projects_path + "Harry/Cohort11_april2024/"
 output_path = source_path + "derivatives/M" + mouse + "/D" + day + "/"
+source_path_DLC_OF_MODEL = active_projects_path+"Harry/deeplabcut/openfield_pose-Harry Clark-2024-05-13"
 
 email = "hclark3@ed.ac.uk"
 repo_path = "/home/hclark3/Elrond/"
@@ -49,7 +50,18 @@ DESTINATION=""" + data_path + """
 
 # Do the copy with rsync (avoid -p or -a options)
 rsync -rm --exclude='*/*/processed/' --include='of/' --include='of/"""+mouse_day_dir+"""*' --include='of/"""+mouse_day_dir+"""*/****' --include='vr/' --include='vr/"""+mouse_day_dir+"""*' --include='vr/"""+mouse_day_dir+"""*/****' --exclude="*" ${SOURCE} ${DESTINATION}
-    """
+
+# Source path on DataStore. It should start with one of
+# /exports/csce/datastore, /exports/chss/datastore, /exports/cmvm/datastore or /exports/igmm/datastore
+SOURCE=""" + source_path_DLC_OF_MODEL + """
+
+# Destination path on Eddie. It should start with one of:
+# /exports/csce/eddie, /exports/chss/eddie, /exports/cmvm/eddie, /exports/igmm/eddie or /exports/eddie/scratch
+DESTINATION=""" + project_path + """
+
+# Do the copy with rsync (avoid -p or -a options)
+rsync -rm ${SOURCE} ${DESTINATION}"""
+
 staging_text = staging_file_text(mouse, day)
 
 f = open(code_path + "stagein_M" +mouse+"_D"+day+".sh", "w")
@@ -123,8 +135,8 @@ print("qsub -hold_jid M"+mouse+"_D"+day+"_compute stageout_M"+mouse+"_D"+day+".s
 os.chdir(code_path)
 
 subprocess.call( stagein_string.split() )
-subprocess.call( compute_string.split() )
-subprocess.call( stageout_string.split() )
+#subprocess.call( compute_string.split() )
+#subprocess.call( stageout_string.split() )
 
 
 

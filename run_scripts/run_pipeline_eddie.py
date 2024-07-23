@@ -14,12 +14,8 @@ from P2_PostProcess.postprocess import postprocess
 
 
 def process_recordings(recording_paths, local_path="", processed_folder_name="", copy_locally=False,
-                       run_spikesorting=False, run_postprocessing=False,
-        sorting_analyzer_path=None,
-        phy_path=None,
-        report_path=None,
-        base_processed_path=None,
-        **kwargs):
+                       run_spikesorting=False, run_postprocessing=False, sorting_analyzer_path=None,
+                       phy_path=None, report_path=None, base_processed_path=None, **kwargs):
     """
     :param recording_paths: list of paths to recordings from which to process
     :param local_path: if copy_locally is true, copy to and from this local path
@@ -143,7 +139,8 @@ def main():
         update_results_from_phy=False,
         run_postprocessing=True,
         concat_sort=False,
-        use_dlc_to_extract_openfield_position=False,
+        use_dlc_to_extract_openfield_position=True,
+        deeplabcut_of_model_path = project_path + "openfield_pose-Harry Clark-2024-05-13/",
         sorting_analyzer_path= ephys_path + "sorting_analyzer/",
         phy_path = ephys_path + "phy/",
         report_path = ephys_path + "report/",

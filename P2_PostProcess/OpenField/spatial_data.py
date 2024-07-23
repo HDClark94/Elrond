@@ -238,7 +238,7 @@ def extract_position_from_dlc(recording_path, processed_path, model_path):
     avi_paths = [os.path.abspath(os.path.join(recording_path, filename)) for filename in os.listdir(recording_path) if filename.endswith(".avi")]
     if (len(avi_paths) == 1):
         video_path = avi_paths[0]
-        config_path = model_path + "/config.yaml"
+        config_path = model_path + "config.yaml"
 
         save_path = processed_path + "video/"
         if not os.path.exists(save_path):
@@ -303,12 +303,10 @@ def add_dlc_markers(position_data, dlc_position_data):
 def process_position_data(recording_path, processed_path, **kwargs):
     bonsai_position_data = read_bonsai_file(recording_path)
     position_data = proces_bonsai_position(bonsai_position_data)
-
-    if "use_dlc_to_extract_openfield_position" in kwargs:
-        if kwargs["use_dlc_to_extract_openfield_position"]:
-            dlc_position_data = extract_position_from_dlc(recording_path, processed_path, model_path=settings.of_deeplabcut_project_path)
-            if len(dlc_position_data) == len(position_data):
-                position_data = add_dlc_markers(position_data, dlc_position_data)
+    if ("use_dlc_to_extract_openfield_position" in kwargs and kwargs["use_dlc_to_extract_openfield_position"] == True):
+        dlc_position_data = extract_position_from_dlc(recording_path, processed_path, model_path=kwargs["deeplabcut_of_model_path"])
+        if len(dlc_position_data) == len(position_data):
+            position_data = add_dlc_markers(position_data, dlc_position_data)
 
     position_data = resample_position_data(position_data, 30)
 
