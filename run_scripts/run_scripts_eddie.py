@@ -32,7 +32,7 @@ def staging_file_text(mouse, day):
 # Grid Engine options can go here (always start with #$ )
 # Name job and set to use current working directory
 #$ -cwd
-#$ -N stg_"""+mouse_day_dir+"""
+#$ -N M"""+mouse+"""_D"""+day+"""_DL
 
 # Choose the staging queue
 #$ -q staging
@@ -75,7 +75,7 @@ def make_compute_script(mouse, day):
     return """#!/bin/bash
 #Grid Engine options go here, e.g.:
 #$ -cwd
-#$ -N M"""+mouse+"""_D"""+day+"""_compute
+#$ -N M"""+mouse+"""_D"""+day+"""_PL
 #$ -pe sharedmem 24 -l rl9=true,h_vmem=30G,h_rt=48:00:00
 #$ -M """ + email + """ -m e
 # Setup the environment modules command
@@ -94,12 +94,12 @@ compute_file_path = code_path + "M"+mouse+"_D"+day+".sh"
 f = open(compute_file_path, "w")
 f.write(make_compute_script(mouse=mouse, day=day))
 f.close()
-
-compute_string = "qsub -hold_jid stg_M"+mouse+"_D"+day+ " M"+mouse+"_D"+day+".sh"
+compute_string = "qsub -hold_jid M"+mouse+"_D"+day+"_DL M"+mouse+"_D"+day+".sh"
 
 stageout_text = """
 # Grid Engine options start with a #$
 #$ -cwd
+#$ -N M"""+mouse+"""_D"""+day+"""_UL
 # Choose the staging environment
 #$ -q staging
 
@@ -126,10 +126,7 @@ rsync -rl ${SOURCE} ${DESTINATION}"""
 f = open(code_path + "stageout_M"+mouse+"_D"+day+".sh", "w")
 f.write(stageout_text)
 f.close()
-
-stageout_string = "qsub -hold_jid M"+mouse+"_D"+day+"_compute stageout_M"+mouse+"_D"+day+".sh"
-print("qsub -hold_jid M"+mouse+"_D"+day+"_compute stageout_M"+mouse+"_D"+day+".sh")
-
+stageout_string = "qsub -hold_jid M"+mouse+"_D"+day+"_PL stageout_M"+mouse+"_D"+day+".sh"
 
 
 os.chdir(code_path)
