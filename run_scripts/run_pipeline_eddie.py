@@ -140,7 +140,7 @@ def main():
         run_postprocessing=True,
         concat_sort=False,
         use_dlc_to_extract_openfield_position=True,
-        deeplabcut_of_model_path = project_path + "openfield_pose-Harry Clark-2024-05-13/",
+        deeplabcut_of_model_path = project_path + "openfield_pose_eddie/",
         sorting_analyzer_path= ephys_path + "sorting_analyzer/",
         phy_path = ephys_path + "phy/",
         report_path = ephys_path + "report/",

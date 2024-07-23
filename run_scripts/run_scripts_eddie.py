@@ -20,7 +20,7 @@ os.makedirs(ders_path, exist_ok=True)
 active_projects_path = "/exports/cmvm/datastore/sbms/groups/CDBS_SIDB_storage/NolanLab/ActiveProjects/"
 source_path = active_projects_path + "Harry/Cohort11_april2024/"
 output_path = source_path + "derivatives/M" + mouse + "/D" + day + "/"
-source_path_DLC_OF_MODEL = active_projects_path+"Harry/deeplabcut/openfield_pose-Harry Clark-2024-05-13"
+source_path_DLC_OF_MODEL = active_projects_path+"Harry/deeplabcut/openfield_pose_eddie"
 
 email = "hclark3@ed.ac.uk"
 repo_path = "/home/hclark3/Elrond/"
