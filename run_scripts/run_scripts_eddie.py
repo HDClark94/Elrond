@@ -135,8 +135,8 @@ print("qsub -hold_jid M"+mouse+"_D"+day+"_compute stageout_M"+mouse+"_D"+day+".s
 os.chdir(code_path)
 
 subprocess.call( stagein_string.split() )
-#subprocess.call( compute_string.split() )
-#subprocess.call( stageout_string.split() )
+subprocess.call( compute_string.split() )
+subprocess.call( stageout_string.split() )
 
 
 
