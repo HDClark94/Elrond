@@ -24,7 +24,7 @@ def make_trajectory_heat_maps(whole_trajectory, trajectory_1, trajectory_2):
 
 
 def make_same_sized_rate_maps(trajectory_1, trajectory_2, cluster_spatial_firing_1, cluster_spatial_firing_2):
-    whole_trajectory = trajectory_1.append(trajectory_2)
+    whole_trajectory = trajectory_1._append(trajectory_2)
     cluster_id = cluster_spatial_firing_1.cluster_id.iloc[0]
 
     number_of_bins_x, number_of_bins_y = get_number_of_bins(whole_trajectory)
