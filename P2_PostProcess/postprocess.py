@@ -7,7 +7,7 @@ from P2_PostProcess.Opto import opto as opto
 from P2_PostProcess.Sleep import sleep as sleep
 from P2_PostProcess.ABOVisualCoding import visual_coding
 
-def postprocess(working_recording_path, local_path, processed_folder_name, processed_paths, recording_paths, **kwargs):
+def postprocess(processed_folder_name, processed_paths, recording_paths, **kwargs):
     # process behaviour and spike data based on the recording type
 
     recording_types = get_recording_types(recording_paths)

@@ -94,7 +94,7 @@ def process_recordings(recording_paths,
 
     if run_postprocessing:
         print("I will now try to postprocess")
-        postprocess(working_recording_path, local_path, processed_folder_name, processed_paths, recording_paths=recording_paths, **kwargs)
+        postprocess(processed_folder_name, processed_paths, recording_paths=recording_paths, **kwargs)
 
     for recording_path in recording_paths:
         try:
