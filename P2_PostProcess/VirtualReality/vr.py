@@ -49,7 +49,7 @@ def process(recording_path, processed_path, **kwargs):
         spike_data = add_location_and_task_variables(spike_data, position_data, processed_position_data, track_length)
         position_data.to_csv(position_data_path, index=False)
         spike_data.to_pickle(spike_data_path)
-        plot_track_firing(spike_data, processed_position_data, output_path=recording_path+"/"+processed_folder_name, track_length=track_length)
+        plot_track_firing(spike_data, processed_position_data, output_path=processed_path + sorterName, track_length=track_length)
     else:
         print("I couldn't find spike data at ", spike_data_path)
     return
