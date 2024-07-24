@@ -22,11 +22,11 @@ def postprocess(processed_folder_name, processed_paths, recording_paths, **kwarg
         elif type == "openfield":
             of.process(recording_path, processed_path, **kwargs)
         elif type == "opto":
-            opto.process(recording_path, processed_folder_name, **kwargs)
+            opto.process(recording_path, processed_path, **kwargs)
         elif type == "sleep":
-            sleep.process(recording_path, processed_folder_name, **kwargs)
+            sleep.process(recording_path, processed_path, **kwargs)
         elif type == "allen_brain_observatory_visual_coding":
-            visual_coding.process(recording_path, processed_folder_name, **kwargs)
+            visual_coding.process(recording_path, processed_path, **kwargs)
 
         else:
             print(type, " isn't a recognised recording type in postprocessing")
