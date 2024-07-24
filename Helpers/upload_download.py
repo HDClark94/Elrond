@@ -36,11 +36,9 @@ def load_recording(recording_path, recording_format):
     if recording_format == "openephys":
         files = [f for f in Path(recording_path).iterdir()]
         if np.any([".continuous" in f.name and f.is_file() for f in files]):
-            # format = 'legacy'
-            recording = si.read_openephys(recording_path, stream_name='Signals CH')
+            recording = si.read_openephys(recording_path, stream_name='Signals CH') # format = 'legacy'
         else:
-            # format = 'binary'
-            recording = si.read_openephys(recording_path)
+            recording = si.read_openephys(recording_path) # format = 'binary'
 
     elif recording_format == "spikeglx":
         recording = si.read_spikeglx(recording_path)  # untested
@@ -108,6 +106,15 @@ def get_recording_types(recording_paths):
             print("I can't assign a recording type without input")
             recording_types.append("NOT A A VALID RECORDING TYPE")
     return recording_types
+
+def get_recording_type(recording_path):
+    if os.path.exists(recording_path+"/params.yml"):
+        params = load_dict_from_file(recording_path+"/params.yml")
+        if 'recording_type' in params:
+            return params['recording_type']
+    else:
+        print("I couldn't find a params.yml file for ", recording_path)
+    return None
 
 
 def get_recording_format(recording_path):
