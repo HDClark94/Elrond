@@ -284,7 +284,7 @@ def process(recording_path, processed_path, **kwargs):
     # look for position_data
     files = [f for f in Path(recording_path).iterdir()]
     if np.any(["blender.csv" in f.name and f.is_file() for f in files]):
-        position_data = generate_position_data_from_blender_file(recording_path, processed_folder_name)
+        position_data = generate_position_data_from_blender_file(recording_path, processed_path)
     else:
         print("I couldn't find any source of position data")
 
@@ -293,8 +293,8 @@ def process(recording_path, processed_path, **kwargs):
     # process video
     #position_data = process_video(recording_path, processed_folder_name, position_data)
 
-    position_data_path = recording_path + "/" + processed_path + "/position_data.csv"
-    spike_data_path = recording_path + "/" + processed_path + "/" + sorterName + "/spikes.pkl"
+    position_data_path = processed_path + "position_data.csv"
+    spike_data_path = processed_path + sorterName + "/spikes.pkl"
 
     # save position data
     position_data.to_csv(position_data_path, index=False)
