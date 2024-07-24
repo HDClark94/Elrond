@@ -2,6 +2,7 @@ import pandas as pd
 from Helpers.upload_download import *
 from P1_SpikeSort.preprocess import preprocess, ammend_preprocessing_parameters
 from P1_SpikeSort.auto_curate import auto_curation
+from P1_SpikeSort.probe import add_probe
 
 from os.path import expanduser
 si.set_global_job_kwargs(n_jobs=1)
@@ -144,16 +145,19 @@ def spikesort(
 def make_recording_from_paths_and_get_times(recording_paths):
 
     rec_times = []
-    temp_recording = None
     mono_recording = None
-    home_path = expanduser('~')
     for recording_path in recording_paths:
-        temp_recording = si.read_openephys(recording_path)
+        recording_format = get_recording_format(recording_path)
+        temp_recording = load_recording(recording_path, recording_format)
+
         rec_times.append(temp_recording.get_total_samples())
         if mono_recording is None:
             mono_recording = temp_recording
         else:
             mono_recording = si.concatenate_recordings([mono_recording, temp_recording])
-    temp_recording = None
+
+    # check if a probe has been added, if not add it
+    try: _ = mono_recording.get_probe()
+    except: mono_recording, _ = add_probe(mono_recording, recording_paths[0])
 
     return mono_recording, rec_times
