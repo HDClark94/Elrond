@@ -77,6 +77,296 @@ def plot_ranked_image_peristimulus_by_shank(spike_data, position_data, output_pa
     plt.savefig(save_path + '_perstimulus_shank_comparison_top_' + str(top_n) + '.png', dpi=300)
     plt.close()
 
+def plot_all_neural_responses_to_image(spike_data, position_data, output_path, image_IDs=[]):
+    save_path = output_path + '/Figures/image_peristimulus'
+    if os.path.exists(save_path) is False:
+        os.makedirs(save_path)
+
+    for shank_id in np.unique(spike_data["shank_id"]):
+        shank_spike_data = spike_data[spike_data["shank_id"] == shank_id]
+
+        # Create a figure and a set of subplots with 3 rows and 6 columns
+        fig, axs = plt.subplots(len(image_IDs), 2, figsize=(6, 3))
+
+        # Display images in the first row
+        for image_i, image_ID in enumerate(image_IDs):
+            img = mpimg.imread(settings.natural_scenes_image_folder_path + "/image_" + str(-1 * image_ID) + ".jpg")
+            axs[0,image_i].imshow(img, cmap="gray")
+            axs[0,image_i].axis('off')  # Hide the axes for images
+
+            ranks = []
+            for i, cluster_id in enumerate(shank_spike_data.cluster_id):
+                cluster_spike_data = spike_data[spike_data["cluster_id"] == cluster_id]
+                firing_times_cluster = np.array(cluster_spike_data["firing_times"].iloc[0]) / settings.sampling_rate
+
+                valid_times_all_trials=[]
+                id_trial_numbers = np.unique(position_data[position_data["image_ID"] == image_ID]["trial_number"])
+                for tn_idx, tn in enumerate(id_trial_numbers):
+                    t_start = position_data[position_data["trial_number"] == tn]["time_seconds"].iloc[0] - 0.25
+                    t_end = t_start + 1.5
+                    valid_times = firing_times_cluster[(firing_times_cluster > t_start) & (firing_times_cluster < t_end)]
+                    valid_times = valid_times - t_start -0.25  # offset to trial tn-1 start
+                    valid_times_all_trials.extend(valid_times.tolist())
+
+
+
+
+            # find the cells for which the rank is the highest
+            highest_rank=0
+            cluster_id_of_highest_rank=0
+            for i, cluster_id in enumerate(shank_spike_data.cluster_id):
+                ranked_images = np.array(shank_spike_data["image_ranks"].iloc[i])
+                rank = np.argwhere(ranked_images == image_ID)[0][0]
+                if rank>=highest_rank:
+                    highest_rank=rank
+                    cluster_id_of_highest_rank = cluster_id
+            highest_rank = len(ranked_images)-highest_rank
+            print(f"for shank {shank_id}, the highest rank for image {image_ID} is {highest_rank}")
+
+            cluster_spike_data = spike_data[spike_data["cluster_id"] == cluster_id_of_highest_rank]
+            firing_times_cluster = np.array(cluster_spike_data["firing_times"].iloc[0]) / settings.sampling_rate
+            firing_trial_numbers_cluster = np.array(cluster_spike_data["trial_number"].iloc[0])
+
+            axs[1,image_i].axvline(x=0.0, linewidth=1, color="grey")
+            axs[1,image_i].axvline(x=0.25, linewidth=1, color="grey")
+            axs[1,image_i].set_xlim(-0.25, 1)
+            axs[1,image_i].set_ylim(0, 50)
+            axs[1,image_i].set_xticks([])
+            axs[1,image_i].set_xticklabels([])
+            valid_times_all_trials = []
+            for tn_idx, tn in enumerate(id_trial_numbers):
+                t_start = position_data[position_data["trial_number"] == tn]["time_seconds"].iloc[0] - 0.25
+                t_end = t_start + 1.5
+                valid_times = firing_times_cluster[(firing_times_cluster > t_start) & (firing_times_cluster < t_end)]
+                valid_times = valid_times - t_start -0.25  # offset to trial tn-1 start
+                valid_times_all_trials.extend(valid_times.tolist())
+                if len(valid_times) > 0:
+                    axs[1,image_i].plot(valid_times, np.ones(len(valid_times)) * tn_idx, "|", markersize=4, color="black")
+
+            axs[2,image_i].axvline(x=0.0, linewidth=1, color="grey")
+            axs[2,image_i].axvline(x=0.25, linewidth=1, color="grey")
+            axs[2,image_i].set_xlim(-0.25, 1)
+            #axs[image_i, 2].set_ylim(0, 50)
+
+            valid_times_all_trials = np.array(valid_times_all_trials)
+            time_bins = np.arange(-0.25, 1.75, settings.time_bin_size)  # 100ms time bins
+            hist, bin_edges = np.histogram(valid_times_all_trials, time_bins)
+            bin_centres = 0.5 * (bin_edges[1:] + bin_edges[:-1])
+            axs[2,image_i].bar(bin_centres, hist, width=settings.time_bin_size, color="black")
+
+        # Adjust layout to prevent overlapping
+        plt.tight_layout()
+        plt.subplots_adjust(hspace=0.1)
+        plt.savefig(save_path + '/perstimulus_shank' + str(shank_id) + '.png', dpi=300)
+        plt.close()
+    return
+
+def plot_response_to_image(spike_data, position_data, output_path, image_IDs=[]):
+    save_path = output_path + '/Figures/image_peristimulus'
+    if os.path.exists(save_path) is False:
+        os.makedirs(save_path)
+
+    for cluster_id in np.unique(spike_data["cluster_id"]):
+        cluster_spike_data = spike_data[spike_data["cluster_id"] == cluster_id]
+        shank_id = cluster_spike_data["shank_id"].iloc[0]
+
+        # Create a figure and a set of subplots with 3 rows and 6 columns
+        fig, axs = plt.subplots(len(image_IDs), 3, figsize=(6, 4))
+
+        # Display images in the first row
+        for image_i, image_ID in enumerate(image_IDs):
+            img = mpimg.imread(settings.natural_scenes_image_folder_path + "/image_" + str(-1 * image_ID) + ".jpg")
+            axs[0,image_i].imshow(img, cmap="gray")
+            axs[0,image_i].axis('off')  # Hide the axes for images
+
+            firing_times_cluster = np.array(cluster_spike_data["firing_times"].iloc[0]) / settings.sampling_rate
+
+            axs[1,image_i].axvline(x=0.0, linewidth=1, color="grey")
+            axs[1,image_i].axvline(x=0.25, linewidth=1, color="grey")
+            axs[1,image_i].set_xlim(-0.25, 1)
+            axs[1,image_i].set_ylim(0, 50)
+            axs[1,image_i].set_xticks([])
+            axs[1,image_i].set_xticklabels([])
+            id_trial_numbers = np.unique(position_data[position_data["image_ID"] == image_ID]["trial_number"])
+            valid_times_all_trials = []
+            for tn_idx, tn in enumerate(id_trial_numbers):
+                t_start = position_data[position_data["trial_number"] == tn]["time_seconds"].iloc[0] - 0.25
+                t_end = t_start + 1.5
+                valid_times = firing_times_cluster[(firing_times_cluster > t_start) & (firing_times_cluster < t_end)]
+                valid_times = valid_times - t_start -0.25  # offset to trial tn-1 start
+                valid_times_all_trials.extend(valid_times.tolist())
+                if len(valid_times) > 0:
+                    axs[1,image_i].plot(valid_times, np.ones(len(valid_times)) * tn_idx, "|", markersize=4, color="black")
+
+            axs[2,image_i].axvline(x=0.0, linewidth=1, color="grey")
+            axs[2,image_i].axvline(x=0.25, linewidth=1, color="grey")
+            axs[2,image_i].set_xlim(-0.25, 1)
+            #axs[image_i, 2].set_ylim(0, 50)
+
+            valid_times_all_trials = np.array(valid_times_all_trials)
+            time_bins = np.arange(-0.25, 1.75, settings.time_bin_size)  # 100ms time bins
+            hist, bin_edges = np.histogram(valid_times_all_trials, time_bins)
+            bin_centres = 0.5 * (bin_edges[1:] + bin_edges[:-1])
+            axs[2,image_i].bar(bin_centres, hist, width=settings.time_bin_size, color="black")
+
+        # Adjust layout to prevent overlapping
+        plt.tight_layout()
+        plt.subplots_adjust(hspace=0.1)
+        plt.savefig(save_path + '/perstimulus_shank' + str(shank_id) + '_c_'+str(cluster_id)+'.png', dpi=300)
+        plt.close()
+    return
+
+
+def plot_response_to_image_highest_ranked_cell(spike_data, position_data, output_path, image_IDs=[]):
+    save_path = output_path + '/Figures/image_peristimulus'
+    if os.path.exists(save_path) is False:
+        os.makedirs(save_path)
+
+    for shank_id in np.unique(spike_data["shank_id"]):
+        shank_spike_data = spike_data[spike_data["shank_id"] == shank_id]
+
+        # Create a figure and a set of subplots with 3 rows and 6 columns
+        fig, axs = plt.subplots(len(image_IDs), 3, figsize=(6, 4))
+
+        # Display images in the first row
+        for image_i, image_ID in enumerate(image_IDs):
+            img = mpimg.imread(settings.natural_scenes_image_folder_path + "/image_" + str(-1 * image_ID) + ".jpg")
+            axs[0,image_i].imshow(img, cmap="gray")
+            axs[0,image_i].axis('off')  # Hide the axes for images
+
+            # find the cells for which the rank is the highest
+            highest_rank=0
+            cluster_id_of_highest_rank=0
+            for i, cluster_id in enumerate(shank_spike_data.cluster_id):
+                ranked_images = np.array(shank_spike_data["image_ranks"].iloc[i])
+                rank = np.argwhere(ranked_images == image_ID)[0][0]
+                if rank>=highest_rank:
+                    highest_rank=rank
+                    cluster_id_of_highest_rank = cluster_id
+            highest_rank = len(ranked_images)-highest_rank
+            print(f"for shank {shank_id}, the highest rank for image {image_ID} is {highest_rank}")
+
+            cluster_spike_data = spike_data[spike_data["cluster_id"] == cluster_id_of_highest_rank]
+            firing_times_cluster = np.array(cluster_spike_data["firing_times"].iloc[0]) / settings.sampling_rate
+            firing_trial_numbers_cluster = np.array(cluster_spike_data["trial_number"].iloc[0])
+
+            axs[1,image_i].axvline(x=0.0, linewidth=1, color="grey")
+            axs[1,image_i].axvline(x=0.25, linewidth=1, color="grey")
+            axs[1,image_i].set_xlim(-0.25, 1)
+            axs[1,image_i].set_ylim(0, 50)
+            axs[1,image_i].set_xticks([])
+            axs[1,image_i].set_xticklabels([])
+            id_trial_numbers = np.unique(position_data[position_data["image_ID"] == image_ID]["trial_number"])
+            valid_times_all_trials = []
+            for tn_idx, tn in enumerate(id_trial_numbers):
+                t_start = position_data[position_data["trial_number"] == tn]["time_seconds"].iloc[0] - 0.25
+                t_end = t_start + 1.5
+                valid_times = firing_times_cluster[(firing_times_cluster > t_start) & (firing_times_cluster < t_end)]
+                valid_times = valid_times - t_start -0.25  # offset to trial tn-1 start
+                valid_times_all_trials.extend(valid_times.tolist())
+                if len(valid_times) > 0:
+                    axs[1,image_i].plot(valid_times, np.ones(len(valid_times)) * tn_idx, "|", markersize=4, color="black")
+
+            axs[2,image_i].axvline(x=0.0, linewidth=1, color="grey")
+            axs[2,image_i].axvline(x=0.25, linewidth=1, color="grey")
+            axs[2,image_i].set_xlim(-0.25, 1)
+            #axs[image_i, 2].set_ylim(0, 50)
+
+            valid_times_all_trials = np.array(valid_times_all_trials)
+            time_bins = np.arange(-0.25, 1.75, settings.time_bin_size)  # 100ms time bins
+            hist, bin_edges = np.histogram(valid_times_all_trials, time_bins)
+            bin_centres = 0.5 * (bin_edges[1:] + bin_edges[:-1])
+            axs[2,image_i].bar(bin_centres, hist, width=settings.time_bin_size, color="black")
+
+        # Adjust layout to prevent overlapping
+        plt.tight_layout()
+        plt.subplots_adjust(hspace=0.1)
+        plt.savefig(save_path + '/perstimulus_shank' + str(shank_id) + '.png', dpi=300)
+        plt.close()
+    return
+
+
+
+
+
+
+
+def plot_ranked_image_peristimulus_by_shank_heatmap_image_IDs(spike_data, position_data, output_path, image_IDs=[]):
+    save_path = output_path + '/Figures/ranked_image_peristimulus'
+    if os.path.exists(save_path) is False:
+        os.makedirs(save_path)
+
+    for image_ID in image_IDs:
+        recording_length = max(position_data["time_seconds"])
+        for shuffle, shuffle_linestyle in zip(["", "_shuffled"], ["solid", "dashed"]):
+            all_shank_hists = []
+            for shank_idx, shank_id in enumerate(np.unique(spike_data.shank_id)):
+
+                shank_spike_data = spike_data[spike_data.shank_id == shank_id]
+                shank_hists = []
+                for cluster_index, cluster_id in enumerate(shank_spike_data.cluster_id):
+                    cluster_spike_data = shank_spike_data[shank_spike_data["cluster_id"] == cluster_id]
+                    firing_times_cluster = np.array(cluster_spike_data["firing_times"].iloc[0])/settings.sampling_rate
+                    if shuffle == "_shuffled":
+                        random_firing_additions =  np.random.uniform(low=20, high=recording_length-20)
+                        firing_times_cluster += random_firing_additions
+                        firing_times_cluster[firing_times_cluster >= recording_length] -= recording_length  # wrap around
+
+                    if len(firing_times_cluster) > 1:
+                        ranked_images = [image_ID]
+
+                        top_n_hists=[]
+                        for ranked_image in ranked_images:
+                            id_trial_numbers = np.unique(position_data[position_data["image_ID"] == ranked_image]["trial_number"])
+
+                            valid_times_all_trials = []
+                            for tn_idx, tn in enumerate(id_trial_numbers):
+                                t_start = position_data[position_data["trial_number"] == tn]["time_seconds"].iloc[0]-0.25
+                                t_end = t_start+1.75
+                                valid_times = firing_times_cluster[(firing_times_cluster > t_start) &
+                                                                   (firing_times_cluster < t_end)]
+                                valid_times = valid_times-t_start # offset to trial tn-1 start
+                                valid_times_all_trials.extend(valid_times.tolist())
+                            valid_times_all_trials = np.array(valid_times_all_trials)
+                            time_bins = np.arange(0, 2, settings.time_bin_size)  # 100ms time bins
+
+                            hist, bin_edges = np.histogram(valid_times_all_trials, time_bins)
+                            bin_centres = 0.5 * (bin_edges[1:] + bin_edges[:-1])
+                            top_n_hists.append(hist)
+                        shank_hists.append(np.nanmean(top_n_hists,axis=0).tolist())
+
+                shank_hists = np.array(shank_hists)
+                shank_hists = stats.zscore(shank_hists, axis=1, nan_policy="omit")
+
+                # sort by sum of the row
+                #row_sums = shank_hists.sum(axis=1)  # Get the indices that would sort the row sums
+                #sorted_indices = np.argsort(row_sums)  # Sort the array rows based on the sorted indic
+                #shank_hists = shank_hists[sorted_indices]
+
+                all_shank_hists.append(shank_hists)
+
+            fig, axs = plt.subplots(1, 4, figsize=(20, 5))
+            # Create a figure and a set of subplots with 3 rows and 6 columns
+            for i in range(4):
+                # Create a heatmap using pcolormesh with the specified x and y axes
+                c = axs[i].pcolormesh(bin_centres, np.arange(0,len(all_shank_hists[i])), all_shank_hists[i], cmap='viridis', vmin=-3, vmax=3)
+                axs[i].axvline(x=0.25, linewidth=2, color="black")
+                axs[i].axvline(x=0.50, linewidth=2, color="black")
+                axs[i].set_xlim(0, 1.5)
+                axs[i].set_title("shank " + str(i))
+                axs[i].set_ylabel("Neuron")
+                axs[i].set_xlabel("Time (s)")
+            from mpl_toolkits.axes_grid1 import make_axes_locatable
+            divider = make_axes_locatable(axs[-1])
+            cax = divider.append_axes("right", size="5%", pad=0.05)
+            colorbar = fig.colorbar(c, cax=cax)
+            colorbar.set_label('z score fr')
+            plt.tight_layout()
+            plt.savefig(save_path + '_perstimulus_shank_'+str(shank_id)+'_comparison_top_heatmap_imageID' + str(image_ID) + shuffle +'.png', dpi=300)
+            plt.close()
+        print("=====================================")
+    return
+
 def plot_ranked_image_peristimulus_by_shank_heatmap(spike_data, position_data, output_path, top_n=10):
     save_path = output_path + '/Figures/ranked_image_peristimulus'
     if os.path.exists(save_path) is False:
@@ -401,6 +691,52 @@ def bin_fr_in_time(spike_data, position_data, smoothen=True):
     spike_data["fr_time_binned"+suffix] = fr_binned_in_time
     return spike_data
 
+def rank_image_firing_by_abs_fr_change(spike_data, position_data):
+    image_ranks = []
+    for cluster_index, cluster_id in enumerate(spike_data.cluster_id):
+        cluster_spike_data = spike_data[spike_data["cluster_id"] == cluster_id]
+        firing_times_cluster = np.array(cluster_spike_data["firing_times"].iloc[0])
+
+        if len(firing_times_cluster) > 1:
+            fr_binned_in_time = cluster_spike_data["fr_time_binned"].iloc[0]
+
+            abs_change_by_ID = []
+            for id in np.unique(position_data["image_ID"]):
+                id_trial_numbers = np.unique(position_data[position_data["image_ID"] == id]["trial_number"])
+
+                avg_rates_before = []
+                # we want to look at the firing rates before, during and after any given image stimuli
+                for tn in [-3,-2,-1]:
+                    tns= id_trial_numbers-tn
+                    tns = np.intersect1d(tns, np.unique(position_data["trial_number"])) # filter out non trial numbers
+                    # calculate the time binned firing rates for a given set of trials
+                    id_fr_binned_in_time = list_of_list_to_1d_numpy_array_from_indices(fr_binned_in_time, tns-1)
+                    avg_rates_before.append(np.nanmean(id_fr_binned_in_time))
+
+                avg_rates_after = []
+                for tn in [0,1,2]:
+                    tns= id_trial_numbers-tn
+                    tns = np.intersect1d(tns, np.unique(position_data["trial_number"])) # filter out non trial numbers
+                    # calculate the time binned firing rates for a given set of trials
+                    id_fr_binned_in_time = list_of_list_to_1d_numpy_array_from_indices(fr_binned_in_time, tns-1)
+                    avg_rates_after.append(np.nanmean(id_fr_binned_in_time))
+                avg_rates_before = np.array(avg_rates_before)
+                avg_rates_after = np.array(avg_rates_after)
+
+                abs_change = np.abs(np.nanmean(avg_rates_before)
+                                    -np.nanmean(avg_rates_after))
+                abs_change_by_ID.append(abs_change)
+            abs_change_by_ID = np.array(abs_change_by_ID)
+            ranked_IDs = np.unique(position_data["image_ID"])[np.argsort(abs_change_by_ID)]
+            ranked_IDs = ranked_IDs.tolist()
+        else:
+            ranked_IDs = []
+
+        image_ranks.append(ranked_IDs)
+    spike_data["image_ranks"] = image_ranks
+    return spike_data
+
+
 def rank_image_firing(spike_data, position_data):
     image_ranks = []
     for cluster_index, cluster_id in enumerate(spike_data.cluster_id):
@@ -477,11 +813,13 @@ def process(recording_path, processed_folder_name, **kwargs):
 
         #spike_data = rank_image_firing(spike_data, position_data)
         #spike_data.to_pickle(spike_data_path)
-
+        #plot_all_neural_responses_to_image(spike_data, position_data, output_path=recording_path + "/" + processed_folder_name, image_IDs=[-113, -110, -6])
+        plot_response_to_image(spike_data, position_data, output_path=recording_path + "/" + processed_folder_name, image_IDs=[-113, -110, -6])
         #plot_ranked_image_peristimulus_plots(spike_data, position_data, output_path=recording_path+"/"+processed_folder_name)
-        for n in [1, 3,5,10,20,50, 100, 118]:
-            plot_ranked_image_peristimulus_by_shank_heatmap(spike_data, position_data, output_path=recording_path + "/" + processed_folder_name, top_n=n)
-            plot_ranked_image_peristimulus_by_shank(spike_data, position_data, output_path=recording_path + "/" + processed_folder_name, top_n=n)
+        #for n in [1, 3,5,10,20,50, 100, 118]:
+            #plot_ranked_image_peristimulus_by_shank_heatmap_image_IDs(spike_data, position_data, output_path=recording_path + "/" + processed_folder_name, image_IDs=[-113, -110, -6])
+            #plot_ranked_image_peristimulus_by_shank_heatmap(spike_data, position_data, output_path=recording_path + "/" + processed_folder_name, top_n=n)
+            #plot_ranked_image_peristimulus_by_shank(spike_data, position_data, output_path=recording_path + "/" + processed_folder_name, top_n=n)
 
         #plot_firing(spike_data, position_data, output_path=recording_path+"/"+processed_folder_name)
         #plot_firing2(spike_data, position_data, output_path=recording_path+"/"+processed_folder_name)
