@@ -135,7 +135,7 @@ def main():
         local_path="/home/ubuntu/to_sort/recordings/",
         processed_folder_name="processed/",
         copy_locally=False,
-        run_spikesorting=False,
+        run_spikesorting=True,
         update_results_from_phy=False,
         run_postprocessing=True,
         concat_sort=False,
