@@ -1,7 +1,7 @@
 import sys
 import traceback
 import warnings
-import settings
+import Elrond.settings as settings
 import os
 import spikeinterface.full as si
 

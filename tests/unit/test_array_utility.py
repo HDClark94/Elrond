@@ -1,7 +1,7 @@
 import numpy as np
 import sys
 sys.path.append("..")
-from Helpers import array_utility
+from Elrond.Helpers import array_utility
 
 
 def test_shift():

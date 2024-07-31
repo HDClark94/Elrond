@@ -2,7 +2,7 @@ import numpy as np
 import os
 import pandas as pd
 import pickle
-import settings
+import Elrond.settings as settings
 import PreClustering.dead_channels
 import PostSorting.compare_first_and_second_half
 import PostSorting.curation
@@ -26,7 +26,7 @@ import PostSorting.speed
 import PostSorting.temporal_firing
 import PostSorting.theta_modulation
 import PostSorting.load_snippet_data_opto
-from Helpers import file_utility, open_ephys_IO
+from Elrond.Helpers import file_utility, open_ephys_IO
 import sys
 import traceback
 prm = PostSorting.parameters.Parameters()

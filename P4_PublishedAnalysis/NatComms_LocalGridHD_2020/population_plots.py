@@ -1,7 +1,7 @@
 import matplotlib.pylab as plt
 from matplotlib  import cm
 import numpy as np
-from Helpers import plot_utility
+from Elrond.Helpers import plot_utility
 
 
 def plot_avg_firing_combined(superficial, deep, path, name):

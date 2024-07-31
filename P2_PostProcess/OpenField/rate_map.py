@@ -1,9 +1,9 @@
 import numpy as np
 import pandas as pd
 import time
-import settings
-from P2_PostProcess.OpenField.spatial_data import get_bin_size, get_dwell, get_number_of_bins
-from Helpers.math_utility import gaussian_kernel
+import Elrond.settings as settings
+from Elrond.P2_PostProcess.OpenField.spatial_data import get_bin_size, get_dwell, get_number_of_bins
+from Elrond.Helpers.math_utility import gaussian_kernel
 
 def rate_map(cluster_id, smooth, spike_data, positions_x, positions_y,
              number_of_bins_x, number_of_bins_y, bin_size_pixels,

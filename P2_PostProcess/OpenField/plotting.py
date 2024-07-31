@@ -2,13 +2,13 @@ import cmocean
 import matplotlib.pylab as plt
 import matplotlib.image as mpimg
 import os
-from Helpers import plot_utility
+from Elrond.Helpers import plot_utility
 import math
 import numpy as np
 import pandas as pd
-import settings
+import Elrond.settings as settings
 
-from P2_PostProcess.OpenField.Scores.head_direction import get_hd_histogram
+from Elrond.P2_PostProcess.OpenField.Scores.head_direction import get_hd_histogram
 
 def plot_position(position_data):
     plt.plot(position_data['position_x'], position_data['position_y'], color='black', linewidth=5)

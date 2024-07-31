@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import spikeinterface.full as si
 
-import settings
+import Elrond.settings as settings
 
 
 def trace(spike_data, output_path):
@@ -30,6 +30,8 @@ def trace(spike_data, output_path):
     #ax.set_title('Raster Plot of Neuron Spike Times')
     plt.savefig(save_path+"spike_traces.png", dpi=500)
     plt.close()
+
+#Test
 
 
 

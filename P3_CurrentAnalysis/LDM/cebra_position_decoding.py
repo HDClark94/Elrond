@@ -1,5 +1,6 @@
 import pandas as pd
-import settings
+import Elrond.settings as settings
+
 import warnings
 import numpy as np
 import umap
@@ -15,8 +16,45 @@ import cebra.datasets
 from cebra import CEBRA
 import cebra.integrations.plotly
 
+from sklearn.neighbors import KNeighborsRegressor, KNeighborsClassifier
+import sklearn.metrics
+
 from matplotlib.collections import LineCollection
-from Helpers.array_utility import list_of_list_to_1d_numpy_array
+from Elrond.Helpers.array_utility import list_of_list_to_1d_numpy_array
+
+import sklearn.metrics
+
+def encode_1d_to_2d(positions, min_val=0, max_val=200):
+    # Calculate the circumference
+    circumference = max_val - min_val
+
+    # Normalize positions to fall between 0 and 1
+    normalized_positions = (positions - min_val) / circumference
+
+    # Calculate 2D coordinates
+    x_positions = np.cos(2 * np.pi * normalized_positions)
+    y_positions = np.sin(2 * np.pi * normalized_positions)
+
+    return np.array([x_positions, y_positions]).T
+
+
+def decode_2d_to_1d(coordinates, min_val=0, max_val=200):
+    # Calculate the circumference
+    circumference = max_val - min_val
+
+    # Transform 2D coordinates back into angles
+    angles = np.arctan2(coordinates[:,1], coordinates[:,0])
+
+    # Normalize angles to fall between 0 and 1
+    normalized_angles = (angles % (2 * np.pi)) / (2 * np.pi)
+
+    # Calculate original positions
+    positions = normalized_angles * circumference + min_val
+    print(positions.shape)
+
+    return positions
+
+
 
 def extract_fr_column(spike_data, column):
     column_data = []
@@ -97,7 +135,7 @@ def compare_ldm(spike_data):
     cax = divider.append_axes("right", size="5%", pad=0.1)
     cbar = plt.colorbar(scatter_pca_then_umap, cax=cax, label='Third Variable')
     cbar.set_alpha(1)
-    cbar.draw_all()
+    cbar._draw_all()
 
     # Adjust the position of the colorbar
     cbar.ax.yaxis.set_ticks_position('left')
@@ -105,7 +143,7 @@ def compare_ldm(spike_data):
 
     # Show the plot
     plt.tight_layout()
-    plt.savefig("/mnt/datastore/Harry/compare_pca_umap_tsne_discrete_colorbar.png", dpi=400)
+    plt.savefig("/mnt/datastore/Harry/plot_viewer/compare_pca_umap_tsne_discrete_colorbar.png", dpi=400)
     plt.close()
 
     # Create a figure with 2x2 subplots
@@ -147,7 +185,7 @@ def compare_ldm(spike_data):
     cax = divider.append_axes("right", size="5%", pad=0.1)
     cbar = plt.colorbar(scatter_pca_then_umap, cax=cax, label='Pos(cm)')
     cbar.set_alpha(1)
-    cbar.draw_all()
+    cbar._draw_all()
 
     # Adjust the position of the colorbar
     cbar.ax.yaxis.set_ticks_position('left')
@@ -185,121 +223,124 @@ def computer_behaviour_kinematics(position_data, xnew_length, xnew_time_bin_size
     return resampled_behavioural_data
 
 def cebra_test(spike_data, position_data):
-    fr_time_binned = extract_fr_column(spike_data, column="fr_time_binned")
-
-    # extract spatial variables from position
-    times = np.array(position_data['time_seconds'], dtype="float64")
-    trial_numbers_raw = np.array(position_data['trial_number'], dtype=np.int64)
-
-    # calculate the average fr in each 100ms time bin
-    time_bins = np.arange(min(times), max(times), settings.time_bin_size) # 100ms time bins
-    tn_time_bin_means = (np.histogram(times, time_bins, weights = trial_numbers_raw)[0] / np.histogram(times, time_bins)[0]).astype(np.int64)
-
-    # extract y locations
-    image_IDs = []
-    for i in range(len(tn_time_bin_means)):
-        image_IDs.append(position_data[position_data["trial_number"] == tn_time_bin_means[i]]["image_ID"].iloc[0])
-    image_IDs = np.array(image_IDs, dtype=np.int64)[:len(fr_time_binned[0])]+118
+    fr_time_binned = extract_fr_column(spike_data, column="fr_time_binned_smoothed")
+    x_time_binned = extract_fr_column(spike_data, column="fr_time_binned_bin_centres")
 
     # flip axis so its in form (n_samples, n_features)
     fr_time_binned = np.transpose(fr_time_binned)
-    image_IDs = np.transpose(image_IDs)
+    x_time_binned = np.transpose(x_time_binned)
 
-    hippocampus_pos = cebra.datasets.init('rat-hippocampus-single-achilles')
+    behavioural_data = computer_behaviour_kinematics(position_data, xnew_length=len(x_time_binned[:,0]),
+                                                     xnew_time_bin_size=settings.time_bin_size, track_length=200)
 
-    max_iterations = 10000
-    output_dimension = 32  # here, we set as a variable for hypothesis testing below.
-    cebra_posdir3_model = CEBRA(model_architecture='offset10-model',
+    x_position_cm = np.array(behavioural_data["x_position_cm"])
+    speed = np.array(behavioural_data["speed"]); speed = speed/np.max(speed)
+    acceleration = np.array(behavioural_data["acceleration"])
+    trial_numbers = np.array(behavioural_data["trial_numbers"])
+    time_seconds = np.array(behavioural_data["time_seconds"])
+    x_position_cm_xy_cyc = encode_1d_to_2d(positions=x_position_cm)
+    x_position_cm_x_cyc = x_position_cm_xy_cyc[:,0]
+    x_position_cm_y_cyc = x_position_cm_xy_cyc[:,1]
+
+
+    max_iterations = 11000
+    output_dimension = 3  # here, we set as a variable for hypothesis testing below.
+    cebra_model = CEBRA(model_architecture='offset10-model',
                                 batch_size=512,
                                 learning_rate=3e-4,
-                                temperature=1,
-                                output_dimension=3,
+                                temperature=10,
+                                output_dimension=output_dimension,
                                 max_iterations=max_iterations,
                                 distance='cosine',
                                 conditional='time_delta',
                                 device='cuda_if_available',
                                 verbose=True,
-                                time_offsets=10)
-    cebra_posdir3_model.fit(fr_time_binned, image_IDs)
-    cebra_posdir3 = cebra_posdir3_model.transform(fr_time_binned)
+                                time_offsets=1)
 
-    cebra_posdir_shuffled3_model = CEBRA(model_architecture='offset10-model',
-                                         batch_size=512,
-                                         learning_rate=3e-4,
-                                         temperature=1,
-                                         output_dimension=3,
-                                         max_iterations=max_iterations,
-                                         distance='cosine',
-                                         conditional='time_delta',
-                                         device='cuda_if_available',
-                                         verbose=True,
-                                         time_offsets=10)
-    x_position_cm_shuffled = np.random.permutation(image_IDs)
-    cebra_posdir_shuffled3_model.fit(fr_time_binned, x_position_cm_shuffled)
-    cebra_posdir_shuffled3 = cebra_posdir_shuffled3_model.transform(fr_time_binned)
+    all_behaviour = np.stack([x_position_cm, x_position_cm_x_cyc, x_position_cm_y_cyc, speed, acceleration, trial_numbers, time_seconds], axis=0)
+    all_behaviour = np.transpose(all_behaviour)
+    neural_train, neural_test, label_train, label_test = split_data(fr_time_binned, all_behaviour, 0.2)
 
-    cebra_time3_model = CEBRA(model_architecture='offset10-model',
-                              batch_size=512,
-                              learning_rate=3e-4,
-                              temperature=1.12,
-                              output_dimension=3,
-                              max_iterations=max_iterations,
-                              distance='cosine',
-                              conditional='time',
-                              device='cuda_if_available',
-                              verbose=True,
-                              time_offsets=10)
-    cebra_time3_model.fit(fr_time_binned)
-    cebra_time3 = cebra_time3_model.transform(fr_time_binned)
+    cebra_model.fit(neural_train, label_train[:, 1:3])
 
-    cebra_hybrid_model = CEBRA(model_architecture='offset10-model',
-                               batch_size=512,
-                               learning_rate=3e-4,
-                               temperature=1,
-                               output_dimension=3,
-                               max_iterations=max_iterations,
-                               distance='cosine',
-                               conditional='time_delta',
-                               device='cuda_if_available',
-                               verbose=True,
-                               time_offsets=10,
-                               hybrid=True)
-    #cebra_hybrid_model.fit(fr_time_binned, image_IDs)
-    #cebra_hybrid = cebra_posdir3_model.transform(fr_time_binned)
+    cebra_train = cebra_model.transform(neural_train)
+    cebra_test = cebra_model.transform(neural_test)
 
+    cebra_pos_decode_train = decoding_pos(cebra_train, cebra_train, label_train[:, 1:3])
+    cebra_pos_decode_test = decoding_pos(cebra_train, cebra_test, label_train[:, 1:3])
 
-    fig = plt.figure(figsize=(10, 6))
-    ax1 = fig.add_subplot(3, 4, 1, projection="3d")
-    ax2 = fig.add_subplot(3, 4, 2, projection="3d")
-    ax3 = fig.add_subplot(3, 4, 3, projection="3d")
-    ax4 = fig.add_subplot(3, 4, 4, projection="3d")
-    ax5 = fig.add_subplot(3, 4, 5, projection="3d")
-    ax6 = fig.add_subplot(3, 4, 6, projection="3d")
-    ax7 = fig.add_subplot(3, 4, 7, projection="3d")
-    ax8 = fig.add_subplot(3, 4, 8, projection="3d")
-    ax9 = fig.add_subplot(3, 4, 9, projection="3d")
-    ax10 = fig.add_subplot(3, 4, 10, projection="3d")
-    ax11 = fig.add_subplot(3, 4, 11, projection="3d")
-    ax12 = fig.add_subplot(3, 4, 12, projection="3d")
-    ax1 = plot_embeddings(ax1, cebra_posdir3, image_IDs, cmap="cool", viewing_angle=1)
-    ax2 = plot_embeddings(ax2, cebra_posdir_shuffled3, image_IDs, cmap="cool", viewing_angle=1)
-    ax3 = plot_embeddings(ax3, cebra_time3, image_IDs, cmap="cool", viewing_angle=1)
-    #ax4 = plot_embeddings(ax4, cebra_hybrid, image_IDs, cmap="cool", viewing_angle=1)
-    ax5 = plot_embeddings(ax5, cebra_posdir3, image_IDs, cmap="cool", viewing_angle=2)
-    ax6 = plot_embeddings(ax6, cebra_posdir_shuffled3, image_IDs, cmap="cool", viewing_angle=2)
-    ax7 = plot_embeddings(ax7, cebra_time3, image_IDs, cmap="cool", viewing_angle=2)
-    #ax8 = plot_embeddings(ax8, cebra_hybrid, image_IDs, cmap="cool", viewing_angle=2)
-    ax9 = plot_embeddings(ax9, cebra_posdir3, image_IDs, cmap="cool", viewing_angle=3)
-    ax10 = plot_embeddings(ax10, cebra_posdir_shuffled3, image_IDs, cmap="cool", viewing_angle=3)
-    ax11 = plot_embeddings(ax11, cebra_time3, image_IDs, cmap="cool", viewing_angle=3)
-    #ax12 = plot_embeddings(ax12, cebra_hybrid, image_IDs, cmap="cool", viewing_angle=3)
-    ax1.set_title('CEBRA-Behavior')
-    ax2.set_title('CEBRA-Shuffled')
-    ax3.set_title('CEBRA-Time')
-    ax4.set_title('CEBRA-Hybrid')
-    plt.savefig("/mnt/datastore/Harry/plot_viewer/ABO_cebra-behaviour-position.png", dpi=400)
+    original_train = decode_2d_to_1d(label_train[:,1:3])
+    original_test = decode_2d_to_1d(label_test[:,1:3])
+    decoded_train = decode_2d_to_1d(cebra_pos_decode_train)
+    decoded_test = decode_2d_to_1d(cebra_pos_decode_test)
+
+    fig = plt.figure(figsize=(5, 5))
+    ax = plt.subplot(111)
+    ax.plot(cebra_model.state_dict_['loss'], c='deepskyblue', alpha=0.3, label='position')
+    ax.spines['top'].set_visible(False)
+    ax.spines['right'].set_visible(False)
+    ax.set_xlabel('Iterations')
+    ax.set_ylabel('InfoNCE Loss')
+    plt.legend(bbox_to_anchor=(0.5, 0.3), frameon=False)
+    plt.savefig("/mnt/datastore/Harry/plot_viewer/cebra/hits_cebra_loss_function.png", dpi=400)
     plt.close()
+
+
+    fig = plt.figure(figsize=(5, 5))
+    ax = plt.subplot(111)
+    avg_error_by_location, bin_edges = np.histogram(label_test[:, 0], bins=20, range=(0,200), weights=np.abs(original_test-decoded_test))
+    avg_error_by_location = avg_error_by_location/np.histogram(label_test[:, 0], bins=20, range=(0,200))[0]
+    bin_centres = 0.5 * (bin_edges[1:] + bin_edges[:-1])
+    ax.plot(bin_centres, avg_error_by_location)
+    ax.spines['top'].set_visible(False)
+    ax.spines['right'].set_visible(False)
+    ax.set_xlabel('Location')
+    ax.set_ylabel('abs error (cm)')
+    plt.savefig("/mnt/datastore/Harry/plot_viewer/cebra/decoder_error.png", dpi=400)
+    plt.close()
+
+    fig = plt.figure(figsize=(9, 3), dpi=150)
+    plt.subplots_adjust(wspace=0.3)
+    ax = plt.subplot(111)
+    n_samples = 4000
+    ax.scatter(label_test[:n_samples, 6], original_test[:n_samples], c='gray', s=1)
+    ax.scatter(label_test[:n_samples, 6], decoded_test[:n_samples], c='red', s=1)
+    plt.ylabel('Position [cm]')
+    plt.xlabel('Time [s]')
+    plt.savefig("/mnt/datastore/Harry/plot_viewer/cebra/position_decoding_test.png", dpi=400)
+    plt.close()
+
+    fig = plt.figure(figsize=(9, 3), dpi=150)
+    plt.subplots_adjust(wspace=0.3)
+    ax = plt.subplot(111)
+    n_samples = 4000
+    ax.scatter(label_train[:n_samples, 6], original_train[:n_samples], c='gray', s=1)
+    ax.scatter(label_train[:n_samples, 6], decoded_train[:n_samples], c='red', s=1)
+    plt.ylabel('Position [cm]')
+    plt.xlabel('Time [s]')
+    plt.savefig("/mnt/datastore/Harry/plot_viewer/cebra/position_decoding_train.png", dpi=400)
+    plt.close()
+    print("")
+    print("plotted some decoding")
     print("plotted some cebra stuff")
+
+def split_data(neural_data, label_data, test_ratio):
+
+    split_idx = int(len(neural_data)* (1-test_ratio))
+    neural_train = neural_data[:split_idx, :]
+    neural_test = neural_data[split_idx:, :]
+    label_train = label_data[:split_idx, :]
+    label_test = label_data[split_idx:, :]
+
+    return neural_train, neural_test, label_train, label_test
+
+
+
+def decoding_pos(emb_train, emb_test, label_train, n_neighbors=36):
+    pos_decoder = KNeighborsRegressor(n_neighbors, metric = 'cosine')
+    pos_decoder.fit(emb_train, label_train)
+    pos_pred = pos_decoder.predict(emb_test)
+    return pos_pred
 
 
 def plot_embeddings(ax, embedding, label, idx_order = (0,1,2), cmap="", viewing_angle=1):
@@ -351,13 +392,13 @@ def main():
     if settings.suppress_warnings:
         warnings.filterwarnings("ignore")
 
-    spike_data = pd.read_pickle("/mnt/datastore/Harry/Cohort11_april2024/allen_brain_observatory_visual_coding/"
-                                "M21_D28_2024-05-30_18-24-56_VID1/processed/mountainsort5/spikes.pkl")
-    position_data = pd.read_csv("/mnt/datastore/Harry/Cohort11_april2024/allen_brain_observatory_visual_coding/"
-                                "M21_D28_2024-05-30_18-24-56_VID1/processed/position_data.csv")
+    spike_data = pd.read_pickle("/mnt/datastore/Harry/Cohort11_april2024/derivatives/M21/D16/vr/M21_D16_2024-05-16_14-40-02_VR1/processed/kilosort4/spikes.pkl")
+    position_data = pd.read_csv("/mnt/datastore/Harry/Cohort11_april2024/derivatives/M21/D16/vr/M21_D16_2024-05-16_14-40-02_VR1/processed/position_data.csv")
+
+    #compare_ldm(spike_data)
 
     cebra_test(spike_data, position_data)
-    compare_ldm(spike_data)
+
 
 
 

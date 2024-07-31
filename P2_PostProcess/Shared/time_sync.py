@@ -4,9 +4,9 @@ import spikeinterface.full as si
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-from Helpers import open_ephys_IO
-from Helpers.array_utility import *
-import settings
+from Elrond.Helpers import open_ephys_IO
+from Elrond.Helpers.array_utility import *
+import Elrond.settings as settings
 from neuroconv.utils.dict import load_dict_from_file, dict_deep_update
 
 

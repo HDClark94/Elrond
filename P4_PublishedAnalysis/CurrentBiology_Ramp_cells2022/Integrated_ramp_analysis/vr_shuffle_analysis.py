@@ -3,9 +3,9 @@ import pandas as pd
 import traceback
 import os
 import sys
-import settings
-from P2_PostProcess.VirtualReality.spatial_firing import bin_fr_in_space
-from P2_PostProcess.VirtualReality.spatial_data import get_track_length, get_stop_threshold
+import Elrond.settings as settings
+from Elrond.P2_PostProcess.VirtualReality.spatial_firing import bin_fr_in_space
+from Elrond.P2_PostProcess.VirtualReality.spatial_data import get_track_length, get_stop_threshold
 
 
 def add_speed(shuffle_firing, position_data):

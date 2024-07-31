@@ -3,13 +3,13 @@ import os
 import cv2
 import matplotlib.pyplot as plt
 from neuroconv.utils.dict import load_dict_from_file
-import settings
+import Elrond.settings as settings
 import deeplabcut as dlc
 import numpy as np
 import shutil
 import math
-from P2_PostProcess.VirtualReality.spatial_data import *
-from P2_PostProcess.Shared.time_sync import *
+from Elrond.P2_PostProcess.VirtualReality.spatial_data import *
+from Elrond.P2_PostProcess.Shared.time_sync import *
 
 def get_distance(x1,y1,x2,y2):
   distance = math.sqrt((x1 - x2)**2 + (y1 - y2)**2)

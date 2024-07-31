@@ -2,15 +2,15 @@ import os
 import sys
 import traceback
 import warnings
-import settings
+import Elrond.settings as settings
 
 from pathlib import Path
 from os.path import expanduser
 
-from Helpers.upload_download import copy_from_local, copy_to_local, \
+from Elrond.Helpers.upload_download import copy_from_local, copy_to_local, \
     empty_recording_folder_from_local, get_recording_paths, get_processed_paths
-from P1_SpikeSort.spikesort import spikesort
-from P2_PostProcess.postprocess import postprocess
+from Elrond.P1_SpikeSort.spikesort import spikesort
+from Elrond.P2_PostProcess.postprocess import postprocess
 
 
 def process_recordings(recording_paths, local_path="", processed_folder_name="", copy_locally=False,

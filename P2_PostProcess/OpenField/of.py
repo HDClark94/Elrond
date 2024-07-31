@@ -1,7 +1,7 @@
-from P2_PostProcess.Shared.time_sync import *
-from P2_PostProcess.OpenField.spatial_data import *
-from P2_PostProcess.OpenField.spatial_firing import *
-from P2_PostProcess.OpenField.plotting import *
+from Elrond.P2_PostProcess.Shared.time_sync import *
+from Elrond.P2_PostProcess.OpenField.spatial_data import *
+from Elrond.P2_PostProcess.OpenField.spatial_firing import *
+from Elrond.P2_PostProcess.OpenField.plotting import *
 
 def process(recording_path, processed_path, **kwargs):
 

@@ -1,7 +1,7 @@
 import numpy as np
 import Published_analysis.NatComms_LocalGridHD_2020.folder_path_settings
 import pandas as pd
-from Helpers import plot_utility
+from Elrond.Helpers import plot_utility
 import matplotlib.pylab as plt
 import scipy.stats
 import os
