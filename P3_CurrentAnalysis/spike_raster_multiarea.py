@@ -31,6 +31,8 @@ def trace(spike_data, output_path):
     plt.savefig(save_path+"spike_traces.png", dpi=500)
     plt.close()
 
+#Test
+
 
 
 def main():
