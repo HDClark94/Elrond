@@ -7,7 +7,7 @@ from Helpers.upload_download import *
 # This script will convert the data within the blender file into
 # a behavioural dataframe using .csv or .pkl file formats.
 
-def generate_position_data_from_blender_file(recording_path, processed_folder_name):
+def generate_position_data_from_blender_file(recording_path, processed_path):
     blender_files = [f for f in Path(recording_path).iterdir() if "blender.csv" in f.name and f.is_file()]
     assert len(blender_files) == 1, "I need one blender.csv file, There isn't exactly one"
     assert get_recording_types([recording_path])[0] == "vr", "recording type must be vr if attempting to generate position data from a blender file"
@@ -28,7 +28,7 @@ def generate_position_data_from_blender_file(recording_path, processed_folder_na
     position_data["sync_pulse"] = blender_data["sync_pulse"]
     position_data["dwell_time_ms"] = np.append(0, np.diff(position_data["time_seconds"]))
 
-    save_path = recording_path+"/"+processed_folder_name+"/position_data.csv"
+    save_path = processed_path + "position_data.csv"
     position_data.to_csv(save_path)
     print("position data has been extracted from blender files saved at ", save_path)
     return position_data

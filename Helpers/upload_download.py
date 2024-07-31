@@ -7,6 +7,28 @@ import settings
 import spikeinterface.full as si
 from neuroconv.utils.dict import load_dict_from_file, dict_deep_update
 
+def get_processed_paths(base_processed_path, recording_paths):
+
+    if base_processed_path is None:
+        base_processed_path = '/'.join(recording_paths[0].split('/')[:-2]) + '/'
+
+    processed_paths = []
+    for recording_path in recording_paths:
+        relative_recording_path = '/'.join(recording_path.split('/')[-2:])
+        processed_paths.append(base_processed_path + relative_recording_path + '/processed/') 
+
+    return processed_paths
+
+def get_recording_paths(project_path, mouse, day):
+    """
+    Get recording paths based on mouse and day.
+    """
+    data_path = project_path + "data/M"+str(mouse)+"_D"+str(day)+"/"
+    recording_paths = [ data_path + "of/" + os.listdir(data_path + "of/")[a] for a in range(0,2)]
+    recording_paths.append(data_path + "vr/" + os.listdir(data_path + "vr/")[0])
+
+    print(recording_paths)
+    return recording_paths
 
 def load_recording(recording_path, recording_format):
     # load recording channels but don't load ADC channels
@@ -14,11 +36,9 @@ def load_recording(recording_path, recording_format):
     if recording_format == "openephys":
         files = [f for f in Path(recording_path).iterdir()]
         if np.any([".continuous" in f.name and f.is_file() for f in files]):
-            # format = 'legacy'
-            recording = si.read_openephys(recording_path, stream_name='Signals CH')
+            recording = si.read_openephys(recording_path, stream_name='Signals CH') # format = 'legacy'
         else:
-            # format = 'binary'
-            recording = si.read_openephys(recording_path)
+            recording = si.read_openephys(recording_path) # format = 'binary'
 
     elif recording_format == "spikeglx":
         recording = si.read_spikeglx(recording_path)  # untested
@@ -39,41 +59,6 @@ def load_recordings(recording_paths, recording_formats):
     return recordings
 
 
-def get_recordings_to_postprocess(recording_path, local_path, **kwargs):
-    """
-    This is a function that returns a list of paths for recordings in which to postprocess.
-    This is influenced by concat_sort which is a flag for concatenating recordings before sorting
-    """
-    recordings_to_sort = [recording_path]
-    if ("concat_sort" in kwargs and kwargs["concat_sort"] == True):
-        matched_recording_paths = get_matched_recording_paths(recording_path)
-        for matched_recording_path in matched_recording_paths:
-            matched_recording_name = os.path.basename(matched_recording_path)
-            matched_working_recording_path = matched_recording_path
-            if local_path in recording_path:
-                matched_working_recording_path = local_path+matched_recording_name
-            recordings_to_sort.append(matched_working_recording_path)
-            assert os.path.exists(matched_working_recording_path)
-    return recordings_to_sort
-
-
-def get_recordings_to_sort(recording_path, local_path, **kwargs):
-    """
-    This is a function that returns a list of paths for recordings in which to execute PX_scripts.
-    This is influenced by concat_sort which is a flag for concatenating recordings before sorting
-    """
-    recordings_to_sort = [recording_path]
-    if ("concat_sort" in kwargs and kwargs["concat_sort"] == True):
-        matched_recording_paths = get_matched_recording_paths(recording_path)
-        for matched_recording_path in matched_recording_paths:
-            matched_recording_name = os.path.basename(matched_recording_path)
-            matched_working_recording_path = matched_recording_path
-            if local_path in recording_path:
-                matched_working_recording_path = local_path+matched_recording_name
-            recordings_to_sort.append(matched_working_recording_path)
-    return recordings_to_sort
-
-
 def get_recording_types(recording_paths):
     recording_types = []
     for i in range(len(recording_paths)):
@@ -86,6 +71,15 @@ def get_recording_types(recording_paths):
             print("I can't assign a recording type without input")
             recording_types.append("NOT A A VALID RECORDING TYPE")
     return recording_types
+
+def get_recording_type(recording_path):
+    if os.path.exists(recording_path+"/params.yml"):
+        params = load_dict_from_file(recording_path+"/params.yml")
+        if 'recording_type' in params:
+            return params['recording_type']
+    else:
+        print("I couldn't find a params.yml file for ", recording_path)
+    return None
 
 
 def get_recording_format(recording_path):

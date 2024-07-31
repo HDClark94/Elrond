@@ -1,6 +1,6 @@
 import settings
 
-def auto_curate(spike_data):
+def auto_curation(spike_data):
     """
     :param spike_data: pandas dataframe with each row defined by a unique cluster_id
     :return: spike_data with automatic curation labels

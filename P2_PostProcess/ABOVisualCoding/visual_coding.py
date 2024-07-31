@@ -370,7 +370,7 @@ def rank_image_firing(spike_data, position_data):
     return spike_data
 
 
-def process(recording_path, processed_folder_name, **kwargs):
+def process(recording_path, processed_path, **kwargs):
     # process and save spatial spike data
     if "sorterName" in kwargs.keys():
         sorterName = kwargs["sorterName"]
@@ -380,7 +380,7 @@ def process(recording_path, processed_folder_name, **kwargs):
     # look for position_data
     files = [f for f in Path(recording_path).iterdir()]
     if np.any(["blender.csv" in f.name and f.is_file() for f in files]):
-        position_data = generate_position_data_from_blender_file(recording_path, processed_folder_name)
+        position_data = generate_position_data_from_blender_file(recording_path, processed_path)
     else:
         print("I couldn't find any source of position data")
 
@@ -389,8 +389,8 @@ def process(recording_path, processed_folder_name, **kwargs):
     # process video
     #position_data = process_video(recording_path, processed_folder_name, position_data)
 
-    position_data_path = recording_path + "/" + processed_folder_name + "/position_data.csv"
-    spike_data_path = recording_path + "/" + processed_folder_name + "/" + sorterName + "/spikes.pkl"
+    position_data_path = processed_path + "position_data.csv"
+    spike_data_path = processed_path + sorterName + "/spikes.pkl"
 
     # save position data
     position_data.to_csv(position_data_path, index=False)
@@ -399,16 +399,15 @@ def process(recording_path, processed_folder_name, **kwargs):
     # process and save spatial spike data
     if os.path.exists(spike_data_path):
         spike_data = pd.read_pickle(spike_data_path)
-        position_data = synchronise_position_data_via_ADC_ttl_pulses(position_data, processed_folder_name, recording_path)
+        position_data = synchronise_position_data_via_ADC_ttl_pulses(position_data, processed_path, recording_path)
         spike_data = add_location_and_task_variables(spike_data, position_data)
         position_data.to_csv(position_data_path, index=False)
 
         spike_data = rank_image_firing(spike_data, position_data)
         spike_data.to_pickle(spike_data_path)
 
-        #plot_ranked_image_peristimulus_plots(spike_data, position_data, output_path=recording_path+"/"+processed_folder_name)
-        for n in [1,3,5,10,20,118]:
-            plot_ranked_image_peristimulus_by_shank(spike_data, position_data, output_path=recording_path + "/" + processed_folder_name, top_n=n)
+        plot_ranked_image_peristimulus_plots(spike_data, position_data, output_path=recording_path+"/"+processed_path)
+        plot_ranked_image_peristimulus_by_shank(spike_data, position_data, output_path=recording_path + "/" + processed_folder_name, top_n=n)
         plot_firing(spike_data, position_data, output_path=recording_path+"/"+processed_folder_name)
         #plot_firing2(spike_data, position_data, output_path=recording_path+"/"+processed_folder_name)
     else:
