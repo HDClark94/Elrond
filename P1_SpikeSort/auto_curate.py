@@ -1,4 +1,4 @@
-import settings
+import Elrond.settings as settings
 
 def auto_curation(spike_data):
     """

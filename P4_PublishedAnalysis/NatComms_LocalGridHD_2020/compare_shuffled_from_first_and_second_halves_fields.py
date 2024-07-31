@@ -1,4 +1,4 @@
-from Helpers import array_utility, plot_utility
+from Elrond.Helpers import array_utility, plot_utility
 import matplotlib.pylab as plt
 import numpy as np
 import os

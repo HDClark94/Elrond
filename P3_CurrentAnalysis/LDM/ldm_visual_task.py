@@ -1,5 +1,5 @@
 import pandas as pd
-import settings
+import Elrond.settings as settings
 import warnings
 import numpy as np
 import umap
@@ -16,7 +16,7 @@ from cebra import CEBRA
 import cebra.integrations.plotly
 
 from matplotlib.collections import LineCollection
-from Helpers.array_utility import list_of_list_to_1d_numpy_array
+from Elrond.Helpers.array_utility import list_of_list_to_1d_numpy_array
 
 def extract_fr_column(spike_data, column):
     column_data = []

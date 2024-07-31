@@ -1,11 +1,11 @@
-from Helpers.upload_download import *
+from Elrond.Helpers.upload_download import *
 
-#from P2_PostProcess.Shared import shared as shared
-from P2_PostProcess.VirtualReality import vr as vr
-from P2_PostProcess.OpenField import of as of
-from P2_PostProcess.Opto import opto as opto
-from P2_PostProcess.Sleep import sleep as sleep
-from P2_PostProcess.ABOVisualCoding import visual_coding
+#from Elrond.P2_PostProcess.Shared import shared as shared
+from Elrond.P2_PostProcess.VirtualReality import vr as vr
+from Elrond.P2_PostProcess.OpenField import of as of
+from Elrond.P2_PostProcess.Opto import opto as opto
+from Elrond.P2_PostProcess.Sleep import sleep as sleep
+from Elrond.P2_PostProcess.ABOVisualCoding import visual_coding
 
 def postprocess(processed_folder_name, processed_paths, recording_paths, **kwargs):
     # process behaviour and spike data based on the recording type

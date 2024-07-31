@@ -1,12 +1,12 @@
 import pandas as pd
-import settings
-from P2_PostProcess.OpenField.rate_map import calculate_rate_maps
-from P2_PostProcess.OpenField.Scores.spatial_information import calculate_spatial_information_scores
-from P2_PostProcess.OpenField.Scores.half_session import calculate_half_session_stability_scores
-from P2_PostProcess.OpenField.Scores.border import calculate_border_scores
-from P2_PostProcess.OpenField.Scores.grid import calculate_grid_scores
-from P2_PostProcess.OpenField.Scores.head_direction import calculate_head_direction_scores
-from P2_PostProcess.OpenField.Scores.speed import calculate_speed_scores
+import Elrond.settings as settings
+from Elrond.P2_PostProcess.OpenField.rate_map import calculate_rate_maps
+from Elrond.P2_PostProcess.OpenField.Scores.spatial_information import calculate_spatial_information_scores
+from Elrond.P2_PostProcess.OpenField.Scores.half_session import calculate_half_session_stability_scores
+from Elrond.P2_PostProcess.OpenField.Scores.border import calculate_border_scores
+from Elrond.P2_PostProcess.OpenField.Scores.grid import calculate_grid_scores
+from Elrond.P2_PostProcess.OpenField.Scores.head_direction import calculate_head_direction_scores
+from Elrond.P2_PostProcess.OpenField.Scores.speed import calculate_speed_scores
 
 def calculate_corresponding_indices(spike_data, spatial_data, sampling_rate_ephys = settings.sampling_rate):
     avg_sampling_rate_bonsai = float(1 / spatial_data['synced_time'].diff().mean())

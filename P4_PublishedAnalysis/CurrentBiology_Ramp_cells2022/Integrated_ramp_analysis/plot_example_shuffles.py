@@ -5,7 +5,8 @@ import traceback
 from scipy import stats
 import os
 import sys
-import settings
+import Elrond.settings as settings
+
 import Published_analysis.CurrentBiology_Ramp_cells2022.Integrated_ramp_analysis.Concatenate_vr_shuffle_analysis as Concatenate_vr_shuffle_analysis
 import Published_analysis.CurrentBiology_Ramp_cells2022.Integrated_ramp_analysis.Python_PostSorting.plot_utility
 from astropy.convolution import convolve, Gaussian1DKernel

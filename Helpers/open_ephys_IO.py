@@ -1,4 +1,4 @@
-from Helpers import OpenEphys
+from Elrond.Helpers import OpenEphys
 import numpy as np
 import matplotlib.pylab as plt
 

@@ -7,7 +7,7 @@ from os.path import isfile, join
 import numpy as np
 import pandas as pd
 from natsort import natsorted, ns
-import settings
+import Elrond.settings as settings
 
 def image_list2pdf(image_list, labels, save_path, res=500):
     """

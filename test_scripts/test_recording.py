@@ -1,9 +1,9 @@
 import sys
 import traceback
 import warnings
-import settings
+import Elrond.settings as settings
 import os
-from Helpers.upload_download import get_recording_format, load_recording
+from Elrond.Helpers.upload_download import get_recording_format, load_recording
 
 def test_recording_with_spike_interface(recording_paths):
     """

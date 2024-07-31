@@ -2,7 +2,7 @@ import glob
 import matplotlib.pylab as plt
 import numpy as np
 import pandas as pd
-from Helpers import plot_utility
+from Elrond.Helpers import plot_utility
 import PostSorting.make_plots
 import PostSorting.speed
 import Published_analysis.NatComms_LocalGridHD_2020.folder_path_settings

@@ -3,7 +3,6 @@ import shutil
 import yaml
 import numpy as np
 from pathlib import Path
-import settings
 import spikeinterface.full as si
 from neuroconv.utils.dict import load_dict_from_file, dict_deep_update
 

@@ -5,7 +5,7 @@ from neuroconv.utils.dict import load_dict_from_file, dict_deep_update
 from neuroconv.datainterfaces import OpenEphysRecordingInterface
 from neuroconv.datainterfaces import CsvTimeSeriesInterface
 
-from P1_SpikeSort.probe import add_probe
+from Elrond.P1_SpikeSort.probe import add_probe
 from neuroconv import ConverterPipe
 import pandas as pd
 import numpy as np

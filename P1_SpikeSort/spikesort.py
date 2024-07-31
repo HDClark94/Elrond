@@ -1,8 +1,8 @@
 import pandas as pd
-from Helpers.upload_download import *
-from P1_SpikeSort.preprocess import preprocess, ammend_preprocessing_parameters
-from P1_SpikeSort.auto_curate import auto_curation
-from P1_SpikeSort.probe import add_probe
+from Elrond.Helpers.upload_download import *
+from Elrond.P1_SpikeSort.preprocess import preprocess, ammend_preprocessing_parameters
+from Elrond.P1_SpikeSort.auto_curate import auto_curation
+from Elrond.P1_SpikeSort.probe import add_probe 
 
 from os.path import expanduser
 si.set_global_job_kwargs(n_jobs=1)

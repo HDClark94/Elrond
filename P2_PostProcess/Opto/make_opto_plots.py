@@ -6,7 +6,7 @@ import pandas as pd
 import PostSorting.parameters
 import PostSorting.make_plots
 import matplotlib.image as mpimg
-from Helpers import open_ephys_IO
+from Elrond.Helpers import open_ephys_IO
 import mdaio
 
 

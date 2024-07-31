@@ -4,7 +4,7 @@ import Published_analysis.NatComms_LocalGridHD_2020.folder_path_settings
 import Published_analysis.NatComms_LocalGridHD_2020.false_positives
 import pandas as pd
 import PostSorting.parameters
-from Helpers import plot_utility
+from Elrond.Helpers import plot_utility
 
 import scipy
 import scipy.stats
