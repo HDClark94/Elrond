@@ -27,6 +27,15 @@ def extract_fr_column(spike_data, column):
         column_data.append(list_of_list_to_1d_numpy_array(spike_data[column].iloc[i]))
     return np.array(column_data)
 
+def split_data(neural_data, label_data, test_ratio):
+
+    split_idx = int(len(neural_data)* (1-test_ratio))
+    neural_train = neural_data[:split_idx, :]
+    neural_test = neural_data[split_idx:, :]
+    label_train = label_data[:split_idx, :]
+    label_test = label_data[split_idx:, :]
+
+    return neural_train, neural_test, label_train, label_test
 
 def compare_ldm(spike_data):
     fr_time_binned = extract_fr_column(spike_data, column="fr_time_binned_smoothed")
