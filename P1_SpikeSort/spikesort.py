@@ -37,7 +37,7 @@ def spikesort(
         recording_paths,
         local_path,
         processed_folder_name,
-        do_spike_sorting = False,
+        do_spike_sorting = True,
         do_spike_postprocessing = True,
         make_report = True,
         make_phy_output = True,
@@ -128,6 +128,7 @@ def spikesort(
         sorting_analyzer._sorting = sorting_mono
 
     if make_phy_output and not curate_using_phy:
+        sorting_analyzer.compute(["waveforms"])
         si.export_to_phy(sorting_analyzer, output_folder=phy_path, remove_if_exists=True, copy_binary=True)
     if make_report:
         si.export_report(sorting_analyzer, output_folder=report_path, remove_if_exists=True)
