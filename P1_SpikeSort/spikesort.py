@@ -128,7 +128,7 @@ def spikesort(
         sorting_analyzer._sorting = sorting_mono
 
     if make_phy_output and not curate_using_phy:
-        sorting_analyzer.compute(["waveforms"])
+        sorting_analyzer.compute(["templates", "template_metrics", "waveforms"])
         si.export_to_phy(sorting_analyzer, output_folder=phy_path, remove_if_exists=True, copy_binary=True)
     if make_report:
         si.export_report(sorting_analyzer, output_folder=report_path, remove_if_exists=True)
