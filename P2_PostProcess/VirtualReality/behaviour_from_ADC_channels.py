@@ -3,7 +3,7 @@ import numpy as np
 import pandas as pd
 from scipy import stats
 import Elrond.settings as settings
-import Helpers.open_ephys_IO as open_ephys_IO
+import Elrond.Helpers.open_ephys_IO as open_ephys_IO
 from astropy.convolution import convolve, Gaussian1DKernel
 from Elrond.Helpers.upload_download import *
 
