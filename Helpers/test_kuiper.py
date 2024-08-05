@@ -3,7 +3,7 @@ import numpy as np
 import scipy.stats
 from numpy.testing import assert_array_almost_equal
 
-from Elrond.Helpers import kuiper
+from Helpers import kuiper
 
 
 def seed(n=0):

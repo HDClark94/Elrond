@@ -1,6 +1,6 @@
 import glob
 import matplotlib.pylab as plt
-from Elrond.Helpers import math_utility, plot_utility
+from Helpers import math_utility, plot_utility
 import numpy as np
 import os
 import Published_analysis.NatComms_LocalGridHD_2020.folder_path_settings

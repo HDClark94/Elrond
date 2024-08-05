@@ -1,9 +1,9 @@
 import pandas as pd
-from Elrond.Helpers.upload_download import *
-from Elrond.P1_SpikeSort.preprocess import preprocess, ammend_preprocessing_parameters
-from Elrond.P1_SpikeSort.auto_curate import auto_curation
-from Elrond.P1_SpikeSort.probe import add_probe 
-import Elrond.settings as settings
+from Helpers.upload_download import *
+from P1_SpikeSort.preprocess import preprocess, ammend_preprocessing_parameters
+from P1_SpikeSort.auto_curate import auto_curation
+from P1_SpikeSort.probe import add_probe 
+import settings as settings
 
 from os.path import expanduser
 si.set_global_job_kwargs(n_jobs=1)
@@ -129,7 +129,6 @@ def spikesort(
         sorting_analyzer._sorting = sorting_mono
 
     if make_phy_output and not curate_using_phy:
-        sorting_analyzer.compute(["templates", "template_metrics", "waveforms"])
         si.export_to_phy(sorting_analyzer, output_folder=phy_path, remove_if_exists=True, copy_binary=True)
     if make_report:
         si.export_report(sorting_analyzer, output_folder=report_path, remove_if_exists=True)

@@ -1,5 +1,5 @@
 import pandas as pd
-import Elrond.settings as settings
+import settings as settings
 
 import warnings
 import numpy as np
@@ -20,7 +20,7 @@ from sklearn.neighbors import KNeighborsRegressor, KNeighborsClassifier
 import sklearn.metrics
 
 from matplotlib.collections import LineCollection
-from Elrond.Helpers.array_utility import list_of_list_to_1d_numpy_array
+from Helpers.array_utility import list_of_list_to_1d_numpy_array
 
 def extract_fr_column(spike_data, column):
     column_data = []

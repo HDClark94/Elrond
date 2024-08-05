@@ -1,6 +1,6 @@
 import numpy as np
 import pandas as pd
-from Elrond.Helpers.array_utility import *
+from Helpers.array_utility import *
 from skimage import measure
 from scipy import misc
 from scipy.ndimage import rotate

@@ -1,6 +1,6 @@
 import numpy as np
 import pandas as pd
-from Elrond.Helpers import open_ephys_IO
+from Helpers import open_ephys_IO
 import PostSorting.parameters
 import math
 import gc
@@ -11,7 +11,7 @@ import PostSorting.vr_stop_analysis
 import PostSorting.post_process_sorted_data_vr
 import PostSorting.vr_make_plots
 import PostSorting.vr_cued
-import Elrond.settings as settings
+import settings as settings
 
 from astropy.convolution import convolve, Gaussian1DKernel
 

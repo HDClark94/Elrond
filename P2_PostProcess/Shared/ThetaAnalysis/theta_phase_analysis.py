@@ -2,7 +2,7 @@
 import pyarrow.feather as feather
 import glob
 import os
-from Elrond.Helpers import open_ephys_IO
+from Helpers import open_ephys_IO
 import matplotlib.pylab as plt
 import numpy as np
 import pandas as pd

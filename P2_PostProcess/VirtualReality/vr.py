@@ -1,8 +1,8 @@
-from Elrond.P2_PostProcess.VirtualReality.behaviour_from_blender import *
-from Elrond.P2_PostProcess.VirtualReality.behaviour_from_ADC_channels import *
-from Elrond.P2_PostProcess.VirtualReality.spatial_firing import *
-from Elrond.P2_PostProcess.VirtualReality.plotting import *
-from Elrond.P2_PostProcess.VirtualReality.video import *
+from P2_PostProcess.VirtualReality.behaviour_from_blender import *
+from P2_PostProcess.VirtualReality.behaviour_from_ADC_channels import *
+from P2_PostProcess.VirtualReality.spatial_firing import *
+from P2_PostProcess.VirtualReality.plotting import *
+from P2_PostProcess.VirtualReality.video import *
 
 def process(recording_path, processed_path, **kwargs):
     track_length = get_track_length(recording_path)

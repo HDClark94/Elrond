@@ -2,10 +2,10 @@ import os
 import sys
 import traceback
 import warnings
-import Elrond.settings as settings
+import settings as settings
 
-from Elrond.Helpers.upload_download import copy_from_local, copy_to_local, empty_recording_folder_from_local
-from Elrond.P2_PostProcess.VirtualReality.behaviour_from_ADC_channels import generate_position_data_from_ADC_channels, \
+from Helpers.upload_download import copy_from_local, copy_to_local, empty_recording_folder_from_local
+from P2_PostProcess.VirtualReality.behaviour_from_ADC_channels import generate_position_data_from_ADC_channels, \
     run_checks_for_position_data
 
 def process_recordings(recording_paths, local_path="", processed_folder_name= "", copy_locally=False, run_formatter=False, **kwargs):

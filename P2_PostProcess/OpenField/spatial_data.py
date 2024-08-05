@@ -1,7 +1,7 @@
 import os
 import glob
 import math
-import Elrond.settings as settings
+import settings as settings
 import numpy as np
 import pandas as pd
 import csv
@@ -12,7 +12,7 @@ import math
 
 from pathlib import Path
 from scipy.interpolate import interp1d
-from Elrond.Helpers import math_utility
+from Helpers import math_utility
 
 def read_bonsai_file(recording_folder):
     if os.path.isdir(recording_folder) is False:

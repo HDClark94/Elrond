@@ -2,13 +2,13 @@ import os
 import numpy as np
 import pandas as pd
 from scipy import stats
-import Elrond.settings as settings
-import Elrond.Helpers.open_ephys_IO as open_ephys_IO
+import settings as settings
+import Helpers.open_ephys_IO as open_ephys_IO
 from astropy.convolution import convolve, Gaussian1DKernel
-from Elrond.Helpers.upload_download import *
+from Helpers.upload_download import *
 
-from Elrond.P2_PostProcess.VirtualReality.spatial_data import process_position_data, get_stop_threshold, get_track_length
-from Elrond.P2_PostProcess.VirtualReality.plotting import plot_variables, plot_behaviour
+from P2_PostProcess.VirtualReality.spatial_data import process_position_data, get_stop_threshold, get_track_length
+from P2_PostProcess.VirtualReality.plotting import plot_variables, plot_behaviour
 
 # Behavioural variables in VR recordings created between 2016-2023
 # are stored within the ADC*.continuous open ephys legacy files

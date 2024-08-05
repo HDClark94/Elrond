@@ -5,7 +5,7 @@ import Published_analysis.NatComms_LocalGridHD_2020.shuffle_field_analysis
 import Published_analysis.NatComms_LocalGridHD_2020.false_positives
 import pandas as pd
 import PostSorting.parameters
-from Elrond.Helpers import plot_utility
+from Helpers import plot_utility
 
 import scipy
 import scipy.stats

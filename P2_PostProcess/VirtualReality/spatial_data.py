@@ -3,9 +3,9 @@ import pandas as pd
 import os
 import traceback
 from scipy import stats
-import Elrond.settings as settings
+import settings as settings
 from astropy.convolution import convolve, Gaussian1DKernel
-import Elrond.Helpers.metadata_extraction as metadata_extraction
+import Helpers.metadata_extraction as metadata_extraction
 import matplotlib.pylab as plt 
 from neuroconv.utils.dict import load_dict_from_file
 import csv

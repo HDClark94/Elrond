@@ -13,7 +13,7 @@ import scipy
 import Edmond.plot_utility2
 import Edmond.VR_grid_analysis.hit_miss_try_firing_analysis
 from Edmond.eLife_Grid_anchoring_2024.vr_grid_cells import *
-import Elrond.settings as settings
+import settings as settings
 import matplotlib.pylab as plt
 import control_sorting_analysis
 import PostSorting.post_process_sorted_data_vr

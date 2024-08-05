@@ -2,7 +2,7 @@ import os
 import sys
 import traceback
 import warnings
-import Elrond.settings as settings
+import settings as settings
 import yaml
 import pandas as pd
 import numpy as np
