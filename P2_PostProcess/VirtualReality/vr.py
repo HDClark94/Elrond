@@ -27,7 +27,8 @@ def process(recording_path, processed_path, **kwargs):
     print("I am using position data with an avg sampling rate of ", str(1/np.nanmean(np.diff(position_data["time_seconds"]))), "Hz")
 
     # process video
-    #position_data = process_video(recording_path, processed_folder_name, position_data)
+    #position_data = process_video(recording_path, processed_path, position_data, 
+    #                              model_path=kwargs["deeplabcut_vr_model_path"])
 
     position_data_path = processed_path + "position_data.csv"
     processed_position_data_path = processed_path + "processed_position_data.pkl"
@@ -43,7 +44,7 @@ def process(recording_path, processed_path, **kwargs):
     plot_behaviour(position_data, processed_position_data, output_path=processed_path, track_length=track_length)
 
     # process and save spatial spike data
-    if os.path.exists(spike_data_path) and not ("postprocess_behaviour_only" in kwargs and kwargs["postprocess_behaviour_only"]):
+    if os.path.exists(spike_data_path):
         spike_data = pd.read_pickle(spike_data_path)
         position_data = synchronise_position_data_via_ADC_ttl_pulses(position_data, processed_path, recording_path)
         spike_data = add_location_and_task_variables(spike_data, position_data, processed_position_data, track_length)
