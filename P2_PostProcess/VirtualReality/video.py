@@ -25,14 +25,14 @@ def plot_middle_frame(video_path, save_path):
     fig, ax = plt.subplots()
     ax.imshow(frame)
     plt.title("middle frame")
-    plt.savefig(save_path + "/middle_frame.png")
+    plt.savefig(save_path + "middle_frame.png")
     plt.close()
 
 def analyse_dlc_model(video_path, model_path, save_path):
-    config_path = model_path+"/config.yaml"
+    config_path = model_path+"config.yaml"
     # add columns to position_data using markers as set in the dlc model
     video_filename = video_path.split("/")[-1]
-    new_videopath = save_path+"/"+video_filename
+    new_videopath = save_path+video_filename
     _ = shutil.copy(video_path, new_videopath)
 
     dlc.analyze_videos(config_path, [new_videopath], save_as_csv=True, destfolder=save_path)
@@ -87,8 +87,8 @@ def add_synced_videodata_to_position_data(position_data, video_data):
     position_data["eye_centroid_y"] = eye_centroids_y
     return position_data
 
-def process_video(recording_path, processed_folder_name, position_data):
-    # run checks
+def process_video(recording_path, processed_path, position_data, model_path):
+    # run checks 
     avi_paths = [os.path.abspath(os.path.join(recording_path, filename)) for filename in os.listdir(recording_path) if filename.endswith("_capture.avi")]
     bonsai_csv_paths = [os.path.abspath(os.path.join(recording_path, filename)) for filename in os.listdir(recording_path) if filename.endswith("_capture.csv")]
     if (len(avi_paths) != 1) or (len(bonsai_csv_paths) != 1):
@@ -96,18 +96,18 @@ def process_video(recording_path, processed_folder_name, position_data):
         return position_data
     # else continue on with the video analysis
 
-    save_path = recording_path+"/"+processed_folder_name+"/video"
+    save_path = processed_path+"video/"
     if not os.path.exists(save_path):
         os.mkdir(save_path)
 
     # use bonsai csv to sync the video_markers_df with position_data and the sync pulse signal in that
     bonsai_data = read_bonsai_file(bonsai_csv_paths[0])
-    video_data = analyse_dlc_model(video_path=avi_paths[0], model_path=settings.vr_deeplabcut_project_path, save_path=save_path)
+    video_data = analyse_dlc_model(video_path=avi_paths[0], model_path=model_path, save_path=save_path)
     video_data = pd.concat([video_data.reset_index(drop=True), bonsai_data.reset_index(drop=True)], axis=1)
     video_data = add_eye_stats(video_data)
 
     # syncrhonise position data and video data
-    position_data, video_data = synchronise_position_data_via_column_ttl_pulses(position_data, video_data, processed_folder_name, recording_path)
+    position_data, video_data = synchronise_position_data_via_column_ttl_pulses(position_data, video_data, processed_path, recording_path)
     # now video data contains a synced_time column which is relative to the start of the time column in position_data
     position_data = add_synced_videodata_to_position_data(position_data, video_data)
 
