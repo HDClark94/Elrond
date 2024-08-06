@@ -31,8 +31,6 @@ def process_recordings(recording_paths, local_path="", processed_folder_name="",
     :Keyword Arguments:
         concat_sort: flag whether to look for recordings within the same session and spikesort across
         based on the concat_sort flag and the linked recordings in the param.yl of the original recording
-        use_dlc_to_extract_openfield_position: flag whether to ignore any processed output from bonsai and instead use
-        deeplabcut to extract openfield position from the raw video
         sorterName: string for a named sorted if spikesorting is called, options include:
         'mountainsort4','klusta','tridesclous','hdsort','ironclust','kilosort',
         'kilosort2', 'spykingcircus','herdingspikes','waveclus'. For each sorter, a different set up might be required
@@ -142,7 +140,6 @@ def main():
         update_results_from_phy=False,
         run_postprocessing=True,
         concat_sort=False,
-        use_dlc_to_extract_openfield_position=True,
         deeplabcut_of_model_path = project_path + "openfield_pose_eddie/",
         sorting_analyzer_path= ephys_path + "sorting_analyzer/",
         phy_path = ephys_path + "phy/",
