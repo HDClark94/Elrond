@@ -2,15 +2,15 @@ import os
 import sys
 import traceback
 import warnings
-import Elrond.settings as settings
+import settings as settings
 
 from pathlib import Path
 from os.path import expanduser
 
-from Elrond.Helpers.upload_download import copy_from_local, copy_to_local, \
-    empty_recording_folder_from_local, get_recording_paths, get_processed_paths
-from Elrond.P1_SpikeSort.spikesort import spikesort
-from Elrond.P2_PostProcess.postprocess import postprocess
+from Helpers.upload_download import copy_from_local, copy_to_local, \
+    empty_recording_folder_from_local, get_recording_paths, get_processed_paths, chronologize_paths
+from P1_SpikeSort.spikesort import spikesort
+from P2_PostProcess.postprocess import postprocess
 
 
 def process_recordings(recording_paths, local_path="", processed_folder_name="", copy_locally=False,
@@ -126,10 +126,13 @@ def main():
 
     home_path = expanduser("~")
     project_path = home_path + "/../../../exports/eddie/scratch/hclark3/harry_project/"
-    recording_paths = get_recording_paths(project_path, mouse, day)
+    data_path = project_path + "data/M"+str(mouse)+"_D"+str(day)+"/"
     ephys_path = project_path + "derivatives/M"+str(mouse)+"/D"+str(day)+"/ephys/"
-
-
+    recording_paths = []
+    recording_paths.append(get_recording_paths(data_path+"of/", mouse, day))
+    recording_paths.append(get_recording_paths(data_path+"vr/", mouse, day))
+    recording_paths = chronologize_paths(recording_paths)
+    
     process_recordings(
         recording_paths,
         local_path="/home/ubuntu/to_sort/recordings/",

@@ -2,15 +2,15 @@ import os
 import sys
 import traceback
 import warnings
-import Elrond.settings as settings
-
+from Helpers.array_utility import remove_nans_and_inf_from_both_arrays
+import settings as settings
 from pathlib import Path
 from os.path import expanduser
 
-from Elrond.Helpers.upload_download import copy_from_local, copy_to_local, \
-    empty_recording_folder_from_local, get_processed_paths
-from Elrond.P1_SpikeSort.spikesort import spikesort
-from Elrond.P2_PostProcess.postprocess import postprocess
+from Helpers.upload_download import copy_from_local, copy_to_local, \
+    empty_recording_folder_from_local, get_processed_paths, chronologize_paths
+from P1_SpikeSort.spikesort import spikesort
+from P2_PostProcess.postprocess import postprocess
 
 
 def process_recordings(recording_paths,
@@ -78,10 +78,10 @@ def process_recordings(recording_paths,
             recording_paths,
             local_path,
             processed_folder_name,
-            do_spike_sorting = True,
+            do_spike_sorting = False,
             do_spike_postprocessing = True,
-            make_report = True,
-            make_phy_output = False,
+            make_report = False,
+            make_phy_output = True,
             curate_using_phy = False,
             auto_curate = False,
             sorting_analyzer_path=sorting_analyzer_path,
@@ -127,17 +127,18 @@ def main():
     if settings.suppress_warnings:
         warnings.filterwarnings("ignore")
 
-    mouse = 20
-    day = 14
+    mouse = 21 
+    day = 16
     mouse_day = "M"+str(mouse)+"_D"+str(day)
-
     project_path = "/mnt/datastore/Harry/Cohort11_april2024/"
-    recording_paths = []
+
+    recording_paths = [] 
     recording_paths.extend([f.path for f in os.scandir(project_path+"vr") if f.is_dir()])
     recording_paths.extend([f.path for f in os.scandir(project_path+"of") if f.is_dir()])
     recording_paths.extend([f.path for f in os.scandir(project_path+"allen_brain_observatory_visual_coding") if f.is_dir()])
     recording_paths = [s for s in recording_paths if mouse_day in s]
     ephys_path = project_path + "derivatives/M"+str(mouse)+"/D"+str(day)+"/ephys/"
+    recording_paths = chronologize_paths(recording_paths)
 
 
     process_recordings(
@@ -146,7 +147,7 @@ def main():
         processed_folder_name="processed/",
         copy_locally=False,
         run_spikesorting=True,
-        run_postprocessing=True,
+        run_postprocessing=False,
         sorting_analyzer_path= ephys_path + "sorting_analyzer/",
         phy_path = ephys_path + "phy/",
         report_path = ephys_path + "report/",
