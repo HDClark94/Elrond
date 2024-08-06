@@ -36,10 +36,6 @@ def generate_position_data_from_blender_file(recording_path, processed_path):
 def blender_position_to_trial_type(blender_position):
     trial_types = []
     for i in range(len(blender_position)):
-        if int(np.round(blender_position[i], 2)) == 0:
-            trial_types.append(0)
-        if int(np.round(blender_position[i], 2)) == 10:
-            trial_types.append(1)
-        if int(np.round(blender_position[i], 2)) == 20:
-            trial_types.append(2)
-    return np.array(trial_types)
+        trial_types.append(int(np.round(blender_position[i], 2)/10)) 
+ 
+    return np.array(trial_types)    
