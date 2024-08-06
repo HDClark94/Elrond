@@ -303,13 +303,13 @@ def add_dlc_markers(position_data, dlc_position_data):
 def process_position_data(recording_path, processed_path, **kwargs):
     bonsai_position_data = read_bonsai_file(recording_path)
     position_data = proces_bonsai_position(bonsai_position_data)
-    if ("use_dlc_to_extract_openfield_position" in kwargs and kwargs["use_dlc_to_extract_openfield_position"] == True):
-        dlc_position_data = extract_position_from_dlc(recording_path, processed_path, model_path=kwargs["deeplabcut_of_model_path"])
+    if settings.use_dlc_for_open_field:
+        dlc_position_data = extract_position_from_dlc(recording_path, processed_path, 
+                                                      model_path=kwargs["deeplabcut_of_model_path"])
         if len(dlc_position_data) == len(position_data):
             position_data = add_dlc_markers(position_data, dlc_position_data)
 
-    position_data = resample_position_data(position_data, 30)
-
+    position_data = resample_position_data(position_data, 30) 
     position_data = calculate_speed(position_data)
     position_data = curate_position(position_data)  # remove jumps from data, and when the beads are far apart
     position_data = calculate_position(position_data)  # get central position and interpolate missing data
