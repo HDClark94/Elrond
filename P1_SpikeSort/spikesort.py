@@ -37,7 +37,6 @@ def save_spikes_to_dataframe(sorters, quality_metrics,
 def spikesort(
         recording_paths,
         local_path,
-        processed_folder_name,
         do_spike_sorting = False,
         do_spike_postprocessing = True,
         make_report = True,
@@ -57,12 +56,15 @@ def spikesort(
     else:
         sorterName = settings.sorterName
 
+    # if no paths are specified we save the processed stuff in the recording folders
+    processed_folder_name = Path("processed")
+
     if sorting_analyzer_path is None:
-        sorting_analyzer_path = recording_paths[0] + "/" + processed_folder_name + "/" + sorterName + "/sorting_analyzer"
+        sorting_analyzer_path = recording_paths[0] / processed_folder_name / Path(sorterName + "/sorting_analyzer")
     if phy_path is None:
-        phy_path = recording_paths[0]+"/"+processed_folder_name +"/"+sorterName+"/phy"
+        phy_path = recording_paths[0] / processed_folder_name / Path(sorterName + "/phy")
     if report_path is None:
-        report_path = recording_paths[0] + "/" + processed_folder_name + "/" + sorterName + "/uncurated_report"
+        report_path = recording_paths[0] / processed_folder_name / Path(sorterName + "/uncurated_report")
 
     recording_mono, rec_samples = make_recording_from_paths_and_get_times(recording_paths)
 
@@ -70,7 +72,6 @@ def spikesort(
     params = si.get_default_sorter_params(sorterName)
     recording_mono = preprocess(recording_mono)
     params = ammend_preprocessing_parameters(params, **kwargs)
-
 
     sorting_mono=None
     if do_spike_sorting:

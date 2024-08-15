@@ -9,12 +9,15 @@ from neuroconv.utils.dict import load_dict_from_file, dict_deep_update
 def get_processed_paths(base_processed_path, recording_paths):
 
     if base_processed_path is None:
-        base_processed_path = '/'.join(recording_paths[0].split('/')[:-2]) + '/'
+        #base_processed_path = '/'.join(recording_paths[0].split('/')[:-2]) + '/'
+        base_processed_path = Path('/'.join(list(recording_paths[0].parts[:-2])))
+
 
     processed_paths = []
     for recording_path in recording_paths:
-        relative_recording_path = '/'.join(recording_path.split('/')[-2:])
-        processed_paths.append(base_processed_path + relative_recording_path + '/processed/') 
+        #relative_recording_path = '/'.join(recording_path.split('/')[-2:])
+        relative_recording_path = Path('/'.join(list(recording_paths[0].parts[:-2])))
+        processed_paths.append(base_processed_path / relative_recording_path / Path('processed')) 
 
     return processed_paths
 
@@ -22,11 +25,10 @@ def get_recording_paths(project_path, mouse, day):
     """
     Get recording paths based on mouse and day.
     """
-    data_path = project_path + "data/M"+str(mouse)+"_D"+str(day)+"/"
-    recording_paths = [ data_path + "of/" + os.listdir(data_path + "of/")[a] for a in range(0,2)]
-    recording_paths.append(data_path + "vr/" + os.listdir(data_path + "vr/")[0])
+    data_path = project_path / Path("data/M"+str(mouse)+"_D"+str(day))
+    recording_paths = [ data_path / Path("of/" + os.listdir(data_path + "of/")[a]) for a in range(0,2)]
+    recording_paths.append(data_path / Path("vr/" + os.listdir(data_path + "vr/")[0]))
 
-    print(recording_paths)
     return recording_paths
 
 def load_recording(recording_path, recording_format):
@@ -61,8 +63,8 @@ def load_recordings(recording_paths, recording_formats):
 def get_recording_types(recording_paths):
     recording_types = []
     for i in range(len(recording_paths)):
-        if os.path.exists(recording_paths[i]+"/params.yml"):
-            params = load_dict_from_file(recording_paths[i]+"/params.yml")
+        if os.path.exists(recording_paths[i] / Path("params.yml")):
+            params = load_dict_from_file(recording_paths[i] / Path("params.yml"))
             if 'recording_type' in params:
                 recording_types.append(params['recording_type'])
         else:
@@ -72,8 +74,8 @@ def get_recording_types(recording_paths):
     return recording_types
 
 def get_recording_type(recording_path):
-    if os.path.exists(recording_path+"/params.yml"):
-        params = load_dict_from_file(recording_path+"/params.yml")
+    if os.path.exists(recording_path/Path("params.yml")):
+        params = load_dict_from_file(recording_path/Path("params.yml"))
         if 'recording_type' in params:
             return params['recording_type']
     else:
@@ -82,8 +84,8 @@ def get_recording_type(recording_path):
 
 
 def get_recording_format(recording_path):
-    if os.path.isfile(recording_path + "/params.yml"):
-        with open(recording_path + "/params.yml", 'r') as f:
+    if os.path.isfile(recording_path / "params.yml"):
+        with open(recording_path / "params.yml", 'r') as f:
             params = yaml.safe_load(f)
             if 'recording_format' in params:
                 return params["recording_format"]
@@ -94,8 +96,8 @@ def get_recording_format(recording_path):
 def get_recording_formats(recording_paths):
     recording_formats = []
     for i in range(len(recording_paths)):
-        if os.path.exists(recording_paths[i]+"/params.yml"):
-            params = load_dict_from_file(recording_paths[i]+"/params.yml")
+        if os.path.exists(recording_paths[i]/Path("params.yml")):
+            params = load_dict_from_file(recording_paths[i]/Path("params.yml"))
             if 'recording_format' in params:
                 recording_formats.append(params['recording_format'])
         else:

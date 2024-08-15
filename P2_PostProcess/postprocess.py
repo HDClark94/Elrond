@@ -7,15 +7,12 @@ from Elrond.P2_PostProcess.Opto import opto as opto
 from Elrond.P2_PostProcess.Sleep import sleep as sleep
 from Elrond.P2_PostProcess.ABOVisualCoding import visual_coding
 
-def postprocess(processed_folder_name, processed_paths, recording_paths, **kwargs):
+def postprocess(processed_paths, recording_paths, **kwargs):
     # process behaviour and spike data based on the recording type
 
     recording_types = get_recording_types(recording_paths)
 
     for recording_path, type, processed_path in zip(recording_paths, recording_types, processed_paths):
-
-        if not os.path.exists(recording_path + "/" + processed_folder_name):
-            os.mkdir(recording_path + "/" + processed_folder_name)
 
         if type == "vr":
             vr.process(recording_path, processed_path,  **kwargs)
