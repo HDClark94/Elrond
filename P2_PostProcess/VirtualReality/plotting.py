@@ -1,13 +1,83 @@
 import os
 import matplotlib.pylab as plt
 import numpy as np
+import pandas as pd
 from scipy import stats
 import matplotlib.ticker as ticker
 import settings as settings
 from astropy.nddata import block_reduce
 from Helpers import plot_utility
-from Helpers.array_utility import pandas_collumn_to_numpy_array, pandas_collumn_to_2d_numpy_array
+from Helpers.array_utility import pandas_collumn_to_2d_numpy_array
 from astropy.convolution import convolve, Gaussian1DKernel
+from P3_CurrentAnalysis.basic_lomb_scargle_estimator import lomb_scargle, distance_from_integer, frequency
+
+def plot_eye_trajectory(position_data, processed_position_data, output_path="", track_length=200):
+    save_path = output_path+'Figures/behaviour'
+    if os.path.exists(save_path) is False:
+        os.makedirs(save_path)
+
+    fig, axs = plt.subplots(2, 3, figsize=(10, 7))
+    #axs[0].set_ylabel('Eye radius (pixels)', fontsize=25, labelpad = 10)
+    y_max = 0; y_min = 1e15  
+    x_max = 0; x_min = 1e15
+    for tt, ax_tt in zip([0, 1], axs):
+        for hmt, hmt_color, ax in zip(["hit", "try", "run"], ["green", "orange", "red"], ax_tt):
+            tmp_processed_position_data = processed_position_data[(processed_position_data["hit_miss_try"] == hmt) &
+                                                                  (processed_position_data["trial_type"] == tt)]
+            trial_numbers = np.unique(tmp_processed_position_data["trial_number"])
+
+            tmp_position_data = position_data[np.isin(position_data["trial_number"], trial_numbers)]
+
+            if len(tmp_position_data)>0:        
+                # Bin the track_location in 1cm bins
+                tmp_position_data['track_bin'] = pd.cut(tmp_position_data['x_position_cm'], bins=np.arange(0, tmp_position_data['x_position_cm'].max() + 1, 1))
+                # Group by trial_number and track_bin, then calculate the mean x_pos and y_pos
+                grouped = tmp_position_data.groupby(['trial_number', 'track_bin']).agg({'eye_centroid_x': 'mean', 'eye_centroid_y': 'mean'}).reset_index()
+                # Group by track_bin to average across trials
+                averaged_data = grouped.groupby('track_bin').agg({'eye_centroid_x': 'mean', 'eye_centroid_y': 'mean'}).reset_index()
+                colors = plt.cm.rainbow(np.linspace(0, 1, len(averaged_data['eye_centroid_y'])))
+                ax.scatter(averaged_data['eye_centroid_x'], averaged_data['eye_centroid_y'], marker='o', alpha=1, color=colors)
+
+                """
+                for tn in trial_numbers:
+                    colors = plt.cm.rainbow(np.linspace(0, 1, len(tmp_position_data[tmp_position_data["trial_number"] == tn])))
+                    ax.scatter(tmp_position_data[tmp_position_data["trial_number"] == tn]["eye_centroid_x"],
+                            tmp_position_data[tmp_position_data["trial_number"] == tn]["eye_centroid_y"], color=colors, alpha=0.1)
+                """ 
+                if y_max < np.max(averaged_data["eye_centroid_y"]):
+                    y_max = np.max(averaged_data["eye_centroid_y"])
+                if y_min > np.min(averaged_data["eye_centroid_y"]):
+                    y_min = np.min(averaged_data["eye_centroid_y"])
+                if x_max < np.max(averaged_data["eye_centroid_x"]):
+                    x_max = np.max(averaged_data["eye_centroid_x"])
+                if x_min > np.min(averaged_data["eye_centroid_x"]):
+                    x_min = np.min(averaged_data["eye_centroid_x"])
+            ax.set_xlim(0,track_length)
+            ax.set_title(f'tt:{tt},  hmt:{hmt}')
+            ax.yaxis.set_ticks_position('left')
+            ax.xaxis.set_ticks_position('bottom')
+            ax.xaxis.set_major_locator(ticker.MultipleLocator(100))
+            ax.tick_params(axis='both', which='major', labelsize=20)
+            plot_utility.style_vr_plot(ax, x_max=None)
+    for ax in axs.flatten():
+        ax.set_ylim(y_min,y_max) 
+        ax.set_xlim(x_min,x_max)
+        ax.set_xticks([])
+        ax.set_yticks([]) 
+        ax.spines['top'].set_visible(False)
+        ax.spines['right'].set_visible(False)
+        ax.spines['left'].set_visible(False)
+        ax.spines['bottom'].set_visible(False)
+    # Create a ScalarMappable and add a colorbar
+    sm = plt.cm.ScalarMappable(cmap='rainbow', norm=plt.Normalize(vmin=0, vmax=len(averaged_data['eye_centroid_y'])))
+    sm.set_array([])  # Only needed for the colorbar
+    cbar = plt.colorbar(sm, ax=ax)
+    cbar.set_label('(cm)')
+    plt.subplots_adjust(hspace = .35, wspace = .35,  bottom = 0.2, left = 0.2, right = 0.87, top = 0.92)
+    plt.savefig(save_path + '/eye_movements.png', dpi=200)
+    plt.close()
+
+
 
 def plot_eye(processed_position_data, output_path="", track_length=200):
     save_path = output_path+'Figures/behaviour'
@@ -74,6 +144,45 @@ def plot_eye(processed_position_data, output_path="", track_length=200):
     plt.subplots_adjust(hspace = .35, wspace = .35,  bottom = 0.2, left = 0.2, right = 0.87, top = 0.92)
     plt.savefig(save_path + '/eye_radius_vs_track_position.png', dpi=200)
     plt.close()
+
+    fig, axs = plt.subplots(1, 2, figsize=(10, 5))
+    axs[0].set_ylabel('Eye radius (pixels)', fontsize=25, labelpad = 10)
+    y_max = 0
+    y_min = 1e15
+    for tt, ax in zip([0, 1], axs):
+        for hmt, hmt_color in zip(["hit", "try", "run"], ["green", "orange", "red"]):
+            tmp_processed_position_data = processed_position_data[(processed_position_data["hit_miss_try"] == hmt) &
+                                                                  (processed_position_data["trial_type"] == tt)]
+            if len(tmp_processed_position_data)>0: 
+                trial_radi = pandas_collumn_to_2d_numpy_array(tmp_processed_position_data["radi_binned_in_space"])
+                trial_radi_sem = stats.sem(trial_radi, axis=0, nan_policy="omit")
+                trial_radi_avg = np.nanmean(trial_radi, axis=0)
+                bin_centres = np.array(processed_position_data["position_bin_centres"].iloc[0])
+                ax.fill_between(bin_centres, trial_radi_avg-trial_radi_sem, trial_radi_avg+trial_radi_sem, color=hmt_color, alpha=0.2)
+                ax.plot(bin_centres, trial_radi_avg, color=hmt_color, linewidth=3)
+
+            if y_max < np.max(trial_radi_avg+trial_radi_sem):
+                y_max = np.max(trial_radi_avg+trial_radi_sem)
+            if y_min > np.min(trial_radi_avg-trial_radi_sem):
+                y_min = np.min(trial_radi_avg-trial_radi_sem)
+            ax.set_xlim(0,track_length)
+
+            ax.yaxis.set_ticks_position('left')
+            ax.xaxis.set_ticks_position('bottom')
+            ax.set_xlabel('Location (cm)', fontsize=25, labelpad = 10)
+            ax.xaxis.set_major_locator(ticker.MultipleLocator(100))
+            ax.tick_params(axis='both', which='major', labelsize=20)
+            plot_utility.style_vr_plot(ax, x_max=None)
+        if tt == 0:
+            plot_utility.style_track_plot(ax, track_length)
+        else:
+            plot_utility.style_track_plot_no_cue(ax, track_length)
+    axs[0].set_ylim(y_min,y_max) 
+    axs[1].set_ylim(y_min,y_max) 
+
+    plt.subplots_adjust(hspace = .35, wspace = .35,  bottom = 0.2, left = 0.2, right = 0.87, top = 0.92)
+    plt.savefig(save_path + '/eye_radius_vs_track_position_trial_seperated.png', dpi=200)
+    plt.close() 
 
 
 
@@ -471,10 +580,69 @@ def plot_firing_rate_maps(spike_data, processed_position_data, output_path, trac
     plt.savefig(save_path + '/all_firing_rates.png', dpi=400)
     plt.close()
 
+def plot_spatial_periodogram_per_trial(spike_data, processed_position_data, output_path, track_length):
+    if "ls_powers" not in list(spike_data): 
+        spike_data = lomb_scargle(spike_data, processed_position_data)
 
+    save_path = output_path + 'Figures/spatial_periodograms/'
+    if os.path.exists(save_path) is False:
+        os.makedirs(save_path) 
 
+    periodograms = []
+    for cluster_index, cluster_id in enumerate(spike_data.cluster_id):
+        cluster_spike_data = spike_data[spike_data["cluster_id"] == cluster_id]
+        firing_times_cluster = np.array(cluster_spike_data["firing_times"].iloc[0])
 
+        if len(firing_times_cluster)>1:
+            powers = np.array(cluster_spike_data["ls_powers"].iloc[0])
+            centre_xs = np.array(cluster_spike_data["ls_centre_distances"].iloc[0])
+            #centre_xs = np.round(centre_trials).astype(np.int64)
 
+            fig = plt.figure()
+            fig.set_size_inches(5, 5, forward=True)
+            ax = fig.add_subplot(1, 1, 1)
+            Y, X = np.meshgrid(centre_xs, frequency) 
+            cmap = plt.cm.get_cmap("inferno")
+            ax.pcolormesh(X, Y, powers.T, cmap=cmap)
+            for f in range(1,5):
+                ax.axvline(x=f, color="white", linewidth=2,linestyle="dotted")
+            ax.set_ylabel('Centre X', fontsize=30, labelpad = 10)
+            ax.set_xlabel('Track frequency', fontsize=30, labelpad = 10)
+            ax.spines['top'].set_visible(False)
+            ax.spines['right'].set_visible(False)
+            ax.set_xticks([0, 1, 2, 3, 4, 5])
+            ax.set_xlim([0.1,5])
+            ax.set_ylim([min(centre_xs), max(centre_xs)])
+            ax.yaxis.set_tick_params(labelsize=20)
+            ax.xaxis.set_tick_params(labelsize=20)
+            plt.subplots_adjust(hspace = .35, wspace = .35,  bottom = 0.2, left = 0.3, right = 0.87, top = 0.92)
+            plt.savefig(save_path + 'spatial_periodogram_' + str(int(cluster_id)) +'.png', dpi=300)
+            plt.close()
+            periodograms.append(powers.T)
+
+    nrows = int(np.ceil(np.sqrt(len(spike_data))))
+    ncols = nrows; i=0; j=0
+    fig, ax = plt.subplots(ncols=ncols, nrows=nrows, figsize=(20, 20), squeeze=False)
+    for periodogram in periodograms:
+        vmin, vmax = get_vmin_vmax(periodogram)
+        ax[j, i].pcolormesh(X, Y, periodogram, cmap=cmap, shading="auto", vmin=vmin, vmax=vmax)
+        i+=1
+        if i==ncols:
+            i=0; j+=1
+    for j in range(nrows):
+        for i in range(ncols):
+            ax[j, i].spines['top'].set_visible(False) 
+            ax[j, i].spines['right'].set_visible(False)
+            ax[j, i].spines['bottom'].set_visible(False)
+            ax[j, i].spines['left'].set_visible(False)
+            ax[j, i].set_xticks([])
+            ax[j, i].set_yticks([])
+            ax[j, i].xaxis.set_tick_params(labelbottom=False)
+            ax[j, i].yaxis.set_tick_params(labelleft=False)
+    plt.subplots_adjust(hspace=.1, wspace=.1, bottom=None, left=None, right=None, top=None)
+    plt.savefig(save_path + '/all_spatial_periodograms.png', dpi=400)
+    plt.close()
+  
 
 def plot_firing_rate_maps_per_trial(spike_data, processed_position_data, output_path, track_length):
     save_path = output_path + 'Figures/rate_maps_by_trial'
@@ -549,6 +717,59 @@ def plot_firing_rate_maps_per_trial(spike_data, processed_position_data, output_
     plt.subplots_adjust(hspace=.1, wspace=.1, bottom=None, left=None, right=None, top=None)
     plt.savefig(save_path + '/all_firing_rates.png', dpi=400)
     plt.close()
+  
+def plot_firing_rate_maps_per_trial_2(cluster_spike_data, processed_position_data, 
+                                      track_length, output_path=None, ax=None):
+    if output_path is not None:
+        save_path = output_path + 'Figures/rate_maps_by_trial'
+        if os.path.exists(save_path) is False:
+            os.makedirs(save_path)
+   
+    firing_times_cluster = cluster_spike_data["firing_times"].iloc[0]
+    if len(firing_times_cluster)>1:
+        cluster_firing_maps = np.array(cluster_spike_data['fr_binned_in_space_smoothed'].iloc[0])
+        cluster_firing_maps[np.isnan(cluster_firing_maps)] = 0
+        cluster_firing_maps[np.isinf(cluster_firing_maps)] = 0
+        percentile_99th_display = np.nanpercentile(cluster_firing_maps, 95)
+        cluster_firing_maps = min_max_normalize(cluster_firing_maps)
+        percentile_99th = np.nanpercentile(cluster_firing_maps, 95)
+        cluster_firing_maps = np.clip(cluster_firing_maps, a_min=0, a_max=percentile_99th)
+        vmin, vmax = get_vmin_vmax(cluster_firing_maps)
+
+        locations = np.arange(0, len(cluster_firing_maps[0]))
+        ordered = np.arange(0, len(processed_position_data), 1)
+        X, Y = np.meshgrid(locations, ordered)
+        cmap = plt.cm.get_cmap("viridis")
+        
+        if ax is None:
+            fig = plt.figure()
+            fig.set_size_inches(5, 5, forward=True)
+            ax = fig.add_subplot(1, 1, 1)
+
+        ax.pcolormesh(X, Y, cluster_firing_maps, cmap=cmap, shading="auto", vmin=vmin, vmax=vmax)
+        ax.set_title(str(np.round(percentile_99th_display, decimals=1))+" Hz", fontsize=20)
+        ax.set_ylabel('Trial Number', fontsize=20, labelpad = 20)
+        ax.set_xlabel('Location (cm)', fontsize=20, labelpad = 20)
+        ax.set_xlim([0, track_length])
+        ax.set_ylim([0, len(processed_position_data)-1])
+        ax.tick_params(axis='both', which='both', labelsize=20)
+        ax.spines['top'].set_visible(False)
+        ax.spines['right'].set_visible(False)
+        tick_spacing = 100
+        ax.xaxis.set_major_locator(ticker.MultipleLocator(tick_spacing))
+        ax.yaxis.set_ticks_position('left')
+        ax.xaxis.set_ticks_position('bottom')
+        #cbar = spikes_on_track.colorbar(c, ax=ax, fraction=0.046, pad=0.04)
+        #cbar.set_label('Firing Rate (Hz)', rotation=270, fontsize=20)
+        #cbar.set_ticks([0,np.max(cluster_firing_maps)])
+        #cbar.set_ticklabels(["0", "Max"])
+        #cbar.ax.tick_params(labelsize=20)
+        if output_path is not None:
+            plt.savefig(save_path + '/firing_rate_map_trials_' + 
+                        spike_data.session_id.iloc[cluster_index] + '_' + 
+                        str(int(cluster_id)) + '.png', dpi=300)
+        
+
 
 def get_vmin_vmax(cluster_firing_maps, bin_cm=8):
     cluster_firing_maps_reduced = []
@@ -557,7 +778,7 @@ def get_vmin_vmax(cluster_firing_maps, bin_cm=8):
     cluster_firing_maps_reduced = np.array(cluster_firing_maps_reduced)
     vmin= 0
     vmax= np.max(cluster_firing_maps_reduced)
-    return vmin, vmax
+    return vmin, vmax 
 
 def plot_behaviour(position_data, processed_position_data, output_path, track_length):
     plot_variables(position_data, output_path)
@@ -565,17 +786,20 @@ def plot_behaviour(position_data, processed_position_data, output_path, track_le
     plot_stop_histogram(processed_position_data, output_path, track_length=track_length)
     plot_speed_histogram(processed_position_data, output_path, track_length=track_length)
     plot_speed_heat_map(processed_position_data, output_path, track_length=track_length)
+    plot_eye_trajectory(position_data, processed_position_data, output_path, track_length=track_length)
     plot_eye(processed_position_data, output_path, track_length=track_length)
-
-def plot_track_firing(spike_data, processed_position_data, output_path, track_length):
+ 
+def plot_track_firing(spike_data, processed_position_data, output_path, track_length):  
+    plot_spatial_periodogram_per_trial(spike_data, processed_position_data, output_path, track_length=track_length)
     plot_firing_rate_maps(spike_data, processed_position_data, output_path, track_length=track_length)
     plot_firing_rate_maps_per_trial(spike_data, processed_position_data, output_path, track_length=track_length)
     plot_spikes_on_track(spike_data, processed_position_data, output_path, track_length=track_length)
-
+ 
 
 #  this is here for testing
 def main():
     print('-------------------------------------------------------------')
+    print("8888888") 
     print('-------------------------------------------------------------')
 
 

@@ -298,7 +298,7 @@ def add_dlc_markers(position_data, dlc_position_data):
         position_data["y_left"].iloc[i] = left[1]
         position_data["x_right"].iloc[i] = right[0]
         position_data["y_right"].iloc[i] = right[1]
-    return position_data
+    return position_data 
 
 def process_position_data(recording_path, processed_path, **kwargs):
     bonsai_position_data = read_bonsai_file(recording_path)
@@ -306,8 +306,9 @@ def process_position_data(recording_path, processed_path, **kwargs):
     if settings.use_dlc_for_open_field:
         dlc_position_data = extract_position_from_dlc(recording_path, processed_path, 
                                                       model_path=kwargs["deeplabcut_of_model_path"])
-        if len(dlc_position_data) == len(position_data):
-            position_data = add_dlc_markers(position_data, dlc_position_data)
+        shortest_length = min(len(dlc_position_data), len(position_data))
+        position_data = add_dlc_markers(position_data[:shortest_length], 
+                                        dlc_position_data[:shortest_length])
 
     position_data = resample_position_data(position_data, 30) 
     position_data = calculate_speed(position_data)

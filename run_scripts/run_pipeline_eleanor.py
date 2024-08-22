@@ -80,7 +80,7 @@ def process_recordings(recording_paths,
             processed_folder_name,
             do_spike_sorting = False,
             do_spike_postprocessing = True,
-            make_report = False,
+            make_report = False, 
             make_phy_output = True,
             curate_using_phy = False,
             auto_curate = False,
@@ -128,30 +128,31 @@ def main():
         warnings.filterwarnings("ignore")
 
     mouse = 21 
-    day = 16
+    day = 26
     mouse_day = "M"+str(mouse)+"_D"+str(day)
     project_path = "/mnt/datastore/Harry/Cohort11_april2024/"
 
     recording_paths = [] 
     recording_paths.extend([f.path for f in os.scandir(project_path+"vr") if f.is_dir()])
-    recording_paths.extend([f.path for f in os.scandir(project_path+"of") if f.is_dir()])
-    recording_paths.extend([f.path for f in os.scandir(project_path+"allen_brain_observatory_visual_coding") if f.is_dir()])
+    #recording_paths.extend([f.path for f in os.scandir(project_path+"of") if f.is_dir()])
+    #recording_paths.extend([f.path for f in os.scandir(project_path+"allen_brain_observatory_visual_coding") if f.is_dir()])
     recording_paths = [s for s in recording_paths if mouse_day in s]
     ephys_path = project_path + "derivatives/M"+str(mouse)+"/D"+str(day)+"/ephys/"
     recording_paths = chronologize_paths(recording_paths)
 
-
-    process_recordings(
+    process_recordings( 
         recording_paths,
         local_path="/home/ubuntu/to_sort/recordings/",
         processed_folder_name="processed/",
         copy_locally=False,
-        run_spikesorting=True,
-        run_postprocessing=False,
+        run_spikesorting=False, 
+        run_postprocessing=True,
         sorting_analyzer_path= ephys_path + "sorting_analyzer/",
         phy_path = ephys_path + "phy/",
         report_path = ephys_path + "report/",
         base_processed_path = project_path + "derivatives/M"+str(mouse)+"/D"+str(day)+"/",
+        deeplabcut_of_model_path = settings.of_deeplabcut_project_path,
+        deeplabcut_vr_model_path = settings.vr_deeplabcut_project_path,
         sorterName="kilosort4",
         sorter_kwargs={'do_CAR': False, 'do_correction': True}
     )

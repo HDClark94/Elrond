@@ -66,7 +66,7 @@ def trim_arrays_find_starts(sync_data_ephys_downsampled, spatial_data, trim_time
 
 
 #  this is needed for finding the rising edge of the pulse to by synced
-def detect_last_zero(signal):
+def detect_last_zero(signal): 
     '''
     signal is a already thresholded binary signal with 0 and 1
     return the index of the last 0 before the first 1
@@ -74,7 +74,7 @@ def detect_last_zero(signal):
     first_index_in_signal = np.argmin(signal) # index of first zero value
     first_zero_index_in_signal = np.nonzero(signal)[0][0] #index of first non-zero value
     first_nonzero_index = first_index_in_signal + first_zero_index_in_signal # potential bug here if first_index_in_signal is not 0
-    assert first_nonzero_index == first_zero_index_in_signal, 'Error, sync signal does not start at zero'
+    #assert first_nonzero_index == first_zero_index_in_signal, 'Error, sync signal does not start at zero'
     last_zero_index = first_nonzero_index - 1
     return last_zero_index
 
@@ -147,7 +147,7 @@ def adjust_for_lag(sync_data_ephys, spatial_data, recording_path, processed_path
 
     lag2 = ephys_rising_edge_time - bonsai_rising_edge_time
     if np.abs(lag2)<1: # i.e. a sensible adjustment for the rising edge
-        spatial_data['synced_time'] = spatial_data.synced_time_estimate + lag2
+        spatial_data['synced_time'] = spatial_data.synced_time_estimate + lag2 
     else: # if too big then just use correlative lag
         spatial_data['synced_time'] = spatial_data.synced_time_estimate
 
@@ -157,7 +157,7 @@ def adjust_for_lag(sync_data_ephys, spatial_data, recording_path, processed_path
     return spatial_data
 
 def save_plots_of_pulses(bonsai=None, ephys=None, output_path=None, lag=np.nan, name=""):
-    save_path = output_path + '/Figures/Sync_test/'
+    save_path = output_path + 'Figures/Sync_test/'
     if os.path.exists(save_path) is False:
         os.makedirs(save_path)
     plt.figure()

@@ -138,7 +138,7 @@ def style_vr_plot(ax, x_max=None):
         which='both',  # both major and minor ticks are affected
         bottom=True,  # ticks along the bottom edge are off
         top=False,  # ticks along the top edge are off
-        right=False,
+        right=False, 
         left=True,
         labelleft=True,
         labelbottom=True)  # labels along the bottom edge are off
@@ -154,7 +154,13 @@ def style_track_plot(ax, track_length, alpha=0.25):
     ax.axvspan(0, 30, facecolor='k', linewidth =0, alpha=.25) # black box
     ax.axvspan(track_length-30, track_length, facecolor='k', linewidth =0, alpha=alpha)# black box
 
+def style_track_plot_no_cue(ax, track_length, alpha=0.25):
+    ax.axvline(track_length-60-30-20, color="black", linestyle="dotted", linewidth=1, alpha=alpha)
+    ax.axvline(track_length-60-30, color="black", linestyle="dotted", linewidth=1, alpha=alpha)
+    ax.axvspan(0, 30, facecolor='k', linewidth =0, alpha=.25) # black box
+    ax.axvspan(track_length-30, track_length, facecolor='k', linewidth =0, alpha=alpha)# black box
 
+ 
 def format_bar_chart(ax, x_label, y_label):
     plt.gcf().subplots_adjust(bottom=0.2)
     plt.gcf().subplots_adjust(left=0.2)
