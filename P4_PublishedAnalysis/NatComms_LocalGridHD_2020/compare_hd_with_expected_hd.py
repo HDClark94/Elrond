@@ -6,7 +6,7 @@ import Published_analysis.NatComms_LocalGridHD_2020.folder_path_settings
 import pandas as pd
 import PostSorting.open_field_head_direction
 import PostSorting.open_field_make_plots
-from Elrond.Helpers import plot_utility
+from Helpers import plot_utility
 import PostSorting.compare_first_and_second_half
 import PostSorting.open_field_head_direction
 import PostSorting.parameters

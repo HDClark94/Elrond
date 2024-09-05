@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import spikeinterface.full as si
 
-import Elrond.settings as settings
+import settings as settings
 
 
 def trace(spike_data, output_path):

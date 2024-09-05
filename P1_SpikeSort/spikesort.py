@@ -1,8 +1,9 @@
 import pandas as pd
-from Elrond.Helpers.upload_download import *
-from Elrond.P1_SpikeSort.preprocess import preprocess, ammend_preprocessing_parameters
-from Elrond.P1_SpikeSort.auto_curate import auto_curation
-from Elrond.P1_SpikeSort.probe import add_probe 
+from Helpers.upload_download import *
+from P1_SpikeSort.preprocess import preprocess, ammend_preprocessing_parameters
+from P1_SpikeSort.auto_curate import auto_curation
+from P1_SpikeSort.probe import add_probe 
+import settings as settings
 
 from os.path import expanduser
 si.set_global_job_kwargs(n_jobs=1)
@@ -37,7 +38,7 @@ def spikesort(
         recording_paths,
         local_path,
         processed_folder_name,
-        do_spike_sorting = False,
+        do_spike_sorting = True,
         do_spike_postprocessing = True,
         make_report = True,
         make_phy_output = True,

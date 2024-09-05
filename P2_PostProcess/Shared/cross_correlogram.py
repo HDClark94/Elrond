@@ -4,7 +4,7 @@ import os
 import traceback
 import warnings
 import sys
-from Elrond.Helpers.upload_download import *
+from Helpers.upload_download import *
 import pandas as pd
 import neo
 import quantities as pq

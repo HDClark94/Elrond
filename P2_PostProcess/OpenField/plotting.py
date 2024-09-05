@@ -2,13 +2,13 @@ import cmocean
 import matplotlib.pylab as plt
 import matplotlib.image as mpimg
 import os
-from Elrond.Helpers import plot_utility
+from Helpers import plot_utility
 import math
 import numpy as np
 import pandas as pd
-import Elrond.settings as settings
+import settings as settings
 
-from Elrond.P2_PostProcess.OpenField.Scores.head_direction import get_hd_histogram
+from P2_PostProcess.OpenField.Scores.head_direction import get_hd_histogram
 
 def plot_position(position_data):
     plt.plot(position_data['position_x'], position_data['position_y'], color='black', linewidth=5)
@@ -140,9 +140,9 @@ def plot_firing_rate_maps(spatial_firing, output_path):
         # plt.savefig(save_path + '/' + spatial_firing.session_id[cluster] + '_rate_map_' + str(cluster + 1) + '.pdf')
         plt.close()
 
-
+ 
     nrows = int(np.ceil(np.sqrt(len(spatial_firing))))
-    ncols = nrows; i=0; j=0;
+    ncols = nrows; i=0; j=0; 
     fig, ax = plt.subplots(ncols=ncols, nrows=nrows, figsize=(20, 20), squeeze=False)
     for rate_map in rate_maps:
         ax[j, i].imshow(rate_map, cmap=cmap, interpolation='nearest')
@@ -200,13 +200,10 @@ def plot_polar_head_direction_histogram(spatial_firing, position_data, output_pa
         os.makedirs(save_path)
     for cluster_index, cluster_id in enumerate(spatial_firing.cluster_id):
         cluster_df = spatial_firing[(spatial_firing.cluster_id == cluster_id)] # dataframe for that cluster
-        hd_polar_fig = plt.figure()
-        hd_polar_fig.set_size_inches(5, 5, forward=True)
-        ax = hd_polar_fig.add_subplot(1, 1, 1)  # specify (nrows, ncols, axnum)
+        hd_polar_fig, ax = plt.subplots(subplot_kw={'projection': 'polar'}, figsize=(5,5))
         hd_hist_cluster = cluster_df['hd_spike_histogram'].iloc[0]
         theta = np.linspace(0, 2*np.pi, 361)  # x axis
-        ax = plt.subplot(1, 1, 1, polar=True)
-        ax = plot_utility.style_polar_plot(ax)
+        ax = plot_utility.style_polar_plot(ax) 
         ax.plot(theta[:-1], hd_hist_cluster, color='red', linewidth=2)
         ax.plot(theta[:-1], hd_hist*(max(hd_hist_cluster)/max(hd_hist)), color='black', linewidth=2)
         plt.tight_layout()

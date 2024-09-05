@@ -1,7 +1,7 @@
 import os
 import glob
 import math
-import Elrond.settings as settings
+import settings as settings
 import numpy as np
 import pandas as pd
 import csv
@@ -12,7 +12,7 @@ import math
 
 from pathlib import Path
 from scipy.interpolate import interp1d
-from Elrond.Helpers import math_utility
+from Helpers import math_utility
 
 def read_bonsai_file(recording_folder):
     if os.path.isdir(recording_folder) is False:
@@ -298,18 +298,19 @@ def add_dlc_markers(position_data, dlc_position_data):
         position_data["y_left"].iloc[i] = left[1]
         position_data["x_right"].iloc[i] = right[0]
         position_data["y_right"].iloc[i] = right[1]
-    return position_data
+    return position_data 
 
 def process_position_data(recording_path, processed_path, **kwargs):
     bonsai_position_data = read_bonsai_file(recording_path)
     position_data = proces_bonsai_position(bonsai_position_data)
-    if ("use_dlc_to_extract_openfield_position" in kwargs and kwargs["use_dlc_to_extract_openfield_position"] == True):
-        dlc_position_data = extract_position_from_dlc(recording_path, processed_path, model_path=kwargs["deeplabcut_of_model_path"])
-        if len(dlc_position_data) == len(position_data):
-            position_data = add_dlc_markers(position_data, dlc_position_data)
+    if settings.use_dlc_for_open_field:
+        dlc_position_data = extract_position_from_dlc(recording_path, processed_path, 
+                                                      model_path=kwargs["deeplabcut_of_model_path"])
+        shortest_length = min(len(dlc_position_data), len(position_data))
+        position_data = add_dlc_markers(position_data[:shortest_length], 
+                                        dlc_position_data[:shortest_length])
 
-    position_data = resample_position_data(position_data, 30)
-
+    position_data = resample_position_data(position_data, 30) 
     position_data = calculate_speed(position_data)
     position_data = curate_position(position_data)  # remove jumps from data, and when the beads are far apart
     position_data = calculate_position(position_data)  # get central position and interpolate missing data

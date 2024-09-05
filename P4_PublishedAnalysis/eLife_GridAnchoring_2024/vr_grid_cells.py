@@ -2,7 +2,7 @@ import os
 import traceback
 import warnings
 import sys
-import Elrond.settings as settings
+import settings as settings
 
 import matplotlib.pylab as plt
 import matplotlib.ticker as ticker

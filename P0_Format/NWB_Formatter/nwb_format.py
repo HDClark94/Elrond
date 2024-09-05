@@ -1,8 +1,8 @@
 import os
-from Elrond.P0_Format.NWB_Formatter.OpenEphys import ConvertOpenEphys2NWB
-from Elrond.P2_PostProcess.VirtualReality.behaviour_from_ADC_channels import generate_position_data_from_ADC_channels, \
+from P0_Format.NWB_Formatter.OpenEphys import ConvertOpenEphys2NWB
+from P2_PostProcess.VirtualReality.behaviour_from_ADC_channels import generate_position_data_from_ADC_channels, \
     run_checks_for_position_data
-from Elrond.Helpers.upload_download import get_recording_format
+from Helpers.upload_download import get_recording_format
 
 def check_kwargs_are_compatible(**kwargs):
     return True
