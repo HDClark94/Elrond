@@ -4,7 +4,7 @@ from P2_PostProcess.VirtualReality.spatial_firing import *
 from P2_PostProcess.VirtualReality.plotting import *
 from P2_PostProcess.VirtualReality.video import *
 from P3_CurrentAnalysis.basic_lomb_scargle_estimator import lomb_scargle
-from P3_CurrentAnalysis.ramp_score import calculate_ramp_scores
+from P3_CurrentAnalysis.ramp_score import calculate_ramp_scores, calculate_ramp_scores_parallel
 
 def process(recording_path, processed_path, **kwargs):
     track_length = get_track_length(recording_path)
@@ -29,8 +29,8 @@ def process(recording_path, processed_path, **kwargs):
     print("I am using position data with an avg sampling rate of ", str(1/np.nanmean(np.diff(position_data["time_seconds"]))), "Hz")
 
     # process video
-    position_data = process_video(recording_path, processed_path, position_data, 
-                                  model_path=kwargs["deeplabcut_vr_model_path"])
+    #position_data = process_video(recording_path, processed_path, position_data, 
+    #                              model_path=kwargs["deeplabcut_vr_model_path"])
 
     position_data_path = processed_path + "position_data.csv"
     processed_position_data_path = processed_path + "processed_position_data.pkl"
@@ -50,11 +50,10 @@ def process(recording_path, processed_path, **kwargs):
         spike_data = pd.read_pickle(spike_data_path)
         position_data = synchronise_position_data_via_ADC_ttl_pulses(position_data, processed_path, recording_path)
         spike_data = add_location_and_task_variables(spike_data, position_data, processed_position_data, track_length)
-        #spike_data = lomb_scargle(spike_data, processed_position_data, track_length)
+        spike_data = lomb_scargle(spike_data, processed_position_data, track_length)
         position_data.to_csv(position_data_path, index=False)
-        spike_data.to_pickle(spike_data_path)
-        _ = calculate_ramp_scores(spike_data, processed_position_data, position_data, track_length,
-                                  save_path=processed_path+sorterName+"/", save=True)
+        spike_data.to_pickle(spike_data_path)    
+        _ = calculate_ramp_scores_parallel(spike_data, processed_position_data, position_data, track_length,save_path=processed_path+sorterName+"/", save=True)
         plot_track_firing(spike_data, processed_position_data, output_path=processed_path + sorterName+"/", track_length=track_length)
     else: 
         print("I couldn't find spike data at ", spike_data_path)
