@@ -8,12 +8,17 @@ from scipy import signal
 from astropy.timeseries import LombScargle
 from astropy.convolution import convolve, Gaussian1DKernel
 from astropy.nddata import block_reduce
+from joblib import Parallel, delayed
+import multiprocessing
+import warnings
+warnings.filterwarnings("ignore")
 
+ 
 # Periodgram settings
 frequency_step = 0.02
 frequency = np.arange(0.1, 10+frequency_step, frequency_step) # spatial freqs to test for
 window_length_in_laps = 3 # n trials (laps)
-power_estimate_step = 5 # cm
+power_estimate_step = 200 # cm 
 
 def distance_from_integer(frequencies):
     distance_from_zero = np.asarray(frequencies)%1
@@ -21,7 +26,7 @@ def distance_from_integer(frequencies):
     tmp = np.vstack((distance_from_zero, distance_from_one))
     return np.min(tmp, axis=0)
 
-def lomb_scargle(spike_data, processed_position_data, track_length):
+def lomb_scargle(spike_data, processed_position_data, track_length, verbose=True):
     n_trials = len(processed_position_data)
     elapsed_distance_bins = np.arange(0, (track_length*n_trials)+1, 1)
     elapsed_distance = 0.5*(elapsed_distance_bins[1:]+elapsed_distance_bins[:-1])/track_length
@@ -43,7 +48,7 @@ def lomb_scargle(spike_data, processed_position_data, track_length):
 
             powers = []
             centre_distances = []
-            indices_to_test = np.arange(0, len(fr)-sliding_window_size, 1, dtype=np.int64)[::power_estimate_step]
+            indices_to_test = np.arange(0, len(fr)-sliding_window_size, 1, dtype=np.int64)[::power_estimate_step] 
             for m in indices_to_test:
                 ls = LombScargle(elapsed_distance[m:m+sliding_window_size], fr[m:m+sliding_window_size])
                 power = ls.power(frequency)
@@ -70,7 +75,8 @@ def lomb_scargle(spike_data, processed_position_data, track_length):
             all_freqs.append([])
             all_deltas.append([])
 
-        print(f'lomb scargle computation time for cluster {cluster_id} is {time.time()-time_then}, seconds')
+        if verbose:
+            print(f'lomb scargle computation time for cluster {cluster_id} is {time.time()-time_then}, seconds')
  
     spike_data["ls_powers"] = all_powers
     spike_data["ls_centre_distances"] = all_centre_distances
@@ -78,12 +84,24 @@ def lomb_scargle(spike_data, processed_position_data, track_length):
     spike_data["ls_deltas"] = all_deltas
     return spike_data
 
+def lomb_scargle_parallel_container(cluster_df, processed_position_data, track_length, verbose=True):
+    cluster_df = cluster_df.to_frame().T.reset_index(drop=True)
+    cluster_df = lomb_scargle(cluster_df, processed_position_data, track_length, verbose=verbose)
+    return cluster_df
+
+def lomb_scargle_parallel(spike_data, processed_position_data, track_length, verbose=True):
+    n_cores = multiprocessing.cpu_count()  
+    parallel_spike_data = Parallel(n_jobs=n_cores)(delayed(lomb_scargle_parallel_container)(cluster_df, processed_position_data, track_length, verbose=verbose) 
+                                                   for i, cluster_df in spike_data.iterrows())
+    spike_data = pd.concat(parallel_spike_data, ignore_index=True) 
+    return spike_data
+
 def main():
     spike_data = pd.read_pickle("/mnt/datastore/Harry/Cohort11_april2024/derivatives/M21/D26/vr/M21_D26_2024-05-28_17-04-41_VR1/processed/kilosort4/spikes.pkl")
     position_data = pd.read_csv("/mnt/datastore/Harry/Cohort11_april2024/derivatives/M21/D26/vr/M21_D26_2024-05-28_17-04-41_VR1/processed/position_data.csv")
     processed_position_data = pd.read_pickle("/mnt/datastore/Harry/Cohort11_april2024/derivatives/M21/D26/vr/M21_D26_2024-05-28_17-04-41_VR1/processed/processed_position_data.pkl")
     spike_data = lomb_scargle(spike_data, processed_position_data)
-    print("done")
+    print("done") 
 
 if __name__ == '__main__':
     main()
