@@ -127,20 +127,20 @@ def main():
     if settings.suppress_warnings:
         warnings.filterwarnings("ignore")
 
-    mouse = 21 
-    day = 26
+    mouse = 21
+    day = 23
     mouse_day = "M"+str(mouse)+"_D"+str(day)
     project_path = "/mnt/datastore/Harry/Cohort11_april2024/"
 
-    recording_paths = [] 
-    recording_paths.extend([f.path for f in os.scandir(project_path+"vr") if f.is_dir()])
-    #recording_paths.extend([f.path for f in os.scandir(project_path+"of") if f.is_dir()])
+    recording_paths = []  
+    #recording_paths.extend([f.path for f in os.scandir(project_path+"vr") if f.is_dir()])
+    recording_paths.extend([f.path for f in os.scandir(project_path+"of") if f.is_dir()])
     #recording_paths.extend([f.path for f in os.scandir(project_path+"allen_brain_observatory_visual_coding") if f.is_dir()])
     recording_paths = [s for s in recording_paths if mouse_day in s]
     ephys_path = project_path + "derivatives/M"+str(mouse)+"/D"+str(day)+"/ephys/"
-    recording_paths = chronologize_paths(recording_paths)
+    recording_paths = chronologize_paths(recording_paths) 
 
-    process_recordings( 
+    process_recordings(  
         recording_paths,
         local_path="/home/ubuntu/to_sort/recordings/",
         processed_folder_name="processed/",

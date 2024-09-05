@@ -6,7 +6,7 @@ from Helpers.array_utility import remove_nans_and_inf_from_both_arrays
 import settings as settings
 from pathlib import Path
 from os.path import expanduser
-
+import numpy as np
 from Helpers.upload_download import copy_from_local, copy_to_local, \
     empty_recording_folder_from_local, get_processed_paths, chronologize_paths
 from P1_SpikeSort.spikesort import spikesort
@@ -110,6 +110,7 @@ def process_recordings(recording_paths,
             traceback.print_tb(exc_traceback)
             print("")
     return
+ 
 
 
 def get_recording_paths(project_path, mouse, day):
@@ -121,42 +122,46 @@ def get_recording_paths(project_path, mouse, day):
     recording_paths.append(data_path + "vr/" + os.listdir(data_path + "vr/")[0])
 
     print(recording_paths)
-    return recording_paths
+    return recording_paths 
+
 
 def main():
     if settings.suppress_warnings:
         warnings.filterwarnings("ignore")
 
-    for mouse in [20, 21]:
-        for day in [14,15,16,17,18,19,20,21,22,23,24,25]: 
-             
-            mouse_day = "M"+str(mouse)+"_D"+str(day)
-            project_path = "/mnt/datastore/Harry/Cohort11_april2024/"
+    for mouse in [21]: 
+        for day in np.arange(23, 24):  
+            try:    
+                mouse_day = "M"+str(mouse)+"_D"+str(day)
+                project_path = "/mnt/datastore/Harry/Cohort11_april2024/"
 
-            recording_paths = [] 
-            recording_paths.extend([f.path for f in os.scandir(project_path+"vr") if f.is_dir()])
-            #recording_paths.extend([f.path for f in os.scandir(project_path+"of") if f.is_dir()])
-            #recording_paths.extend([f.path for f in os.scandir(project_path+"allen_brain_observatory_visual_coding") if f.is_dir()])
-            recording_paths = [s for s in recording_paths if mouse_day in s]
-            ephys_path = project_path + "derivatives/M"+str(mouse)+"/D"+str(day)+"/ephys/"
-            recording_paths = chronologize_paths(recording_paths)
+                recording_paths = [] 
+                recording_paths.extend([f.path for f in os.scandir(project_path+"vr") if f.is_dir()])
+                #recording_paths.extend([f.path for f in os.scandir(project_path+"of") if f.is_dir()])
+                #recording_paths.extend([f.path for f in os.scandir(project_path+"allen_brain_observatory_visual_coding") if f.is_dir()])
+                recording_paths = [s for s in recording_paths if mouse_day in s]
+                ephys_path = project_path + "derivatives/M"+str(mouse)+"/D"+str(day)+"/ephys/"
+                recording_paths = chronologize_paths(recording_paths)  
 
-            process_recordings(
-                recording_paths,
-                local_path="/home/ubuntu/to_sort/recordings/",
-                processed_folder_name="processed/",
-                copy_locally=False,
-                run_spikesorting=False, 
-                run_postprocessing=True,
-                sorting_analyzer_path= ephys_path + "sorting_analyzer/",
-                phy_path = ephys_path + "phy/",
-                report_path = ephys_path + "report/",
-                base_processed_path = project_path + "derivatives/M"+str(mouse)+"/D"+str(day)+"/",
-                deeplabcut_of_model_path = settings.of_deeplabcut_project_path,
-                deeplabcut_vr_model_path = settings.vr_deeplabcut_project_path,
-                sorterName="kilosort4",
-                sorter_kwargs={'do_CAR': False, 'do_correction': True}
-            )
+                process_recordings(
+                    recording_paths,
+                    local_path="/home/ubuntu/to_sort/recordings/",
+                    processed_folder_name="processed/",
+                    copy_locally=False,
+                    run_spikesorting=False, 
+                    run_postprocessing=True,
+                    sorting_analyzer_path= ephys_path + "sorting_analyzer/",
+                    phy_path = ephys_path + "phy/",
+                    report_path = ephys_path + "report/",
+                    base_processed_path = project_path + "derivatives/M"+str(mouse)+"/D"+str(day)+"/",
+                    deeplabcut_of_model_path = settings.of_deeplabcut_project_path,
+                    deeplabcut_vr_model_path = settings.vr_deeplabcut_project_path,
+                    sorterName="kilosort4", 
+                    sorter_kwargs={'do_CAR': False, 'do_correction': True} 
+                )
+            except: 
+                print("failed") 
+
 
 if __name__ == '__main__':
     main()
