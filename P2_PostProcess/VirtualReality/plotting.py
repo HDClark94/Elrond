@@ -184,8 +184,6 @@ def plot_eye(processed_position_data, output_path="", track_length=200):
     plt.savefig(save_path + '/eye_radius_vs_track_position_trial_seperated.png', dpi=200)
     plt.close() 
 
-
-
 def plot_speed_heat_map(processed_position_data, output_path="", track_length=200):
     save_path = output_path+'Figures/behaviour'
     if os.path.exists(save_path) is False:
@@ -222,8 +220,6 @@ def plot_speed_heat_map(processed_position_data, output_path="", track_length=20
     plt.subplots_adjust(hspace = .35, wspace = .35,  bottom = 0.2, left = 0.2, right = 0.87, top = 0.92)
     plt.savefig(save_path + '/speed_heat_map.png', dpi=200)
     plt.close()
-
-
 
 # plot the raw movement channel to check all is good
 def plot_movement_channel(location, output_path):
@@ -267,17 +263,6 @@ def plot_trial_channels(trial1, trial2, output_path):
     plt.plot(trial2[0,:])
     plt.savefig(output_path + 'Figures/trial_type2.png')
     plt.close()
-
-
-'''
-
-# Plot behavioural info:
-> stops on trials 
-> avg stop histogram
-> avg speed histogram
-> combined plot
-
-'''
 
 def get_trial_color(trial_type):
     if trial_type == 0:
@@ -358,7 +343,6 @@ def curate_stops(stop_locations, stop_trial_numbers, track_length):
 
     return np.array(curated_stop_locations), np.array(curated_stop_trials)
 
-
 def plot_stop_histogram(processed_position_data, output_path="", track_length=200):
     # TODO test this
     save_path = output_path+'Figures/behaviour'
@@ -398,7 +382,6 @@ def plot_stop_histogram(processed_position_data, output_path="", track_length=20
     plt.savefig(save_path + '/stop_histogram.png', dpi=200)
     plt.close()
 
-
 def min_max_normalize(x):
     """
         argument
@@ -410,7 +393,6 @@ def min_max_normalize(x):
     max_val = np.max(x)
     x = (x-min_val) / (max_val-min_val)
     return x
-
 
 def plot_speed_histogram(processed_position_data, output_path="", track_length=200):
     # TODO test this
@@ -443,9 +425,6 @@ def plot_speed_histogram(processed_position_data, output_path="", track_length=2
     plt.subplots_adjust(hspace = .35, wspace = .35,  bottom = 0.2, left = 0.2, right = 0.87, top = 0.92)
     plt.savefig(save_path + '/speed_histogram.png', dpi=200)
     plt.close()
-
-
-
 
 def plot_spikes_on_track(spike_data, processed_position_data, output_path, track_length=200,
                          plot_trials=["beaconed", "non_beaconed", "probe"]):
@@ -492,6 +471,44 @@ def plot_spikes_on_track(spike_data, processed_position_data, output_path, track
             plt.close()
     return
 
+
+def plot_firing_rate_maps_short(cluster_data, track_length=200, save_path=None):
+    firing_times_cluster = cluster_data["firing_times"].iloc[0]
+    cluster_id = cluster_data["cluster_id"].iloc[0]
+
+    if len(firing_times_cluster)>1:
+        cluster_firing_maps = np.array(cluster_data['fr_binned_in_space_smoothed'].iloc[0])
+        cluster_firing_maps[np.isnan(cluster_firing_maps)] = np.nan
+        cluster_firing_maps[np.isinf(cluster_firing_maps)] = np.nan
+
+        spikes_on_track = plt.figure()
+        spikes_on_track.set_size_inches(5, 5/3, forward=True)
+        ax = spikes_on_track.add_subplot(1, 1, 1)
+        locations = np.arange(0, len(cluster_firing_maps[0]))
+        ax.fill_between(locations, np.nanmean(cluster_firing_maps, axis=0) - stats.sem(cluster_firing_maps, axis=0,nan_policy="omit"),
+                                    np.nanmean(cluster_firing_maps, axis=0) + stats.sem(cluster_firing_maps, axis=0,nan_policy="omit"), color="black", alpha=0.2)
+        ax.plot(locations, np.nanmean(cluster_firing_maps, axis=0), color="black", linewidth=1)
+        
+        plt.ylabel('FR (Hz)', fontsize=25, labelpad = 10)
+        plt.xlabel('Location (cm)', fontsize=25, labelpad = 10)
+        plt.xlim(0, track_length)
+        ax.tick_params(axis='both', which='both', labelsize=20)
+        ax.set_xlim([0, track_length])
+        max_fr = max(np.nanmean(cluster_firing_maps, axis=0)+stats.sem(cluster_firing_maps, axis=0))
+        max_fr = max_fr+(0.1*(max_fr))
+        ax.set_ylim([0, max_fr])
+        ax.set_yticks([0, np.round(ax.get_ylim()[1], 1)])
+        ax.set_ylim(bottom=0)
+        plot_utility.style_track_plot(ax, track_length, alpha=0.15)
+        ax.spines['top'].set_visible(False)
+        ax.spines['right'].set_visible(False)
+        ax.xaxis.set_major_locator(ticker.MultipleLocator(100))
+        ax.yaxis.set_ticks_position('left')
+        ax.xaxis.set_ticks_position('bottom')
+        plt.subplots_adjust(hspace = .35, wspace = .35,  bottom = 0.2, left = 0.3, right = 0.87, top = 0.92)
+        if save_path is not None:
+            plt.savefig(save_path + '/avg_firing_rate_maps_short_' + cluster_data.session_id.iloc[0] + '_' + str(int(cluster_id)) + '.png', dpi=300)
+    return              
 
 def plot_firing_rate_maps(spike_data, processed_position_data, output_path, track_length=200):
     print('I am plotting firing rate maps...')
@@ -580,9 +597,9 @@ def plot_firing_rate_maps(spike_data, processed_position_data, output_path, trac
     plt.savefig(save_path + '/all_firing_rates.png', dpi=400)
     plt.close()
 
-def plot_spatial_periodogram_per_trial(spike_data, processed_position_data, output_path, track_length):
+def plot_spatial_periodogram_per_trial(spike_data, processed_position_data, output_path, track_length): 
     if "ls_powers" not in list(spike_data): 
-        spike_data = lomb_scargle(spike_data, processed_position_data)
+        spike_data = lomb_scargle(spike_data, processed_position_data, track_length) 
 
     save_path = output_path + 'Figures/spatial_periodograms/'
     if os.path.exists(save_path) is False:
@@ -717,9 +734,8 @@ def plot_firing_rate_maps_per_trial(spike_data, processed_position_data, output_
     plt.subplots_adjust(hspace=.1, wspace=.1, bottom=None, left=None, right=None, top=None)
     plt.savefig(save_path + '/all_firing_rates.png', dpi=400)
     plt.close()
-  
-def plot_firing_rate_maps_per_trial_2(cluster_spike_data, processed_position_data, 
-                                      track_length, output_path=None, ax=None):
+   
+def plot_firing_rate_maps_per_trial_2(cluster_spike_data, track_length, output_path=None, ax=None):
     if output_path is not None:
         save_path = output_path + 'Figures/rate_maps_by_trial'
         if os.path.exists(save_path) is False:
@@ -737,7 +753,7 @@ def plot_firing_rate_maps_per_trial_2(cluster_spike_data, processed_position_dat
         vmin, vmax = get_vmin_vmax(cluster_firing_maps)
 
         locations = np.arange(0, len(cluster_firing_maps[0]))
-        ordered = np.arange(0, len(processed_position_data), 1)
+        ordered = np.arange(0, len(cluster_firing_maps), 1)
         X, Y = np.meshgrid(locations, ordered)
         cmap = plt.cm.get_cmap("viridis")
         
@@ -751,7 +767,7 @@ def plot_firing_rate_maps_per_trial_2(cluster_spike_data, processed_position_dat
         ax.set_ylabel('Trial Number', fontsize=20, labelpad = 20)
         ax.set_xlabel('Location (cm)', fontsize=20, labelpad = 20)
         ax.set_xlim([0, track_length])
-        ax.set_ylim([0, len(processed_position_data)-1])
+        ax.set_ylim([0, len(cluster_firing_maps)-1])
         ax.tick_params(axis='both', which='both', labelsize=20)
         ax.spines['top'].set_visible(False)
         ax.spines['right'].set_visible(False)
@@ -786,11 +802,11 @@ def plot_behaviour(position_data, processed_position_data, output_path, track_le
     plot_stop_histogram(processed_position_data, output_path, track_length=track_length)
     plot_speed_histogram(processed_position_data, output_path, track_length=track_length)
     plot_speed_heat_map(processed_position_data, output_path, track_length=track_length)
-    plot_eye_trajectory(position_data, processed_position_data, output_path, track_length=track_length)
-    plot_eye(processed_position_data, output_path, track_length=track_length)
+    #plot_eye_trajectory(position_data, processed_position_data, output_path, track_length=track_length)
+    #plot_eye(processed_position_data, output_path, track_length=track_length) 
  
 def plot_track_firing(spike_data, processed_position_data, output_path, track_length):  
-    plot_spatial_periodogram_per_trial(spike_data, processed_position_data, output_path, track_length=track_length)
+    #plot_spatial_periodogram_per_trial(spike_data, processed_position_data, output_path, track_length=track_length)
     plot_firing_rate_maps(spike_data, processed_position_data, output_path, track_length=track_length)
     plot_firing_rate_maps_per_trial(spike_data, processed_position_data, output_path, track_length=track_length)
     plot_spikes_on_track(spike_data, processed_position_data, output_path, track_length=track_length)
