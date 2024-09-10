@@ -4,6 +4,7 @@ from P1_SpikeSort.preprocess import preprocess, ammend_preprocessing_parameters
 from P1_SpikeSort.auto_curate import auto_curation
 from P1_SpikeSort.probe import add_probe 
 import settings as settings
+from datetime import datetime
 
 from os.path import expanduser
 si.set_global_job_kwargs(n_jobs=1)
@@ -71,6 +72,7 @@ def spikesort(
     params = ammend_preprocessing_parameters(params, **kwargs)
 
 
+    print("Before spike sorting, time is", datetime.now())
     sorting_mono=None
     if do_spike_sorting:
         print("I will sort using", sorterName)
@@ -98,6 +100,8 @@ def spikesort(
     else:
         sorting_analyzer = si.load_sorting_analyzer(sorting_analyzer_path, load_extensions=True)
         sorting_analyzer._recording = recording_mono
+
+    print("Before postprocessing, time is", datetime.now())
 
     if do_spike_postprocessing: 
 

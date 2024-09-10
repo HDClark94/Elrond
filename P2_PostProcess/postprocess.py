@@ -7,6 +7,8 @@ from P2_PostProcess.Opto import opto as opto
 from P2_PostProcess.Sleep import sleep as sleep
 from P2_PostProcess.ABOVisualCoding import visual_coding
 
+from datetime import datetime
+
 def postprocess(processed_folder_name, processed_paths, recording_paths, **kwargs):
     # process behaviour and spike data based on the recording type
 
@@ -17,10 +19,15 @@ def postprocess(processed_folder_name, processed_paths, recording_paths, **kwarg
         if not os.path.exists(recording_path + "/" + processed_folder_name):
             os.mkdir(recording_path + "/" + processed_folder_name)
 
+
         if type == "vr":
+            print("Before vr, time is", datetime.now())
             vr.process(recording_path, processed_path,  **kwargs)
+            print("After vr, time is", datetime.now())
         elif type == "openfield":
+            print("Before of, time is", datetime.now())
             of.process(recording_path, processed_path, **kwargs)
+            print("After of, time is", datetime.now())
         elif type == "opto":
             opto.process(recording_path, processed_path, **kwargs)
         elif type == "sleep":
@@ -32,4 +39,4 @@ def postprocess(processed_folder_name, processed_paths, recording_paths, **kwarg
             print(type, " isn't a recognised recording type in postprocessing")
         #shared.process(recording_path, processed_folder_name, **kwargs)
 
-    print("Finished post-processing...")
+    print("Finished post-processing... and time is ", datetime.now())
