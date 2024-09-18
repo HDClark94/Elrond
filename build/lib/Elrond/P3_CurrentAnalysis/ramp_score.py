@@ -1,10 +1,10 @@
 import numpy as np 
-import settings
+import Elrond.settings as settings
 import pandas as pd 
 import scipy.stats as stats
 import statsmodels.api as sm
 from statsmodels.stats.multitest import fdrcorrection
-from P2_PostProcess.VirtualReality.spatial_firing import add_kinematics, bin_fr_in_space
+from ..P2_PostProcess.VirtualReality.spatial_firing import add_kinematics, bin_fr_in_space
 from joblib import Parallel, delayed
 import multiprocessing
 import warnings

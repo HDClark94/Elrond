@@ -1,17 +1,17 @@
+pyyaml
+numpy
+spikeinterface
+neuroconv
+matplotlib
+astropy
+joblib
+opencv-python
+statsmodels
+scikit-image
+cmocean
 
 [full]
-h5py
-pandas
-xarray
-scipy
-scikit-learn
-networkx
-distinctipy
-matplotlib>=3.6
-numba
-
-[full:platform_system != "Darwin"]
-cuda-python
 
 [postprocessing]
-dlc
+
+[sorting]

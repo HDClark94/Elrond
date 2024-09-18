@@ -8,7 +8,7 @@ from Helpers import plot_utility, open_ephys_IO
 import PostSorting.parameters
 from PostSorting.load_firing_data import available_ephys_channels
 import re
-import settings as settings
+import Elrond.settings as settings
 import matplotlib
 from scipy import stats
 

@@ -2,7 +2,7 @@ import os
 import sys
 import traceback
 import warnings
-import settings as settings
+import Elrond.settings as settings
 
 from Elrond.Helpers.upload_download import copy_from_local, copy_to_local, empty_recording_folder_from_local
 from Elrond.P0_Format.NWB_Formatter.nwb_format import format

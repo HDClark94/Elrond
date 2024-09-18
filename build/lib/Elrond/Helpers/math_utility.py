@@ -44,7 +44,7 @@ def circ_corrcc(alpha, x):
     By Philipp Berens, 2009
     Python adaptation by Etienne Combrisson
     """
-    if len(alpha) is not len(x):
+    if len(alpha) != len(x):
         raise ValueError('The length of alpha and x must be the same')
     n = len(alpha)
 

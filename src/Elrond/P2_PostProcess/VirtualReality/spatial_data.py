@@ -3,7 +3,7 @@ import pandas as pd
 import os
 import traceback
 from scipy import stats
-import settings as settings
+import Elrond.settings as settings
 from astropy.convolution import convolve, Gaussian1DKernel
 import Elrond.Helpers.metadata_extraction as metadata_extraction
 import matplotlib.pylab as plt 

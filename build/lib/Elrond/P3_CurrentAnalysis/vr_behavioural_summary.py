@@ -5,7 +5,7 @@ import traceback
 import sys
 import numpy as np
 import matplotlib.pyplot as plt
-from P2_PostProcess.VirtualReality.plotting import *
+from ..P2_PostProcess.VirtualReality.plotting import *
 from Helpers.array_utility import pandas_collumn_to_numpy_array
 import scipy.stats as stats
 

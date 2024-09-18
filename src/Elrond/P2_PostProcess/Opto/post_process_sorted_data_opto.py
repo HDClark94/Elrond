@@ -2,7 +2,7 @@ import numpy as np
 import os
 import pandas as pd
 import pickle
-import settings as settings
+import Elrond.settings as settings
 import PreClustering.dead_channels
 import PostSorting.compare_first_and_second_half
 import PostSorting.curation

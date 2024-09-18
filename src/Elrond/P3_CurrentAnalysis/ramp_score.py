@@ -1,5 +1,5 @@
 import numpy as np 
-import settings
+import Elrond.settings as settings
 import pandas as pd 
 import scipy.stats as stats
 import statsmodels.api as sm

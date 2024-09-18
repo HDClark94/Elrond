@@ -2,7 +2,7 @@ import os
 import pickle
 
 import numpy as np
-import settings as settings
+import Elrond.settings as settings
 
 import PostSorting.compare_first_and_second_half
 import PostSorting.curation

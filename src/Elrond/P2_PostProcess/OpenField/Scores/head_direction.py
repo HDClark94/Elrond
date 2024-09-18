@@ -5,7 +5,7 @@ import matplotlib.pylab as plt
 import numpy as np
 import pandas as pd
 import subprocess
-import settings as settings
+import Elrond.settings as settings
 
 
 def moving_sum(array, window):

@@ -3,7 +3,7 @@ import sys
 import traceback
 import warnings
 from Elrond.Helpers.array_utility import remove_nans_and_inf_from_both_arrays
-import settings as settings
+import Elrond.settings as settings
 from pathlib import Path
 from os.path import expanduser
 import numpy as np

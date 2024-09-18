@@ -1,3 +1,3 @@
-from .upload_download import (
+from Elrond.Helpers.upload_download import (
     get_processed_paths
 )

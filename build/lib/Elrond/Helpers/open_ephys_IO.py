@@ -1,4 +1,4 @@
-from Helpers import OpenEphys
+from .OpenEphys import *
 import numpy as np
 import matplotlib.pylab as plt
 

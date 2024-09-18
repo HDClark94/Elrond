@@ -19,6 +19,17 @@ classifiers = [
 
 
 dependencies = [
+    "pyyaml",
+    "numpy",
+    "spikeinterface",
+    "neuroconv",
+    "matplotlib",
+    "astropy",
+    "joblib",
+    "opencv-python",
+    "statsmodels",
+    "scikit-image",
+    "cmocean"
 ]
 
 [build-system]
@@ -42,14 +53,22 @@ repository = "https://github.com/hdclark94/elrond"
 [project.optional-dependencies]
 
 sorting = [
-    "spikeinterface"
 ]
 
 postprocessing = [
-    "dlc"
 ]
 
 full = [
-    "dlc"
-    "spikeinterface"
+    "pyyaml",
+    "numpy",
+    "spikeinterface",
+    "neuroconv",
+    "matplotlib",
+    "astropy",
+    "joblib",
+    "opencv-python",
+    "statsmodels",
+    "scikit-image",
+    "cmocean",
+    "deeplabcut"
 ]

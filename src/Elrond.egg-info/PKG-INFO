@@ -14,19 +14,20 @@ Classifier: Operating System :: MacOS
 Classifier: Operating System :: OS Independent
 Requires-Python: <4.0,>=3.9
 Description-Content-Type: text/markdown
+Requires-Dist: pyyaml
+Requires-Dist: numpy
+Requires-Dist: spikeinterface
+Requires-Dist: neuroconv
+Requires-Dist: matplotlib
+Requires-Dist: astropy
+Requires-Dist: joblib
+Requires-Dist: opencv-python
+Requires-Dist: statsmodels
+Requires-Dist: scikit-image
+Requires-Dist: cmocean
+Provides-Extra: sorting
 Provides-Extra: postprocessing
-Requires-Dist: dlc; extra == "postprocessing"
 Provides-Extra: full
-Requires-Dist: h5py; extra == "full"
-Requires-Dist: pandas; extra == "full"
-Requires-Dist: xarray; extra == "full"
-Requires-Dist: scipy; extra == "full"
-Requires-Dist: scikit-learn; extra == "full"
-Requires-Dist: networkx; extra == "full"
-Requires-Dist: distinctipy; extra == "full"
-Requires-Dist: matplotlib>=3.6; extra == "full"
-Requires-Dist: cuda-python; platform_system != "Darwin" and extra == "full"
-Requires-Dist: numba; extra == "full"
 
 # Elrond: 
 The ELectrophysiology Repository for Open-source Neural Data

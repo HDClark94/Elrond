@@ -2,7 +2,7 @@ import os
 import numpy as np
 import pandas as pd
 from scipy import stats
-import settings as settings
+import Elrond.settings as settings
 import Elrond.Helpers.open_ephys_IO as open_ephys_IO
 from astropy.convolution import convolve, Gaussian1DKernel
 from ...Helpers.upload_download import *

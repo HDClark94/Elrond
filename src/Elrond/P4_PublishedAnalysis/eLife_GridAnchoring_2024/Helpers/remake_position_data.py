@@ -11,7 +11,7 @@ import PostSorting.vr_stop_analysis
 import PostSorting.post_process_sorted_data_vr
 import PostSorting.vr_make_plots
 import PostSorting.vr_cued
-import settings as settings
+import Elrond.settings as settings
 
 from astropy.convolution import convolve, Gaussian1DKernel
 

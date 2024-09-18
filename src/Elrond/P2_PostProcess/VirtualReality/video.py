@@ -3,7 +3,7 @@ import os
 import cv2
 import matplotlib.pyplot as plt
 from neuroconv.utils.dict import load_dict_from_file
-import settings as settings
+import Elrond.settings as settings
 
 import numpy as np
 import shutil

@@ -9,3 +9,5 @@ from .P1_SpikeSort import *
 from .P2_PostProcess import *
 from .P3_CurrentAnalysis import *
 from .P4_PublishedAnalysis import *
+
+from .P2_PostProcess.postprocess import *

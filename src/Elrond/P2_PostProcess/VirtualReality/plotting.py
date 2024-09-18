@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 from scipy import stats
 import matplotlib.ticker as ticker
-import settings as settings
+import Elrond.settings as settings
 from astropy.nddata import block_reduce
 from ...Helpers import plot_utility
 from ...Helpers.array_utility import pandas_collumn_to_2d_numpy_array

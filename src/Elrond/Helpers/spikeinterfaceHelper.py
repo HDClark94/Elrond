@@ -11,7 +11,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from .file_utility import *
-import settings as settings
+import Elrond.settings as settings
 from probeinterface.plotting import plot_probe
 from probeinterface import get_probe
 from probeinterface import Probe, ProbeGroup

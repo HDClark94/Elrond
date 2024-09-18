@@ -13,7 +13,7 @@ import os
 from neuroconv.utils.dict import load_dict_from_file
 from pathlib import Path
 
-import settings as settings
+import Elrond.settings as settings
 
 def get_probe_dataframe(number_of_channels):
     if number_of_channels == 16: # presume tetrodes

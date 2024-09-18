@@ -1,6 +1,6 @@
 import glob
 import os
-import settings as settings
+import Elrond.settings as settings
 
 def getDeadChannel(deadChannelFile):
     deadChannels = []

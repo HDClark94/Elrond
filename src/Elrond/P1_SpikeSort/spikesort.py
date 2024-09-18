@@ -3,7 +3,7 @@ from ..Helpers.upload_download import *
 from .preprocess import preprocess, ammend_preprocessing_parameters
 from ..P1_SpikeSort.auto_curate import auto_curation
 from ..P1_SpikeSort.probe import add_probe 
-import settings as settings
+import Elrond.settings as settings
 from datetime import datetime
 
 from os.path import expanduser

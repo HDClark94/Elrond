@@ -2,7 +2,7 @@ import os
 import sys
 import traceback
 import warnings
-import settings as settings
+import Elrond.settings as settings
 from pathlib import Path
 from os.path import expanduser
 

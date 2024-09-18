@@ -3,7 +3,7 @@ import pandas as pd
 import traceback
 import os
 import sys
-import settings as settings
+import Elrond.settings as settings
 from P2_PostProcess.VirtualReality.spatial_firing import bin_fr_in_space
 from P2_PostProcess.VirtualReality.spatial_data import get_track_length, get_stop_threshold
 

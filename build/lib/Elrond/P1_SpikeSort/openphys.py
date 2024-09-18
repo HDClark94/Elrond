@@ -1,4 +1,4 @@
-import Helpers.OpenEphys as OpenEphys
+import Elrond.Helpers.OpenEphys as OpenEphys
 
 def load_OpenEphysRecording(folder, channel_ids=None):
     number_of_channels, corrected_data_file_suffix = count_files_that_match_in_folder(folder, data_file_prefix=settings.data_file_prefix, data_file_suffix='.continuous')

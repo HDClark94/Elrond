@@ -1,5 +1,5 @@
 import pandas as pd
-import settings as settings
+import Elrond.settings as settings
 from ..OpenField.rate_map import calculate_rate_maps
 from ..OpenField.Scores.spatial_information import calculate_spatial_information_scores
 from ..OpenField.Scores.half_session import calculate_half_session_stability_scores

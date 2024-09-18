@@ -1,4 +1,4 @@
-import settings as settings
+import Elrond.settings as settings
 import spikeinterface.full as si
 
 def ammend_preprocessing_parameters(params, **kwargs):

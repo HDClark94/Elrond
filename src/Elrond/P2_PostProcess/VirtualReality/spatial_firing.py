@@ -1,6 +1,6 @@
 import numpy as np
 import pandas as pd
-import settings as settings
+import Elrond.settings as settings
 from astropy.convolution import convolve, Gaussian1DKernel
 import traceback
 import os

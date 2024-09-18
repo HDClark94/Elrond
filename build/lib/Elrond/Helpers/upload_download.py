@@ -4,7 +4,7 @@ import yaml
 import numpy as np
 from pathlib import Path
 import spikeinterface.full as si
-from neuroconv.utils.dict import load_dict_from_file, dict_deep_update
+from neuroconv.utils.dict import load_dict_from_file
 
 def get_processed_paths(base_processed_path, recording_paths):
 

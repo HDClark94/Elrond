@@ -2,7 +2,7 @@ import numpy as np
 from scipy.stats.stats import pearsonr
 from ...OpenField.rate_map import rate_map_vectorised, rate_map, get_bin_size, get_number_of_bins, get_dwell
 from ...OpenField.spatial_data import get_position_heatmap
-import settings as settings
+import Elrond.settings as settings
 import pandas as pd
 
 

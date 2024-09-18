@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 import time
-import settings as settings
+import Elrond.settings as settings
 from ..OpenField.spatial_data import get_bin_size, get_dwell, get_number_of_bins
 from ...Helpers.math_utility import gaussian_kernel
 

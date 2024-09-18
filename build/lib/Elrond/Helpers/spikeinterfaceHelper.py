@@ -10,12 +10,12 @@ from spikeinterface.exporters import export_to_phy
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-from Helpers.file_utility import *
-import settings as settings
+from .file_utility import *
+import Elrond.settings as settings
 from probeinterface.plotting import plot_probe
 from probeinterface import get_probe
 from probeinterface import Probe, ProbeGroup
-from Helpers import OpenEphys
+from .OpenEphys import *
 
 def load_OpenEphysRecording(folder, channel_ids=None):
     number_of_channels, corrected_data_file_suffix = count_files_that_match_in_folder(folder, data_file_prefix=settings.data_file_prefix, data_file_suffix='.continuous')

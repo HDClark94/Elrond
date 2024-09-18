@@ -1,5 +1,5 @@
 import pandas as pd
-import settings as settings
+import Elrond.settings as settings
 import warnings
 import numpy as np
 import umap

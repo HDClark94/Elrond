@@ -3,7 +3,7 @@ import numpy as np
 import scipy.stats
 from numpy.testing import assert_array_almost_equal
 
-from Helpers import kuiper
+from .kuiper import *
 
 
 def seed(n=0):

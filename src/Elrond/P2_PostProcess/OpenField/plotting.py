@@ -6,7 +6,7 @@ from ...Helpers import plot_utility
 import math
 import numpy as np
 import pandas as pd
-import settings as settings
+import Elrond.settings as settings
 
 from ..OpenField.Scores.head_direction import get_hd_histogram
 

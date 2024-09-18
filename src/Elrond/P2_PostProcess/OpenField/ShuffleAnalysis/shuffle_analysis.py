@@ -9,7 +9,7 @@ import PostSorting.open_field_border_cells
 import PostSorting.open_field_firing_fields
 import PostSorting.compare_first_and_second_half
 import numpy as np
-import settings as settings
+import Elrond.settings as settings
 import time
 from PostSorting import parameters
 

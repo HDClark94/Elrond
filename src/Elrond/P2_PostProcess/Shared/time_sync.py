@@ -6,7 +6,7 @@ import numpy as np
 import pandas as pd
 from ...Helpers import open_ephys_IO
 from ...Helpers.array_utility import *
-import settings as settings
+import Elrond.settings as settings
 from neuroconv.utils.dict import load_dict_from_file, dict_deep_update
 
 

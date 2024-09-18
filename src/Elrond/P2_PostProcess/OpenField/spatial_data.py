@@ -1,7 +1,7 @@
 import os
 import glob
 import math
-import settings as settings
+import Elrond.settings as settings
 import numpy as np
 import pandas as pd
 import csv

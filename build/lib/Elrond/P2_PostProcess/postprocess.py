@@ -1,11 +1,11 @@
-from Helpers.upload_download import *
+from ..Helpers.upload_download import *
 
 #from P2_PostProcess.Shared import shared as shared
-from P2_PostProcess.VirtualReality import vr as vr
-from P2_PostProcess.OpenField import of as of
-from P2_PostProcess.Opto import opto as opto
-from P2_PostProcess.Sleep import sleep as sleep
-from P2_PostProcess.ABOVisualCoding import visual_coding
+from .VirtualReality import vr as vr
+from .OpenField import of as of
+from .Opto import opto as opto
+from .Sleep import sleep as sleep
+from .ABOVisualCoding import visual_coding
 
 from datetime import datetime
 
