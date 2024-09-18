@@ -1,0 +1,55 @@
+[project]
+name = "Elrond"
+version = "0.0.1"
+authors = [
+  { name="Harry Clark", email="harry@clark.com" },
+]
+description = "Python toolkit for electrophysiological neural data"
+readme = "README.md"
+requires-python = ">=3.9,<4.0"
+classifiers = [
+    "Programming Language :: Python :: 3 :: Only",
+    "License :: OSI Approved :: MIT License",
+    "Intended Audience :: Science/Research",
+    "Operating System :: POSIX :: Linux",
+    "Operating System :: Microsoft :: Windows",
+    "Operating System :: MacOS",
+    "Operating System :: OS Independent"
+]
+
+
+dependencies = [
+]
+
+[build-system]
+requires = ["setuptools>=62.0"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["Elrond*"]
+namespaces = false
+exclude = ["spikeinterface.*.tests"]
+
+[tool.black]
+line-length = 120
+
+[project.urls]
+homepage = "https://github.com/hdclark94/elrond"
+repository = "https://github.com/hdclark94/elrond"
+
+
+[project.optional-dependencies]
+
+sorting = [
+    "spikeinterface"
+]
+
+postprocessing = [
+    "dlc"
+]
+
+full = [
+    "dlc"
+    "spikeinterface"
+]

@@ -1,0 +1,52 @@
+Metadata-Version: 2.1
+Name: spikeinterface
+Version: 0.101.1
+Summary: Python toolkit for electrophysiological neural data
+Author-email: Harry Clark <harry@clark.com>
+Project-URL: homepage, https://github.com/hdclark94/elrond
+Project-URL: repository, https://github.com/hdclark94/elrond
+Classifier: Programming Language :: Python :: 3 :: Only
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Intended Audience :: Science/Research
+Classifier: Operating System :: POSIX :: Linux
+Classifier: Operating System :: Microsoft :: Windows
+Classifier: Operating System :: MacOS
+Classifier: Operating System :: OS Independent
+Requires-Python: <4.0,>=3.9
+Description-Content-Type: text/markdown
+Provides-Extra: postprocessing
+Requires-Dist: dlc; extra == "postprocessing"
+Provides-Extra: full
+Requires-Dist: h5py; extra == "full"
+Requires-Dist: pandas; extra == "full"
+Requires-Dist: xarray; extra == "full"
+Requires-Dist: scipy; extra == "full"
+Requires-Dist: scikit-learn; extra == "full"
+Requires-Dist: networkx; extra == "full"
+Requires-Dist: distinctipy; extra == "full"
+Requires-Dist: matplotlib>=3.6; extra == "full"
+Requires-Dist: cuda-python; platform_system != "Darwin" and extra == "full"
+Requires-Dist: numba; extra == "full"
+
+# Elrond: 
+The ELectrophysiology Repository for Open-source Neural Data
+
+## Overview
+A comprehensive pipeline for electrophysiological recordings in rodents.
+
+This repository contains scripts to call spike sorting and post processing of electrophysiological data recorded from rodents across a range of behavioural tasks including free-moving open field, head-fixed virtual environments, sleep and video playback experiments. Spike sorting is controlled primarily through SpikeInterface objects and functions, Curation is possible through Phy while post-processing is controlled through custom scripts.
+
+The codebase can be used at every stage of research.
+1. Data preparation and daily analysis to provide vital feedback to inform experimental decisions during an experiment
+2. Post experimental anaylsis for projects and publication
+3. Data collation for open-source publication of raw data using the DANDI Archieve in Neuro Data without Borders (NWB) formatting.
+
+
+### Example output figures
+![image](https://user-images.githubusercontent.com/16649631/123976239-e806cd80-d9b5-11eb-839b-28c86352e201.png)
+
+## How to contribute
+Please submit an issue to discuss.
+
+## FAQ
+Spike sorting crashed with a "too many files open" error: Look in additional_files/fix_file_open_limit_linux for instructions for a workaround
