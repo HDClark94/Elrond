@@ -2,11 +2,11 @@ import os
 import sys
 import traceback
 import warnings
-from Helpers.array_utility import remove_nans_and_inf_from_both_arrays
 import settings as settings
 from pathlib import Path
 from os.path import expanduser
 
+from Elrond.Helpers.array_utility import remove_nans_and_inf_from_both_arrays
 from Elrond.Helpers.upload_download import copy_from_local, copy_to_local, \
     empty_recording_folder_from_local, get_processed_paths, chronologize_paths
 from Elrond.P1_SpikeSort.spikesort import spikesort
