@@ -143,12 +143,11 @@ def main():
     #recording_paths = []
     #parameter_helper_path = "/mnt/datastore/Harry/Cohort9_february2023/parameter_helper.csv"
     #process_recordings(recording_paths, parameter_helper_path=parameter_helper_path, allow_overwrite=True)
-
+ 
     recording_paths = []
-    recording_paths.extend([f.path for f in os.scandir("/mnt/datastore/Harry/cohort11_april2024/vr") if f.is_dir()])
-    recording_paths.extend([f.path for f in os.scandir("/mnt/datastore/Harry/cohort11_april2024/of") if f.is_dir()])
-    recording_paths.extend([f.path for f in os.scandir("/mnt/datastore/Harry/cohort11_april2024/allen_brain_observatory_visual_coding") if f.is_dir()])
-    parameter_helper_path = "/mnt/datastore/Harry/cohort11_april2024/parameter_helper.csv"
+    recording_paths.extend([f.path for f in os.scandir("/mnt/datastore/Harry/cohort12_august2024/vr") if f.is_dir()])
+    recording_paths.extend([f.path for f in os.scandir("/mnt/datastore/Harry/cohort12_august2024/of") if f.is_dir()])
+    parameter_helper_path = "/mnt/datastore/Harry/cohort12_august2024/parameter_helper.csv"
     process_recordings(recording_paths, parameter_helper_path=parameter_helper_path, allow_overwrite=True)
 
 
