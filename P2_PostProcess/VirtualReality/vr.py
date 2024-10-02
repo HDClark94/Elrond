@@ -22,16 +22,17 @@ def process(recording_path, processed_path, **kwargs):
         position_data = generate_position_data_from_blender_file(recording_path, processed_path)
     elif np.any([".continuous" in f.name and f.is_file() for f in files]):
         position_data = generate_position_data_from_ADC_channels(recording_path, processed_path)
-    else:
+    else: 
         print("I couldn't find any source of position data")
         return
 
     print("I am using position data with an avg sampling rate of ", str(1/np.nanmean(np.diff(position_data["time_seconds"]))), "Hz")
 
     # process video
-    #position_data = process_video(recording_path, processed_path, position_data, 
-    #                              model_path=kwargs["deeplabcut_vr_model_path"])
-
+    position_data = process_video(recording_path, processed_path, position_data, 
+                                  pupil_model_path=kwargs["deeplabcut_vr_pupil_model_path"],
+                                  licks_model_path=kwargs["deeplabcut_vr_licks_model_path"])  
+  
     position_data_path = processed_path + "position_data.csv"
     processed_position_data_path = processed_path + "processed_position_data.pkl"
     spike_data_path = processed_path + sorterName + "/spikes.pkl"
