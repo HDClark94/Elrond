@@ -28,7 +28,11 @@ def plot_middle_frame(video_path, save_path):
     plt.savefig(save_path + "middle_frame.png")
     plt.close()
 
-def analyse_dlc_model(video_path, model_path, save_path):
+def analyse_dlc_model_pupil(video_path, model_path, processed_path):
+    save_path = processed_path+"pupil_video/"
+    if not os.path.exists(save_path):
+        os.mkdir(save_path)
+
     config_path = model_path+"config.yaml"
     # add columns to position_data using markers as set in the dlc model
     video_filename = video_path.split("/")[-1]
@@ -42,7 +46,38 @@ def analyse_dlc_model(video_path, model_path, save_path):
     csv_path = [os.path.abspath(os.path.join(save_path, filename)) for filename in os.listdir(save_path) if filename.endswith(".csv")]
     markers_df = pd.read_csv(csv_path[0], header=[1, 2], index_col=0) # ignore the scorer column
     os.remove(new_videopath)
+    
+    plot_middle_frame(video_path, save_path) # only take the first video as there hopefully is only one
     return markers_df
+
+def analyse_dlc_model_licks(video_path, model_path, processed_path):
+    save_path = processed_path+"lick_video/"
+    if not os.path.exists(save_path):
+        os.mkdir(save_path)
+
+    config_path = model_path+"config.yaml"
+    # add columns to position_data using markers as set in the dlc model
+    video_filename = video_path.split("/")[-1]
+    new_videopath = save_path+video_filename
+    #_ = shutil.copy(video_path, new_videopath)  
+
+    dlc.analyze_videos(config_path, [new_videopath], save_as_csv=True, destfolder=save_path)
+    dlc.create_labeled_video(config_path, [new_videopath], save_frames=False, pcutoff=0.8)
+    dlc.plot_trajectories(config_path, [new_videopath])
+    csv_path = [os.path.abspath(os.path.join(save_path, filename)) for filename in os.listdir(save_path) if filename.endswith(".csv")]
+    markers_df = pd.read_csv(csv_path[0], header=[1, 2], index_col=0) # ignore the scorer column
+    os.remove(new_videopath)
+    return markers_df
+
+def add_lick_stats(markers):
+    licks = []
+    for i in range(len(markers)): # first two rows are names of bodyparts and coords
+        if markers[('tongue', 'likelihood')][i] > 0.8:
+            licks.append(1)
+        else:
+            licks.append(0)
+    markers["lick"] = licks
+    return markers
 
 def add_eye_stats(markers):
     radi = []
@@ -87,31 +122,32 @@ def add_synced_videodata_to_position_data(position_data, video_data):
     position_data["eye_centroid_y"] = eye_centroids_y
     return position_data
 
-def process_video(recording_path, processed_path, position_data, model_path):
-    # run checks 
+def process_video(recording_path, processed_path, position_data, pupil_model_path, licks_model_path):
+    # run checks  
     avi_paths = [os.path.abspath(os.path.join(recording_path, filename)) for filename in os.listdir(recording_path) if filename.endswith("_capture.avi")]
     bonsai_csv_paths = [os.path.abspath(os.path.join(recording_path, filename)) for filename in os.listdir(recording_path) if filename.endswith("_capture.csv")]
     if (len(avi_paths) != 1) or (len(bonsai_csv_paths) != 1):
         print("I couldn't process video because I need exactly 1 .avi file and 1 .csv file in the recording folder")
         return position_data
-    # else continue on with the video analysis
-
-    save_path = processed_path+"video/"
-    if not os.path.exists(save_path):
-        os.mkdir(save_path)
+    # else continue on with the video analysis 
 
     # use bonsai csv to sync the video_markers_df with position_data and the sync pulse signal in that
     bonsai_data = read_bonsai_file(bonsai_csv_paths[0])
-    video_data = analyse_dlc_model(video_path=avi_paths[0], model_path=model_path, save_path=save_path)
-    video_data = pd.concat([video_data.reset_index(drop=True), bonsai_data.reset_index(drop=True)], axis=1)
-    video_data = add_eye_stats(video_data)
+    #video_pupil_data = analyse_dlc_model_pupil(video_path=avi_paths[0], model_path=pupil_model_path, processed_path=processed_path)
+    video_lick_data = analyse_dlc_model_licks(video_path=avi_paths[0], model_path=licks_model_path, processed_path=processed_path)
+    #video_data = pd.concat([video_pupil_data.reset_index(drop=True), 
+    #                        video_lick_data.reset_index(drop=True),
+    #                        bonsai_data.reset_index(drop=True)], axis=1)
+    video_data = pd.concat([video_lick_data.reset_index(drop=True),
+                            bonsai_data.reset_index(drop=True)], axis=1)
+    video_data = add_eye_stats(video_data) 
+    video_data = add_lick_stats(video_data)
 
     # syncrhonise position data and video data
     position_data, video_data = synchronise_position_data_via_column_ttl_pulses(position_data, video_data, processed_path, recording_path)
     # now video data contains a synced_time column which is relative to the start of the time column in position_data
     position_data = add_synced_videodata_to_position_data(position_data, video_data)
 
-    plot_middle_frame(avi_paths[0], save_path) # only take the first video as there hopefully is only one
     return position_data
 
 #  for testing
