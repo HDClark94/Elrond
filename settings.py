@@ -37,15 +37,15 @@ list_of_quality_metrics = ['snr','isi_violation','firing_rate', 'presence_ratio'
 
 # assign the quality metric name, sign of threshold ("<", ">") and value in a tuple
 # ('isolation_distance', '>', 0.9) and ('nn_noise_overlap', '<', 0.05) use if pca components are computed
-
+ 
 auto_curation_thresholds = [('snr', '>', 1),
                             ('firing_rate', '>', 0.05)]
 ##########
 # VR
 
-vr_deeplabcut_project_path = "/mnt/datastore/Harry/deeplabcut/vr-hc-2024-03-14/"
-#vr_deeplabcut_project_path = ("/run/user/1000/gvfs/smb-share:server=cmvm.datastore.ed.ac.uk,share=cmvm/"
-#                           "sbms/groups/CDBS_SIDB_storage/NolanLab/ActiveProjects/Harry/deeplabcut/vr-hc-2024-03-14")
+vr_deeplabcut_pupil_project_path = "/mnt/datastore/Harry/deeplabcut/vr-hc-2024-03-14/"
+vr_deeplabcut_licks_project_path = "/mnt/datastore/Harry/deeplabcut/Mouse_Licks-Harry_Clark-2024-09-10/"
+
 vr_bin_size_cm = 1
 time_bin_size = 0.1 # seconds
 guassian_std_for_smoothing_in_time_seconds = 0.2 # seconds
@@ -60,9 +60,6 @@ open_field_bin_size_cm = 2.5 # cm
 
 use_dlc_for_open_field = True
 of_deeplabcut_project_path = "/mnt/datastore/Harry/deeplabcut/openfield_pose-Harry Clark-2024-05-13/"
-#of_deeplabcut_project_path = ("/run/user/1000/gvfs/smb-share:server=cmvm.datastore.ed.ac.uk,share=cmvm/"
-#                           "sbms/groups/CDBS_SIDB_storage/NolanLab/ActiveProjects/Harry/deeplabcut/openfield_pose-Harry Clark-2024-05-13")
-
 use_vectorised_rate_map_function = True
 impose_num_cores = False
 fixed_num_cores = 1

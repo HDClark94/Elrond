@@ -1,5 +1,6 @@
 import os
 import matplotlib.pylab as plt
+import matplotlib.image as mpimg
 import numpy as np
 import pandas as pd
 from scipy import stats
@@ -76,8 +77,6 @@ def plot_eye_trajectory(position_data, processed_position_data, output_path="", 
     plt.subplots_adjust(hspace = .35, wspace = .35,  bottom = 0.2, left = 0.2, right = 0.87, top = 0.92)
     plt.savefig(save_path + '/eye_movements.png', dpi=200)
     plt.close()
-
-
 
 def plot_eye(processed_position_data, output_path="", track_length=200):
     save_path = output_path+'Figures/behaviour'
@@ -200,19 +199,19 @@ def plot_speed_heat_map(processed_position_data, output_path="", track_length=20
     X, Y = np.meshgrid(locations, ordered)
     cmap = plt.cm.get_cmap("jet")
     cmap.set_bad("white")
-    pcm = ax.pcolormesh(X, Y, trial_speeds, cmap=cmap, shading="auto")
-    cbar = fig.colorbar(pcm, ax=ax, fraction=0.046, pad=0.14)
-    cbar.mappable.set_clim(0, 100)
-    cbar.outline.set_visible(False)
-    cbar.set_ticks([0,100])
-    cbar.set_ticklabels(["0", "100"])
-    cbar.ax.tick_params(labelsize=20)
-    cbar.set_label('Speed (cm/s)', fontsize=20, rotation=270)
+    pcm = ax.pcolormesh(X, Y, trial_speeds, cmap=cmap, shading="auto", vmin=0, vmax=np.nanmax(trial_speeds))
+    #cbar = fig.colorbar(pcm, ax=ax, fraction=0.046, pad=0.14) 
+    #cbar.mappable.set_clim(0, 100)
+    #cbar.outline.set_visible(False)
+    #cbar.set_ticks([0,100])
+    #cbar.set_ticklabels(["0", "100"])
+    #cbar.ax.tick_params(labelsize=20)
+    #cbar.set_label('Speed (cm/s)', fontsize=20, rotation=270)
     plt.ylabel('Trial Number', fontsize=25, labelpad = 10)
     plt.xlabel('Location (cm)', fontsize=25, labelpad = 10)
     plt.xlim(0, track_length)
     plt.ylim(0, len(processed_position_data))
-    ax.yaxis.set_major_locator(ticker.MultipleLocator(100))
+    ax.xaxis.set_major_locator(ticker.MultipleLocator(100))
     ax.tick_params(axis='both', which='major', labelsize=20)
     ax.yaxis.set_ticks_position('left')
     ax.xaxis.set_ticks_position('bottom')
@@ -295,6 +294,7 @@ def plot_stops_on_track(processed_position_data, output_path, track_length=200):
     plt.ylabel('Stops on trials', fontsize=25, labelpad = 10)
     plt.xlabel('Location (cm)', fontsize=25, labelpad = 10)
     plt.xlim(0,track_length)
+    ax.xaxis.set_major_locator(ticker.MultipleLocator(100))
     ax.tick_params(axis='both', which='major', labelsize=20)
     plt.ylim(0,len(processed_position_data))
     ax.yaxis.set_ticks_position('left')
@@ -310,14 +310,28 @@ def plot_stops_on_track(processed_position_data, output_path, track_length=200):
 def plot_variables(position_data, output_path): # can be raw or downsampled
     save_path = output_path+'Figures/behaviour'
     if os.path.exists(save_path) is False:
-        os.makedirs(save_path)
+        os.makedirs(save_path) 
 
     for column in list(position_data):
-        print("plotting", column)
-        print("avg value:", str(np.nanmean(position_data[column])))
-        plt.plot(position_data[column])
+        variables = np.asarray(position_data[column], dtype=np.float128)
+        fig = plt.figure(figsize=(6,6))
+        ax = fig.add_subplot(1, 1, 1)  # specify (nrows, ncols, axnum)
+        ax.plot(variables, color="black")
         plt.savefig(save_path + '/' + column + '.png')
         plt.close()
+
+        fig = plt.figure(figsize=(6,6))
+        ax = fig.add_subplot(1, 1, 1)  # specify (nrows, ncols, axnum)
+        ax.hist(variables, density=True, bins=50, color="black")
+        ax.set_ylabel('Density', fontsize=25, labelpad = 10)
+        ax.set_xlabel(column, fontsize=25, labelpad = 10)
+        ax.tick_params(axis='both', which='major', labelsize=20)
+        ax.set_ylim(bottom=0)
+        ax.yaxis.set_ticks_position('left')
+        ax.xaxis.set_ticks_position('bottom')
+        plt.subplots_adjust(hspace = .35, wspace = .35,  bottom = 0.2, left = 0.2, right = 0.87, top = 0.92)
+        plt.savefig(save_path + '/' + column + '_hist.png')
+        plt.close() 
 
 def curate_stops(stop_locations, stop_trial_numbers, track_length):
     stop_locations = np.array(stop_locations)
@@ -366,12 +380,12 @@ def plot_stop_histogram(processed_position_data, output_path="", track_length=20
         tt_stops_hist, bin_edges = np.histogram(tt_stops, bins=int(track_length/bin_size), range=(0, track_length))
         bin_centres = 0.5 * (bin_edges[1:] + bin_edges[:-1])
         if len(tt_processed_position_data) > 0:
-            ax.plot(bin_centres, tt_stops_hist / len(tt_processed_position_data), '-', color=c)
+            ax.plot(bin_centres, tt_stops_hist / len(tt_processed_position_data), '-', color=c, linewidth=4)
 
     plt.ylabel('Stops/Trial', fontsize=25, labelpad = 10)
     plt.xlabel('Location (cm)', fontsize=25, labelpad = 10)
-    ax.yaxis.set_major_locator(ticker.MultipleLocator(1))
-    ax.tick_params(axis='both', which='major', labelsize=20)
+    ax.xaxis.set_major_locator(ticker.MultipleLocator(100))
+    ax.tick_params(axis='both', which='major', labelsize=20) 
     plt.xlim(0,track_length)
     ax.set_ylim(bottom=0)
     ax.yaxis.set_ticks_position('left')
@@ -402,6 +416,7 @@ def plot_speed_histogram(processed_position_data, output_path="", track_length=2
 
     fig = plt.figure(figsize=(6,6))
     ax = fig.add_subplot(1, 1, 1)  # specify (nrows, ncols, axnum)
+    y_max=0
     for tt, c in zip([0,1,2], ["black", "red", "blue"]):
         tt_processed_position_data = processed_position_data[processed_position_data["trial_type"] == tt]
         if len(tt_processed_position_data)>0:
@@ -410,18 +425,21 @@ def plot_speed_histogram(processed_position_data, output_path="", track_length=2
             trial_speeds_avg = np.nanmean(trial_speeds, axis=0)
             bin_centres = np.array(processed_position_data["position_bin_centres"].iloc[0])
             ax.plot(bin_centres, trial_speeds_avg, color=c, linewidth=4)
+            ax.fill_between(bin_centres, trial_speeds_avg-trial_speeds_sem, 
+                            trial_speeds_avg+trial_speeds_sem, color=c, alpha=0.3)
+            if np.nanmax(trial_speeds_avg) > y_max:
+                y_max = np.nanmax(trial_speeds_avg) 
 
     plt.xlim(0,track_length)
-    ax.set_yticks([0, 50, 100])
+    plt.ylim(0,y_max+10)
     ax.yaxis.set_ticks_position('left')
     ax.xaxis.set_ticks_position('bottom')
     plot_utility.style_track_plot(ax, track_length)
     plt.ylabel('Speed (cm/s)', fontsize=25, labelpad = 10)
     plt.xlabel('Location (cm)', fontsize=25, labelpad = 10)
     ax.xaxis.set_major_locator(ticker.MultipleLocator(100))
-    ax.yaxis.set_major_locator(ticker.MultipleLocator(100))
     ax.tick_params(axis='both', which='major', labelsize=20)
-    plot_utility.style_vr_plot(ax, x_max=115)
+    plot_utility.style_vr_plot(ax, x_max=y_max+10)
     plt.subplots_adjust(hspace = .35, wspace = .35,  bottom = 0.2, left = 0.2, right = 0.87, top = 0.92)
     plt.savefig(save_path + '/speed_histogram.png', dpi=200)
     plt.close()
@@ -438,7 +456,7 @@ def plot_spikes_on_track(spike_data, processed_position_data, output_path, track
         firing_times_cluster = cluster_spike_data.firing_times.iloc[0]
         x_position_cm = np.array(cluster_spike_data.x_position_cm.iloc[0])
         trial_numbers = np.array(cluster_spike_data.trial_number.iloc[0])
-        trial_types = np.array(cluster_spike_data.trial_type.iloc[0])
+        trial_types = np.array(cluster_spike_data.trial_type.iloc[0]) 
 
         if len(firing_times_cluster)>1:
             x_max = len(processed_position_data)+1
@@ -470,7 +488,6 @@ def plot_spikes_on_track(spike_data, processed_position_data, output_path, track
                 plt.savefig(save_path + '/' + spike_data.session_id.iloc[cluster_index] + '_track_firing_Cluster_' + str(cluster_id) + '.png', dpi=200)
             plt.close()
     return
-
 
 def plot_firing_rate_maps_short(cluster_data, track_length=200, save_path=None):
     firing_times_cluster = cluster_data["firing_times"].iloc[0]
@@ -784,8 +801,6 @@ def plot_firing_rate_maps_per_trial_2(cluster_spike_data, track_length, output_p
             plt.savefig(save_path + '/firing_rate_map_trials_' + 
                         spike_data.session_id.iloc[cluster_index] + '_' + 
                         str(int(cluster_id)) + '.png', dpi=300)
-        
-
 
 def get_vmin_vmax(cluster_firing_maps, bin_cm=8):
     cluster_firing_maps_reduced = []
@@ -796,14 +811,51 @@ def get_vmin_vmax(cluster_firing_maps, bin_cm=8):
     vmax= np.max(cluster_firing_maps_reduced)
     return vmin, vmax 
 
+def plot_combined_behaviour(output_path):
+    fig_paths = []
+    fig_paths.append(output_path + 'Figures/behaviour/stop_histogram.png')
+    fig_paths.append(output_path + 'Figures/behaviour/speed_histogram.png')
+    fig_paths.append(output_path + 'Figures/behaviour/speed_per_100ms_hist.png')
+    fig_paths.append(output_path + 'Figures/behaviour/x_position_cm_hist.png')
+
+    fig_paths.append(output_path + 'Figures/behaviour/stop_raster.png')
+    fig_paths.append(output_path + 'Figures/behaviour/speed_heat_map.png')
+    fig_paths.append(output_path + 'Figures/behaviour/trial_number_hist.png')
+    fig_paths.append(output_path + 'Figures/behaviour/trial_type_hist.png')
+ 
+    fig_paths.append(output_path + 'Figures/behaviour/lick_hist.png')
+    fig_paths.append(output_path + 'Figures/behaviour/lick_raster.png')
+    fig_paths.append(output_path + 'Figures/behaviour/pupil_heatmap.png')
+    fig_paths.append(output_path + 'Figures/behaviour/pupil_hist.png')
+
+    fig_paths.append(output_path + 'Figures/Sync_test/pulses_after_processing_sync_pulses.png')
+    fig_paths.append(output_path + 'Figures/behaviour/hist_barplot.png')
+    fig_paths.append(output_path + 'Figures/behaviour/middle_frame.png')
+    fig_paths.append(output_path + 'Figures/behaviour/trial_number.png') 
+  
+
+    fig, axs = plt.subplots(4, 4, figsize=(10, 9)) 
+    for i, fig_path in enumerate(fig_paths):
+        row = i // 4
+        col = i % 4
+        axs[row, col].axis('off')
+        if os.path.exists(fig_path):
+            img = mpimg.imread(fig_path)
+            axs[row, col].imshow(img)
+    plt.tight_layout()
+    plt.savefig(output_path + 'Figures/behaviour/combined.png', dpi=1000)
+    plt.close() 
+    
 def plot_behaviour(position_data, processed_position_data, output_path, track_length):
     plot_variables(position_data, output_path)
     plot_stops_on_track(processed_position_data, output_path, track_length=track_length)
     plot_stop_histogram(processed_position_data, output_path, track_length=track_length)
     plot_speed_histogram(processed_position_data, output_path, track_length=track_length)
     plot_speed_heat_map(processed_position_data, output_path, track_length=track_length)
+     
     #plot_eye_trajectory(position_data, processed_position_data, output_path, track_length=track_length)
     #plot_eye(processed_position_data, output_path, track_length=track_length) 
+    plot_combined_behaviour(output_path) 
  
 def plot_track_firing(spike_data, processed_position_data, output_path, track_length):  
     #plot_spatial_periodogram_per_trial(spike_data, processed_position_data, output_path, track_length=track_length)

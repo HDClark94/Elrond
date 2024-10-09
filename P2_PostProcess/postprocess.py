@@ -13,11 +13,7 @@ def postprocess(processed_folder_name, processed_paths, recording_paths, **kwarg
     recording_types = get_recording_types(recording_paths)
 
     for recording_path, type, processed_path in zip(recording_paths, recording_types, processed_paths):
-
-        if not os.path.exists(recording_path + "/" + processed_folder_name):
-            os.mkdir(recording_path + "/" + processed_folder_name)
-
-        if type == "vr":
+        if type == "vr":  
             vr.process(recording_path, processed_path,  **kwargs)
         elif type == "openfield":
             of.process(recording_path, processed_path, **kwargs)

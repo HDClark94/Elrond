@@ -145,6 +145,8 @@ def main():
         run_postprocessing=True,
         concat_sort=False,
         deeplabcut_of_model_path = project_path + "openfield_pose_eddie/",
+        deeplabcut_vr_pupil_model_path = project_path + "vr-hc-2024-03-14_eddie/", 
+        deeplabcut_vr_licks_model_path = project_path + "Mouse_Licks-Harry_Clark-2024-09-10_eddie/",
         sorting_analyzer_path= ephys_path + "sorting_analyzer/",
         phy_path = ephys_path + "phy/",
         report_path = ephys_path + "report/",

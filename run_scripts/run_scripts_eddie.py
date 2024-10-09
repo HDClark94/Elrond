@@ -21,7 +21,8 @@ active_projects_path = "/exports/cmvm/datastore/sbms/groups/CDBS_SIDB_storage/No
 source_path = active_projects_path + "Harry/Cohort11_april2024/"
 output_path = source_path + "derivatives/M" + mouse + "/D" + day + "/"
 source_path_DLC_OF_MODEL = active_projects_path+"Harry/deeplabcut/openfield_pose_eddie"
-
+source_path_DLC_VR_LICK_MODEL = active_projects_path+"Harry/deeplabcut/Mouse_Licks-Harry_Clark-2024-09-10_eddie"
+source_path_DLC_VR_PUPIL_MODEL = active_projects_path+"Harry/deeplabcut/vr-hc-2024-03-14_eddie"
 email = "hclark3@ed.ac.uk"
 repo_path = "/home/hclark3/Elrond/"
 
@@ -60,7 +61,31 @@ SOURCE=""" + source_path_DLC_OF_MODEL + """
 DESTINATION=""" + project_path + """
 
 # Do the copy with rsync (avoid -p or -a options)
+rsync -rm ${SOURCE} ${DESTINATION}
+
+# Source path on DataStore. It should start with one of
+# /exports/csce/datastore, /exports/chss/datastore, /exports/cmvm/datastore or /exports/igmm/datastore
+SOURCE=""" + source_path_DLC_VR_PUPIL_MODEL + """
+
+# Destination path on Eddie. It should start with one of:
+# /exports/csce/eddie, /exports/chss/eddie, /exports/cmvm/eddie, /exports/igmm/eddie or /exports/eddie/scratch
+DESTINATION=""" + project_path + """
+
+# Do the copy with rsync (avoid -p or -a options)
+rsync -rm ${SOURCE} ${DESTINATION}
+
+
+# Source path on DataStore. It should start with one of
+# /exports/csce/datastore, /exports/chss/datastore, /exports/cmvm/datastore or /exports/igmm/datastore
+SOURCE=""" + source_path_DLC_VR_LICK_MODEL + """
+
+# Destination path on Eddie. It should start with one of:
+# /exports/csce/eddie, /exports/chss/eddie, /exports/cmvm/eddie, /exports/igmm/eddie or /exports/eddie/scratch
+DESTINATION=""" + project_path + """
+
+# Do the copy with rsync (avoid -p or -a options)
 rsync -rm ${SOURCE} ${DESTINATION}"""
+
 
 staging_text = staging_file_text(mouse, day)
 
