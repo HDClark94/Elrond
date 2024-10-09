@@ -9,6 +9,37 @@ from P2_PostProcess.VirtualReality.plotting import *
 from Helpers.array_utility import pandas_collumn_to_numpy_array
 import scipy.stats as stats
 
+
+def plot_speed_distibutions(position_data, save_path, title, track_length):
+    fig, axs = plt.subplots(5, 6, figsize=(15, 10), sharex=True, sharey=False)
+    fig.suptitle(title, fontsize=16)
+ 
+    days = np.unique(position_data["session_number"])
+    for idx, day in enumerate(days):
+        ax = axs.flat[idx]
+        day_position_data = position_data[position_data["session_number"] == day]
+        column = "speed_as_read_by_blender"
+        speeds = np.asarray(day_position_data[column])
+        speeds = speeds[~np.isnan(speeds)] 
+        ax.hist(speeds, density=True, bins=50, color="black")
+        ax.axvline(np.nanmean(speeds), color="red")
+        ax.tick_params(axis='both', which='major', labelsize=20)
+        ax.set_ylim(bottom=0) 
+        ax.set_xlim(left=-20, right=100)
+        ax.yaxis.set_ticks_position('left')
+        ax.xaxis.set_ticks_position('bottom')
+        ax.set_title(f'Day {day}')
+
+    # Set shared x and y labels
+    fig.text(0.5, 0.04, 'Speed (cm/s)', ha='center', fontsize=18)
+    fig.text(0.04, 0.5, 'Density', va='center', rotation='vertical', fontsize=18)
+    # Adjust layout to prevent overlapping
+    plt.tight_layout(rect=[0.03, 0.03, 1, 0.95])
+    plt.subplots_adjust(left=0.1, bottom=0.1)
+    plt.savefig(save_path + title + '_speed_distribution.png', dpi=200)
+    return
+
+
 def plot_vr_stop_hists(processed_position_data, save_path, title, track_length):
     fig, axs = plt.subplots(5, 6, figsize=(15, 10), sharex=True, sharey=False)
     fig.suptitle(title, fontsize=16)
@@ -151,22 +182,30 @@ def plot_vr_stop_rasters(processed_position_data, save_path, title, track_length
     plt.savefig(save_path + title + '_stop_rasters.png', dpi=200)
     return
 
-def process_recordings(vr_recording_path_list):
-    all_behaviour = pd.DataFrame()
+def process_recordings(vr_recording_path_list, derivatives_path):
+    all_processed_position = pd.DataFrame()
+    all_position = pd.DataFrame()
+
     for recording in vr_recording_path_list:
         print("processing ", recording)
         try:
-            position_data = pd.read_csv(recording+"/processed/position_data.csv")
-            processed_position_data = pd.read_pickle(recording+"/processed/processed_position_data.pkl")
-
             session_id = recording.split("/")[-1]
             mouse_id = session_id.split("_")[0]
+            day_id = session_id.split("_")[1]
             session_number = int(session_id.split("_")[1].split("D")[-1])
+
+            position_data = pd.read_csv(derivatives_path+mouse_id+"/"+day_id+"/vr/"+session_id+"/processed/position_data.csv")
+            processed_position_data = pd.read_pickle(derivatives_path+mouse_id+"/"+day_id+"/vr/"+session_id+"/processed/processed_position_data.pkl")
+
             processed_position_data["session_number"] = session_number
             processed_position_data["mouse_id"] = mouse_id
             processed_position_data["session_id"] = session_id
+            position_data["mouse_id"] = mouse_id
+            position_data["session_id"] = session_id
+            position_data["session_number"] = session_number
 
-            all_behaviour = pd.concat([all_behaviour, processed_position_data], ignore_index=True)
+            all_processed_position = pd.concat([all_processed_position, processed_position_data], ignore_index=True)
+            all_position = pd.concat([all_position, position_data], ignore_index=True)
             print("successfully processed and saved "+recording)
 
         except Exception as ex:
@@ -176,21 +215,25 @@ def process_recordings(vr_recording_path_list):
             traceback.print_tb(exc_traceback)
             print("couldn't process vr_grid analysis on "+recording)
 
-    return all_behaviour
+    return all_processed_position, all_position
 
 
 def main():
+    cohort = "Cohort12_august2024"
+    #cohort = "Cohort11_april2024" 
+    recording_paths = [] 
+    recording_paths.extend([f.path for f in os.scandir("/mnt/datastore/Harry/"+cohort+"/vr") if f.is_dir()])
+    all_processed_position, all_position = process_recordings(recording_paths, derivatives_path="/mnt/datastore/Harry/"+cohort+"/derivatives/")
+    all_processed_position.to_pickle("/mnt/datastore/Harry/"+cohort+"/summary/all_processed_position.pkl")
+    all_position.to_pickle("/mnt/datastore/Harry/"+cohort+"/summary/all_position.pkl")
+    
+    all_processed_position = pd.read_pickle("/mnt/datastore/Harry/"+cohort+"/summary/all_processed_position.pkl")
+    all_position = pd.read_pickle("/mnt/datastore/Harry/"+cohort+"/summary/all_position.pkl")
 
-    recording_paths = []
-    recording_paths.extend([f.path for f in os.scandir("/mnt/datastore/Harry/Cohort11_april2024/vr") if f.is_dir()])
-    #all_behaviour = process_recordings(recording_paths)
-    #all_behaviour.to_pickle("/mnt/datastore/Harry/Cohort11_april2024/summary/all_behaviour.pkl")
-    all_behaviour = pd.read_pickle("/mnt/datastore/Harry/Cohort11_april2024/summary/all_behaviour.pkl")
-
-    plot_vr_hits_across_mice(all_behaviour,save_path="/mnt/datastore/Harry/Cohort11_april2024/summary/", track_length=200)
-
-    for mouse in np.unique(all_behaviour["mouse_id"]):
-        plot_vr_stop_hists(all_behaviour[all_behaviour["mouse_id"] == mouse], save_path="/mnt/datastore/Harry/Cohort11_april2024/summary/",title=mouse, track_length=200)
-        plot_vr_stop_rasters(all_behaviour[all_behaviour["mouse_id"] == mouse], save_path="/mnt/datastore/Harry/Cohort11_april2024/summary/",title=mouse, track_length=200)
+    plot_vr_hits_across_mice(all_processed_position,save_path="/mnt/datastore/Harry/"+cohort+"/summary/", track_length=200)
+    for mouse in np.unique(all_processed_position["mouse_id"]): 
+        plot_speed_distibutions(all_position[all_position["mouse_id"] == mouse], save_path="/mnt/datastore/Harry/"+cohort+"/summary/",title=mouse, track_length=200)
+        plot_vr_stop_hists(all_processed_position[all_processed_position["mouse_id"] == mouse], save_path="/mnt/datastore/Harry/"+cohort+"/summary/",title=mouse, track_length=200)
+        plot_vr_stop_rasters(all_processed_position[all_processed_position["mouse_id"] == mouse], save_path="/mnt/datastore/Harry/"+cohort+"/summary/",title=mouse, track_length=200)
 if __name__ == '__main__':
     main()
