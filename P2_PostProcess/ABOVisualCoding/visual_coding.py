@@ -1,6 +1,6 @@
-from Elrond.P2_PostProcess.ABOVisualCoding.behaviour_from_blender import *
-from Elrond.P2_PostProcess.VirtualReality.spatial_firing import *
-from Elrond.P2_PostProcess.VirtualReality.video import *
+from P2_PostProcess.ABOVisualCoding.behaviour_from_blender import *
+from P2_PostProcess.VirtualReality.spatial_firing import *
+from P2_PostProcess.VirtualReality.video import *
 
 from scipy import stats
 #

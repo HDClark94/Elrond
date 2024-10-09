@@ -2,10 +2,10 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import spikeinterface.full as si
-from Elrond.Helpers.upload_download import *
-from Elrond.P1_SpikeSort.probe import add_probe
-from Elrond.P1_SpikeSort.preprocess import preprocess
-from Elrond.Helpers.array_utility import *
+from Helpers.upload_download import *
+from P1_SpikeSort.probe import add_probe
+from P1_SpikeSort.preprocess import preprocess
+from Helpers.array_utility import *
 import scipy.ndimage.filters as filters
 from scipy.signal import convolve2d
 from astropy.nddata import block_reduce

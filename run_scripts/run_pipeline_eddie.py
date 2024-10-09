@@ -2,15 +2,15 @@ import os
 import sys
 import traceback
 import warnings
-import Elrond.settings as settings
+import settings as settings
 
 from pathlib import Path
 from os.path import expanduser
 
-from Elrond.Helpers.upload_download import copy_from_local, copy_to_local, \
-    empty_recording_folder_from_local, get_recording_paths, get_processed_paths
-from Elrond.P1_SpikeSort.spikesort import spikesort
-from Elrond.P2_PostProcess.postprocess import postprocess
+from Helpers.upload_download import copy_from_local, copy_to_local, \
+    empty_recording_folder_from_local, get_recording_paths, get_processed_paths, chronologize_paths
+from P1_SpikeSort.spikesort import spikesort
+from P2_PostProcess.postprocess import postprocess
 
 
 def process_recordings(recording_paths, local_path="", processed_folder_name="", copy_locally=False,
@@ -31,8 +31,6 @@ def process_recordings(recording_paths, local_path="", processed_folder_name="",
     :Keyword Arguments:
         concat_sort: flag whether to look for recordings within the same session and spikesort across
         based on the concat_sort flag and the linked recordings in the param.yl of the original recording
-        use_dlc_to_extract_openfield_position: flag whether to ignore any processed output from bonsai and instead use
-        deeplabcut to extract openfield position from the raw video
         sorterName: string for a named sorted if spikesorting is called, options include:
         'mountainsort4','klusta','tridesclous','hdsort','ironclust','kilosort',
         'kilosort2', 'spykingcircus','herdingspikes','waveclus'. For each sorter, a different set up might be required
@@ -130,10 +128,13 @@ def main():
 
     home_path = expanduser("~")
     project_path = home_path + "/../../../exports/eddie/scratch/hclark3/harry_project/"
-    recording_paths = get_recording_paths(project_path, mouse, day)
+    data_path = project_path + "data/M"+str(mouse)+"_D"+str(day)+"/"
     ephys_path = project_path + "derivatives/M"+str(mouse)+"/D"+str(day)+"/ephys/"
-
-
+    recording_paths = []
+    recording_paths.append(get_recording_paths(data_path+"of/", mouse, day))
+    recording_paths.append(get_recording_paths(data_path+"vr/", mouse, day))
+    recording_paths = chronologize_paths(recording_paths)
+    
     process_recordings(
         recording_paths,
         local_path="/home/ubuntu/to_sort/recordings/",
@@ -143,7 +144,6 @@ def main():
         update_results_from_phy=False,
         run_postprocessing=True,
         concat_sort=False,
-        use_dlc_to_extract_openfield_position=True,
         deeplabcut_of_model_path = project_path + "openfield_pose_eddie/",
         sorting_analyzer_path= ephys_path + "sorting_analyzer/",
         phy_path = ephys_path + "phy/",

@@ -12,7 +12,7 @@ import shutil
 from statsmodels.sandbox.stats.multicomp import multipletests
 import PostSorting.open_field_firing_maps
 import PostSorting.parameters
-from Elrond.Helpers import array_utility, plot_utility
+from Helpers import array_utility, plot_utility
 
 local_path = Published_analysis.NatComms_LocalGridHD_2020.folder_path_settings.get_local_path() + '/shuffled_analysis_cell/'
 local_path_mouse = local_path + 'all_mice_df.pkl'

@@ -18,16 +18,31 @@ def get_processed_paths(base_processed_path, recording_paths):
 
     return processed_paths
 
-def get_recording_paths(project_path, mouse, day):
+def get_recording_paths(data_path, mouse, day):
     """
     Get recording paths based on mouse and day.
+    data_path is a path with the recordings one level deeper
+    i.e. datapath = "/path/to/recordings/" M1_D1_XXXXXXXX
     """
-    data_path = project_path + "data/M"+str(mouse)+"_D"+str(day)+"/"
-    recording_paths = [ data_path + "of/" + os.listdir(data_path + "of/")[a] for a in range(0,2)]
-    recording_paths.append(data_path + "vr/" + os.listdir(data_path + "vr/")[0])
+    mouse_day = "M"+str(mouse)+"_D"+str(day)
+    recording_paths = os.listdir(data_path)
+    recording_paths = [s for s in recording_paths if mouse_day in s]
 
     print(recording_paths)
     return recording_paths
+
+def chronologize_paths(recording_paths):
+    """ 
+    For a given set of paths, put them in chronological order
+    """
+    # get basenames of the recordings
+    basenames = [os.path.basename(s) for s in recording_paths]
+    # split the basename by the first "-" and take only the latter split
+    time_dates = [s.split("-", 1)[-1] for s in basenames]
+    # reorganise recording_paths based on np.argsort(time_dates)
+    recording_paths = np.array(recording_paths)[np.argsort(time_dates)]
+    return recording_paths.tolist()
+
 
 def load_recording(recording_path, recording_format):
     # load recording channels but don't load ADC channels

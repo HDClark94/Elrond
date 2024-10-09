@@ -6,7 +6,7 @@ import matplotlib.pylab as plt
 import numpy as np
 import os
 import pandas as pd
-from Elrond.Helpers import plot_utility
+from Helpers import plot_utility
 import PostSorting.open_field_head_direction
 import PostSorting.open_field_grid_cells
 

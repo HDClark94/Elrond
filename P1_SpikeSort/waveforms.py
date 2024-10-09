@@ -1,5 +1,5 @@
 import spikeinterface.full as si
-import Elrond.settings as settings
+import settings as settings
 
 def get_waveforms(we, sorters):
     waveforms = []

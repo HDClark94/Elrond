@@ -5,7 +5,7 @@ import Published_analysis.NatComms_LocalGridHD_2020.folder_path_settings
 import Published_analysis.NatComms_LocalGridHD_2020.false_positives
 import Published_analysis.NatComms_LocalGridHD_2020.open_field_firing_maps_processed_data
 import pandas as pd
-from Elrond.Helpers import plot_utility
+from Helpers import plot_utility
 import Published_analysis.NatComms_LocalGridHD_2020.shuffle_cell_analysis
 import PostSorting.compare_first_and_second_half
 import PostSorting.open_field_head_direction

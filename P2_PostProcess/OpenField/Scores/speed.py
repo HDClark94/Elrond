@@ -1,6 +1,6 @@
-from Elrond.Helpers import array_utility
+from Helpers import array_utility
 import numpy as np
-import Elrond.settings as settings
+import settings as settings
 import scipy.ndimage
 import scipy.stats
 

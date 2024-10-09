@@ -5,7 +5,7 @@ import traceback
 from scipy import stats
 import os
 import sys
-import Elrond.settings as settings
+import settings as settings
 
 import Published_analysis.CurrentBiology_Ramp_cells2022.Integrated_ramp_analysis.Concatenate_vr_shuffle_analysis as Concatenate_vr_shuffle_analysis
 import Published_analysis.CurrentBiology_Ramp_cells2022.Integrated_ramp_analysis.Python_PostSorting.plot_utility

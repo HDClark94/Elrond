@@ -1,6 +1,6 @@
 import numpy as np
 import pandas as pd
-import Elrond.settings as settings
+import settings as settings
 from astropy.convolution import convolve, Gaussian1DKernel
 import traceback
 import os
@@ -15,11 +15,11 @@ def add_kinematics(spike_data, position_data):
     speed_per200ms = []
     trial_number = []
     trial_type = []
-    for cluster_index, cluster_id in enumerate(spike_data.cluster_id):
-        cluster_firing_indices = np.asarray(spike_data[spike_data.cluster_id == cluster_id].firing_times)[0]
+    for _, cluster_data in spike_data.iterrows():
+        cluster_firing_indices = np.asarray(cluster_data.firing_times)
         cluster_firing_seconds = cluster_firing_indices/settings.sampling_rate
         cluster_firing_position_data_indices = np.array(np.round(cluster_firing_seconds*position_sampling_rate), dtype=np.int64)
-
+ 
         x_position_cm.append(position_data["x_position_cm"][cluster_firing_position_data_indices].to_list())
         speed_per200ms.append(position_data["speed_per200ms"][cluster_firing_position_data_indices].to_list())
         trial_number.append(position_data["trial_number"][cluster_firing_position_data_indices].to_list())
@@ -55,11 +55,10 @@ def bin_fr_in_time(spike_data, position_data, track_length, smoothen=True):
     tn_time_bin_means = (np.histogram(times, time_bins, weights = trial_numbers_raw)[0] / np.histogram(times, time_bins)[0]).astype(np.int64)
     x_elapsed_bin_means = (np.histogram(times, time_bins, weights = x_position_elapsed_cm)[0] / np.histogram(times, time_bins)[0])
     x_bin_means = x_elapsed_bin_means%track_length
-
-    for i, cluster_id in enumerate(spike_data.cluster_id):
+    
+    for i, cluster_data in spike_data.iterrows():
         if len(time_bins)>1:
-            spike_times = np.array(spike_data[spike_data["cluster_id"] == cluster_id]["firing_times"].iloc[0])
-            spike_times = spike_times/settings.sampling_rate # convert to seconds
+            spike_times = np.asarray(cluster_data.firing_times)/settings.sampling_rate # convert to seconds  
 
             # count the spikes in each time bin and normalise to seconds
             fr_time_bin_means, bin_edges = np.histogram(spike_times, time_bins)
@@ -68,7 +67,7 @@ def bin_fr_in_time(spike_data, position_data, track_length, smoothen=True):
             # and smooth
             if smoothen:
                 fr_time_bin_means = convolve(fr_time_bin_means, gauss_kernel)
-
+ 
             # fill in firing rate array by trial
             fr_binned_in_time_cluster = []
             fr_binned_in_time_bin_centres_cluster = []
@@ -103,11 +102,11 @@ def bin_fr_in_space(spike_data, position_data, track_length, smoothen=True):
     trial_numbers_raw = np.array(position_data['trial_number'], dtype=np.int64)
     x_position_elapsed_cm = (track_length*(trial_numbers_raw-1))+np.array(position_data['x_position_cm'], dtype="float64")
     x_dwell_time = np.array(position_data['dwell_time_ms'], dtype="float64")
-
-    for i, cluster_id in enumerate(spike_data.cluster_id):
+ 
+    for i, cluster_data in spike_data.iterrows():
         if len(elapsed_distance_bins)>1:
-            spikes_x_position_cm = np.array(spike_data[spike_data["cluster_id"] == cluster_id]["x_position_cm"].iloc[0])
-            trial_numbers = np.array(spike_data[spike_data["cluster_id"] == cluster_id]["trial_number"].iloc[0])
+            spikes_x_position_cm = np.asarray(cluster_data.x_position_cm)
+            trial_numbers = np.asarray(cluster_data.trial_number)
 
             # convert spike locations into elapsed distance
             spikes_x_position_elapsed_cm = (track_length*(trial_numbers-1))+spikes_x_position_cm
@@ -140,7 +139,7 @@ def bin_fr_in_space(spike_data, position_data, track_length, smoothen=True):
     spike_data["fr_binned_in_space"+suffix] = fr_binned_in_space
     spike_data["fr_binned_in_space_bin_centres"] = fr_binned_in_space_bin_centres
 
-    return spike_data
+    return spike_data 
 
 
 def add_stops(spike_data, processed_position_data, track_length):

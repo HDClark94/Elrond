@@ -2,7 +2,7 @@ import numpy as np
 import Published_analysis.NatComms_LocalGridHD_2020.folder_path_settings
 import Published_analysis.NatComms_LocalGridHD_2020.shuffle_field_analysis_heading
 import pandas as pd
-from Elrond.Helpers import plot_utility
+from Helpers import plot_utility
 import PostSorting.open_field_heading_direction
 import PostSorting.open_field_firing_maps
 import matplotlib.pylab as plt
