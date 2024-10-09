@@ -15,7 +15,7 @@ from P2_PostProcess.postprocess import postprocess
 
 def process_recordings(recording_paths, local_path="", processed_folder_name="", copy_locally=False,
                        run_spikesorting=False, run_postprocessing=False, sorting_analyzer_path=None,
-                       phy_path=None, report_path=None, base_processed_path=None, **kwargs):
+                       phy_path=None, report_path=None, automated_model_path = None, base_processed_path=None, **kwargs):
     """
     :param recording_paths: list of paths to recordings from which to process
     :param local_path: if copy_locally is true, copy to and from this local path
@@ -38,6 +38,9 @@ def process_recordings(recording_paths, local_path="", processed_folder_name="",
 
     :return: processed recording returned to origin
     """
+
+    check_paths(automated_model_path)
+
     for recording_path in recording_paths:
         try:
             recording_name = os.path.basename(recording_path)
@@ -77,10 +80,11 @@ def process_recordings(recording_paths, local_path="", processed_folder_name="",
             make_report = True,
             make_phy_output = False,
             curate_using_phy = False,
-            auto_curate = False,
+            auto_curate = True,
             sorting_analyzer_path=sorting_analyzer_path,
             phy_path = phy_path,
             report_path = report_path,
+            automated_model_path = automated_model_path,
             processed_paths = processed_paths,
             **kwargs
         )
@@ -144,10 +148,15 @@ def main():
         sorting_analyzer_path= ephys_path + "sorting_analyzer/",
         phy_path = ephys_path + "phy/",
         report_path = ephys_path + "report/",
+        automated_model_path = project_path + "derivatives/automated_curation_model/",
         base_processed_path = project_path + "derivatives/M"+str(mouse)+"/D"+str(day)+"/",
         sorterName="kilosort4",
         sorter_kwargs={'do_CAR': False, 'do_correction': True}
     )
 
+def check_paths(automated_model_path):
+    if Path(automated_model_path).exists() is False:
+        raise Exception("Cannot find automated curation model. Current, non-existant, path is ", automated_model_path)
+    
 if __name__ == '__main__':
     main()

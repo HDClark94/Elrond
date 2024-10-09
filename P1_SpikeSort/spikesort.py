@@ -1,4 +1,5 @@
 import pandas as pd
+import pickle
 from Helpers.upload_download import *
 from P1_SpikeSort.preprocess import preprocess, ammend_preprocessing_parameters
 from P1_SpikeSort.auto_curate import auto_curation
@@ -47,6 +48,7 @@ def spikesort(
         sorting_analyzer_path = None,
         phy_path = None,
         report_path = None,
+        automated_model_path = None,
         processed_paths = None,
         **kwargs
     ):
@@ -120,8 +122,13 @@ def spikesort(
 
     if auto_curate:
 
-        # assign an automatic curation label based on the quality metrics
-        quality_metrics = auto_curation(quality_metrics)
+        best_pipeline = pickle.load(open(automated_model_path + "best_model_label.pkl","rb"))
+        automated_labels = si.auto_label_units(
+            sorting_analyzer,
+            pipeline=best_pipeline,
+            label_conversion = {0: "good", 1: "mua", 2: "noise"}
+        )
+        save_labels(sorting_analyzer)
 
     # this should replace the update_from_phy function - test when we do manual curation
     if curate_using_phy:
@@ -142,6 +149,16 @@ def spikesort(
     save_spikes_to_dataframe(sorters, quality_metrics, rec_samples, recording_paths, processed_paths, sorterName)
 
     return
+
+def save_labels(sorting_analyzer):
+
+    properties_path = sorting_analyzer.folder / 'sorting/properties'
+
+    label_predictions = sorting_analyzer.sorting.get_property('label_prediction')
+    label_confidence = sorting_analyzer.sorting.get_property('label_confidence')
+
+    np.save(properties_path / 'label_predictions.npy', np.array(label_predictions))
+    np.save(properties_path / 'label_confidence.npy', np.array(label_confidence))
 
 def make_recording_from_paths_and_get_times(recording_paths):
 
