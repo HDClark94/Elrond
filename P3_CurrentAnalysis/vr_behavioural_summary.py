@@ -4,10 +4,59 @@ import os
 import traceback
 import sys
 import numpy as np
+from PIL import Image
 import matplotlib.pyplot as plt
+
 from P2_PostProcess.VirtualReality.plotting import *
 from Helpers.array_utility import pandas_collumn_to_numpy_array
 import scipy.stats as stats
+
+
+def find_days(global_deriv_path):
+
+    mice = [ s[1:] for s in os.listdir(global_deriv_path) if "M" in s ]
+
+    mouse_day_dict = {}
+    for mouse in mice:
+
+        mouse_list = np.sort([ int(s[1:]) for s in os.listdir(global_deriv_path + "M"+mouse+"/") ])
+        mouse_day_dict[mouse] = mouse_list
+
+    return mouse_day_dict
+
+
+def plot_lick_rasters(deriv_path):
+
+    mouse_day_dict = find_days(deriv_path)
+
+    for mouse, days in mouse_day_dict.items():
+
+        B=7
+        A = max(len(days)//B +1, 2)
+
+        lick_frames = []
+
+        for day in days:
+            try:
+                image = np.asarray(Image.open(deriv_path + f"M{mouse}/D{day}/vr/position/Figures/behaviour/lick_raster.png"))
+                lick_frames.append(image)
+            except:
+                lick_frames.append(np.array([[0]]))
+
+
+        fig, ax = plt.subplots(A,B)
+        for a in range(A):
+            for b in range(B):
+                ind = b+B*a
+                ax[a,b].axis('off')
+                ax[a,b].set_title('DAY ' + str(ind+1) )
+                try:
+                    ax[a,b].imshow(lick_frames[ind])
+                except:
+                    continue
+
+        plt.tight_layout()
+        plt.savefig(deriv_path + f"summary/M{mouse}_licks.png", dpi=300)
 
 
 def plot_speed_distibutions(position_data, save_path, title, track_length):
@@ -231,6 +280,9 @@ def main():
     all_position = pd.read_pickle("/mnt/datastore/Harry/"+cohort+"/summary/all_position.pkl")
 
     plot_vr_hits_across_mice(all_processed_position,save_path="/mnt/datastore/Harry/"+cohort+"/summary/", track_length=200)
+    deriv_path = f"/home/nolanlab/Chris/Sorting/Cohort12/derivatives/"
+    plot_lick_rasters(deriv_path)
+
     for mouse in np.unique(all_processed_position["mouse_id"]): 
         plot_speed_distibutions(all_position[all_position["mouse_id"] == mouse], save_path="/mnt/datastore/Harry/"+cohort+"/summary/",title=mouse, track_length=200)
         plot_vr_stop_hists(all_processed_position[all_processed_position["mouse_id"] == mouse], save_path="/mnt/datastore/Harry/"+cohort+"/summary/",title=mouse, track_length=200)

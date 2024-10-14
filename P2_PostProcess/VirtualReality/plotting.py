@@ -12,6 +12,66 @@ from Helpers.array_utility import pandas_collumn_to_2d_numpy_array
 from astropy.convolution import convolve, Gaussian1DKernel
 from P3_CurrentAnalysis.basic_lomb_scargle_estimator import lomb_scargle, distance_from_integer, frequency
 
+
+def plot_licks_on_track(processed_position_data, lick_train, save_folder, track_length=200):
+
+    print('I am plotting lick rasta...')
+    
+    trial = 0
+    compensation = 0
+
+    lick_positions_per_trial = {}
+    lick_positions_per_trial[trial] = []
+
+    # restructure the lick data
+    for lick in lick_train:
+        positions = processed_position_data.loc[trial]['pos_binned_in_time_smoothed']
+        length_of_trial = len(positions)
+
+        lick_frame = int(round(lick*10))
+
+        if lick_frame > length_of_trial + compensation:
+            trial = trial + 1
+            lick_positions_per_trial[trial] = []
+            compensation = compensation + length_of_trial
+        else:
+            lick_positions_per_trial[trial].append(positions[lick_frame - compensation-1])
+
+    if os.path.exists(save_folder) is False:
+        os.makedirs(save_folder)
+    fig = plt.figure(figsize=(6,6))
+    ax = fig.add_subplot(1, 1, 1)  # specify (nrows, ncols, axnum)
+
+    for index, trial_row in processed_position_data.iterrows():
+
+        trial_row = trial_row.to_frame().T.reset_index(drop=True)
+        trial_type = trial_row["trial_type"].iloc[0]
+        trial_number = trial_row["trial_number"].iloc[0]
+        print(trial_number)
+        trial_stop_color = get_trial_color(trial_type)
+        try:
+            ax.plot(np.array(lick_positions_per_trial[index]),
+                trial_number*np.ones(len(lick_positions_per_trial[index])),
+                'o', color=trial_stop_color, markersize=4)
+        except:
+            continue
+
+    plt.ylabel('Licks on trials', fontsize=25, labelpad = 10)
+    plt.xlabel('Location (cm)', fontsize=25, labelpad = 10)
+    plt.xlim(0,track_length)
+    ax.tick_params(axis='both', which='major', labelsize=20)
+    plt.ylim(0,len(processed_position_data))
+    ax.yaxis.set_ticks_position('left')
+    ax.xaxis.set_ticks_position('bottom')
+    plot_utility.style_track_plot(ax, track_length)
+    n_trials = len(processed_position_data)
+    x_max = n_trials+0.5
+    plot_utility.style_vr_plot(ax, x_max)
+    plt.subplots_adjust(hspace = .35, wspace = .35,  bottom = 0.2, left = 0.2, right = 0.87, top = 0.92)
+    plt.savefig(save_folder + 'lick_raster.png', dpi=200)
+    plt.close()
+
+
 def plot_eye_trajectory(position_data, processed_position_data, output_path="", track_length=200):
     save_path = output_path+'Figures/behaviour'
     if os.path.exists(save_path) is False:
