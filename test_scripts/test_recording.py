@@ -1,7 +1,7 @@
 import sys
 import traceback
 import warnings
-import settings as settings
+import Elrond.settings as settings
 import os
 from Helpers.upload_download import get_recording_format, load_recording
 

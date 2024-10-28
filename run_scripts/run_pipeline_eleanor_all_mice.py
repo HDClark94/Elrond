@@ -2,15 +2,15 @@ import os
 import sys
 import traceback
 import warnings
-from Helpers.array_utility import remove_nans_and_inf_from_both_arrays
-import settings as settings
+from Elrond.Helpers.array_utility import remove_nans_and_inf_from_both_arrays
+import Elrond.settings as settings
 from pathlib import Path
 from os.path import expanduser
 import numpy as np
-from Helpers.upload_download import copy_from_local, copy_to_local, \
+from Elrond.Helpers.upload_download import copy_from_local, copy_to_local, \
     empty_recording_folder_from_local, get_processed_paths, chronologize_paths
-from P1_SpikeSort.spikesort import spikesort
-from P2_PostProcess.postprocess import postprocess
+from Elrond.P1_SpikeSort.spikesort import spikesort
+from Elrond.P2_PostProcess.postprocess import postprocess
 
 
 def process_recordings(recording_paths,
