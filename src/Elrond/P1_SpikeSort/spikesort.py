@@ -9,6 +9,51 @@ import Elrond.settings as settings
 from os.path import expanduser
 si.set_global_job_kwargs(n_jobs=1)
 
+pp_function_to_class = {
+    # filter stuff
+    "filter": si.FilterRecording,
+    "bandpass_filter": si.BandpassFilterRecording,
+    "notch_filter": si.NotchFilterRecording,
+    "highpass_filter": si.HighpassFilterRecording,
+    "gaussian_filter": si.GaussianFilterRecording,
+    # gain offset stuff
+    "normalize_by_quantile": si.NormalizeByQuantileRecording,
+    "scale": si.ScaleRecording,
+    "zscore": si.ZScoreRecording,
+    "center": si.CenterRecording,
+    # decorrelation stuff
+    "whiten": si.WhitenRecording,
+    # re-reference
+    "common_reference": si.CommonReferenceRecording,
+    "phase_shift": si.PhaseShiftRecording,
+    # misc
+    "frame_slice": si.FrameSliceRecording,
+    "rectify": si.RectifyRecording,
+    "clip": si.ClipRecording,
+    "blank_staturation": si.BlankSaturationRecording,
+    "silence_periods": si.SilencedPeriodsRecording,
+    "remove_artifacts": si.RemoveArtifactsRecording,
+    "zero_channel_pad": si.ZeroChannelPaddedRecording,
+    "deepinterpolate": si.DeepInterpolatedRecording,
+    "resample": si.ResampleRecording,
+    "decimate": si.DecimateRecording,
+    "highpass_spatial_filter": si.HighpassSpatialFilterRecording,
+    "interpolate_bad_channels": si.InterpolateBadChannelsRecording,
+    "depth_order": si.DepthOrderRecording,
+    "average_across_direction": si.AverageAcrossDirectionRecording,
+    "directional_derivative": si.DirectionalDerivativeRecording,
+    "astype": si.AstypeRecording,
+    "unsigned_to_signed": si.UnsignedToSignedRecording,
+}
+
+def apply_pipeline(recording, pp_dict):
+       
+    pp_recording = recording
+    for preprocessor, kwargs in pp_dict.items():
+        pp_recording = pp_function_to_class[preprocessor.split(".")[-1]](recording, **kwargs)
+
+    return pp_recording
+
 def save_spikes_to_dataframe(sorters, quality_metrics,
                              rec_samples, recording_paths, processed_paths, sorterName):
 

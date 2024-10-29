@@ -12,6 +12,7 @@ cmocean
 pydantic>2.4.2
 
 [full]
+neo@ git+https://github.com/NeuralEnsemble/python-neo.git
 pyyaml
 numpy
 spikeinterface
@@ -23,7 +24,9 @@ opencv-python
 statsmodels
 scikit-image
 cmocean
-deeplabcut
+herdingspikes
+kilosort
+numba
 
 [postprocessing]
 
