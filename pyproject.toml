@@ -60,6 +60,7 @@ postprocessing = [
 ]
 
 full = [
+    "neo@git+https://github.com/NeuralEnsemble/python-neo.git",
     "pyyaml",
     "numpy",
     "spikeinterface",
@@ -71,5 +72,8 @@ full = [
     "statsmodels",
     "scikit-image",
     "cmocean",
-    "deeplabcut"
+    "herdingspikes",
+    "kilosort",
+    "numba"
 ]
+
