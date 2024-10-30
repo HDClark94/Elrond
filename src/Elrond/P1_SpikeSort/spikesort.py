@@ -108,10 +108,10 @@ def do_sorting(extractor_paths, sorter_name, sorter_path, deriv_path, sorter_kwa
     if sorter_kwargs is None:
         sorter_kwargs = sorter_kwargs_dict[sorter_name]
 
-    # sorting time! We assume the recording has been saved as a zarr file.
-    # If you're using raw data, use si.read_openephys (or similar)
+    # sorting time! We assume the preprocessed recording has been saved as a zarr file.
+    # If you're using raw data, use si.read_openephys (or similar) and apply a preprocessor.
     recording_for_sort = si.concatenate_recordings( [
-        si.load_extractor(extractor_paths[a]+".zarr") for a in range(3) ] )
+        si.load_extractor(extractor_path + ".zarr") for extractor_path in extractor_paths ] )
     sorting = si.run_sorter_by_property(
             recording=recording_for_sort,
             sorter_name=sorter_name,
@@ -120,8 +120,12 @@ def do_sorting(extractor_paths, sorter_name, sorter_path, deriv_path, sorter_kwa
             verbose=True, **sorter_kwargs,
             grouping_property='group'
     )
-
-    save_spikes_per_session(sorting, extractor_paths, deriv_path)
+    
+    try:
+        save_spikes_per_session(sorting, extractor_paths, deriv_path)
+    except:
+        print("Couldn't save spikes.pkl file for of1, vr, of2 experiment.")
+    
     return sorting
 
 def do_postprocessing(sorting, zarr_for_post_paths, sa_path, extension_dict=None):
