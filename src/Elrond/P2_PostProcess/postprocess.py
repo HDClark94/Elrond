@@ -8,6 +8,8 @@ from .Sleep import sleep as sleep
 from .ABOVisualCoding import visual_coding
 
 from .OpenField.spatial_data import run_dlc_of
+from .VirtualReality.spatial_data import run_dlc_vr
+
 
 def postprocess(processed_folder_name, processed_paths, recording_paths, **kwargs):
     # process behaviour and spike data based on the recording type
@@ -15,7 +17,8 @@ def postprocess(processed_folder_name, processed_paths, recording_paths, **kwarg
     recording_types = get_recording_types(recording_paths)
 
     for recording_path, type, processed_path in zip(recording_paths, recording_types, processed_paths):
-        if type == "vr":  
+        if type == "vr":
+            run_dlc_vr(recording_path, save_path = processed_path+"video/", **kwargs)
             vr.process(recording_path, processed_path,  **kwargs)
         elif type == "openfield":
             dlc_position_data = run_dlc_of(recording_path, save_path = processed_path+"video/", **kwargs)

@@ -6,7 +6,7 @@ from .video import *
 from Elrond.P3_CurrentAnalysis.basic_lomb_scargle_estimator import lomb_scargle
 from Elrond.P3_CurrentAnalysis.ramp_score import calculate_ramp_scores, calculate_ramp_scores_parallel
 
-def process(recording_path, processed_path, **kwargs):
+def process(recording_path, processed_path, dlc_data=None, **kwargs):
     track_length = get_track_length(recording_path)
     stop_threshold = get_stop_threshold(recording_path)
 
@@ -25,13 +25,14 @@ def process(recording_path, processed_path, **kwargs):
     else: 
         print("I couldn't find any source of position data")
         return
+    
+    if dlc_data is not None:
+        # syncrhonise position data and video data
+        position_data, video_data = synchronise_position_data_via_column_ttl_pulses(position_data, video_data, processed_path, recording_path)
+        # now video data contains a synced_time column which is relative to the start of the time column in position_data
+        position_data = add_synced_videodata_to_position_data(position_data, video_data)
 
     print("I am using position data with an avg sampling rate of ", str(1/np.nanmean(np.diff(position_data["time_seconds"]))), "Hz")
-
-    # process video
-    position_data = process_video(recording_path, processed_path, position_data, 
-                                  pupil_model_path=kwargs["deeplabcut_vr_pupil_model_path"],
-                                  licks_model_path=kwargs["deeplabcut_vr_licks_model_path"])  
   
     position_data_path = processed_path + "position_data.csv"
     processed_position_data_path = processed_path + "processed_position_data.pkl"
