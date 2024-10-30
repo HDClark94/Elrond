@@ -3,10 +3,19 @@ from pathlib import Path
 import spikeinterface.full as si
 import sys
 
+from Elrond.P2_PostProcess.OpenField.spatial_data import run_dlc_of
+from Elrond.P2_PostProcess.VirtualReality.spatial_data import run_dlc_vr
+
 from Elrond.P1_SpikeSort.defaults import pp_pipelines_dict
 
 from Elrond.Helpers.zarr import make_zarrs
 from Elrond.P1_SpikeSort.spikesort import do_sorting, do_postprocessing
+
+from pathlib import Path
+import Elrond.P2_PostProcess.VirtualReality.vr as vr
+import Elrond.P2_PostProcess.OpenField.of as of
+import pandas as pd
+
 
 mouse = sys.argv[1]
 day = sys.argv[2]
@@ -71,6 +80,68 @@ def do_sorting_pipeline(mouse, day, sorter_name, project_path, pp_for_sorting=No
     sorting_analyzer = do_postprocessing(sorting, zarr_for_post_paths, sa_path)
     si.export_report(sorting_analyzer, report_path)
 
+def do_dlc_pipeline(mouse, day, dlc_of_model_path=None, dlc_vr_model_path =
+                    None, data_path = None, recording_paths=None,
+                    of1_save_path=None, of2_save_path=None, vr_save_path=None):
+
+    if data_path is None:
+        data_path = project_path + f"data/M{mouse}_D{day}/"
+    if recording_paths is None:
+        recording_paths = [data_path+"of1/", data_path+"vr/", data_path+"of2/"]
+    if of1_save_path is None:
+        of1_save_path = f"{project_path}derivatives/M{mouse}/D{day}/of1/dlc/"
+    if of2_save_path is None:
+        of2_save_path = f"{project_path}derivatives/M{mouse}/D{day}/of2/dlc/"
+    if vr_save_path is None:
+        vr_save_path = f"{project_path}derivatives/M{mouse}/D{day}/of2/vr/"
+  
+    of1_path, vr_path, of2_path = [data_path + "of1/", data_path + "vr/",
+                                   data_path + "of2/"]
+
+    if dlc_of_model_path is not None:
+        run_dlc_of(of1_path, of1_save_path, **{"deeplabcut_of_model_path": dlc_of_model_path})
+        run_dlc_of(of2_path, of2_save_path, **{"deeplabcut_of_model_path": dlc_of_model_path})
+    
+    if dlc_vr_model_path is not None: 
+        run_dlc_vr(vr_path, vr_save_path, **{"deeplabcut_of_model_path": dlc_vr_model_path})
+
+def do_postprocessing(mouse, day, sorter_name, project_path, data_path=None,
+                      recording_paths=None, deriv_path=None, of1_dlc_folder=None,
+                      of2_dlc_folder=None):
+
+    if data_path is None:
+        data_path = project_path + f"data/M{mouse}_D{day}/"
+    if recording_paths is None:
+        recording_paths = [data_path+"of1/", data_path+"vr/", data_path+"of2/"]
+    if deriv_path is None:
+        deriv_path = f"{project_path}derivatives/M{mouse}/D{day}/"
+    if of1_dlc_folder is None:
+        of1_dlc_folder = deriv_path + "of1/dlc/"
+    if of2_dlc_folder is None:
+        of2_dlc_folder = deriv_path + "of2/dlc/"
+
+
+    # vr
+    vr.process(recording_paths[1], deriv_path + "vr/", **{"sorterName":
+                                                          sorter_name})
+
+    # of1
+    of1_dlc_csv_path = list(Path(of1_dlc_folder).glob("*200.csv"))[0]
+    of1_dlc_data = pd.read_csv(of1_dlc_csv_path, header=[1, 2], index_col=0) 
+    of.process(recording_paths[0], deriv_path + "of1/" , of1_dlc_data, **{"sorterName": sorter_name})
+
+    # of2
+    of2_dlc_csv_path = list(Path(of2_dlc_folder).glob("*200.csv"))[0]
+    of2_dlc_data = pd.read_csv(of2_dlc_csv_path, header=[1, 2], index_col=0) 
+    of.process(recording_paths[2], deriv_path + "of2/" , of2_dlc_data, **{"sorterName": sorter_name})
+
+
 do_sorting_pipeline(mouse, day, sorter_name, project_path)
+do_dlc_pipeline(mouse, day, dlc_of_model_path = project_path + "derivatives/dlc_models/of_cohort12-krs-2024-10-30/")
+do_postprocessing(mouse, day, sorter_name, project_path)
+
+
+
+
 
 
