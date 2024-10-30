@@ -4,7 +4,6 @@ import yaml
 import numpy as np
 from pathlib import Path
 import spikeinterface.full as si
-from neuroconv.utils.dict import load_dict_from_file, dict_deep_update
 
 def get_raw_recordings_from(recording_paths):
     recordings = []
@@ -82,7 +81,7 @@ def get_recording_types(recording_paths):
     recording_types = []
     for i in range(len(recording_paths)):
         if os.path.exists(recording_paths[i]+"/params.yml"):
-            params = load_dict_from_file(recording_paths[i]+"/params.yml")
+            params = yaml.safe_load(Path(recording_paths[i]+"/params.yml").read_text())
             if 'recording_type' in params:
                 recording_types.append(params['recording_type'])
         else:
@@ -93,7 +92,7 @@ def get_recording_types(recording_paths):
 
 def get_recording_type(recording_path):
     if os.path.exists(recording_path+"/params.yml"):
-        params = load_dict_from_file(recording_path+"/params.yml")
+        params = yaml.safe_load(Path(recording_path+"/params.yml").read_text())
         if 'recording_type' in params:
             return params['recording_type']
     else:
@@ -115,7 +114,7 @@ def get_recording_formats(recording_paths):
     recording_formats = []
     for i in range(len(recording_paths)):
         if os.path.exists(recording_paths[i]+"/params.yml"):
-            params = load_dict_from_file(recording_paths[i]+"/params.yml")
+            params = yaml.safe_load(Path(recording_paths[i]+"/params.yml").read_text())
             if 'recording_format' in params:
                 recording_formats.append(params['recording_format'])
         else:
