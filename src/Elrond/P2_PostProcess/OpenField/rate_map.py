@@ -116,7 +116,7 @@ def get_xy_locs_and_occupancies(smooth, positions_x, positions_y,
     x = np.linspace((bin_size_pixels/2), (bin_size_pixels*number_of_bins_x)-(bin_size_pixels/2), number_of_bins_x)
     y = np.linspace((bin_size_pixels/2), (bin_size_pixels*number_of_bins_y)-(bin_size_pixels/2), number_of_bins_y)
 
-    occupancies = np.empty( shape=( x.shape[0], y.shape[0]) )
+    occupancies = np.zeros( shape=( x.shape[0], y.shape[0]) )
     all_xy_locs = np.empty( shape=( x.shape[0], y.shape[0]) )
 
     for i in range(x.shape[0]):
