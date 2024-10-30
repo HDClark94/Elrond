@@ -7,6 +7,8 @@ from .Opto import opto as opto
 from .Sleep import sleep as sleep
 from .ABOVisualCoding import visual_coding
 
+from .OpenField.spatial_data import run_dlc_of
+
 def postprocess(processed_folder_name, processed_paths, recording_paths, **kwargs):
     # process behaviour and spike data based on the recording type
 
@@ -16,7 +18,8 @@ def postprocess(processed_folder_name, processed_paths, recording_paths, **kwarg
         if type == "vr":  
             vr.process(recording_path, processed_path,  **kwargs)
         elif type == "openfield":
-            of.process(recording_path, processed_path, **kwargs)
+            dlc_position_data = run_dlc_of(recording_path, save_path = processed_path+"video/", **kwargs)
+            of.process(recording_path, processed_path, dlc_position_data, **kwargs)
         elif type == "opto":
             opto.process(recording_path, processed_path, **kwargs)
         elif type == "sleep":
