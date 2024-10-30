@@ -294,7 +294,7 @@ def add_dlc_markers(position_data, dlc_position_data):
     position_data.reset_index(drop=True)
     for i in range(len(position_data)):
         head = (dlc_position_data[('head', 'x')][i], dlc_position_data[('head', 'y')][i])
-        shoulders = (dlc_position_data[('shoulders', 'x')][i], dlc_position_data[('shoulders', 'y')][i])
+        shoulders = (dlc_position_data[('shoulder', 'x')][i], dlc_position_data[('shoulder', 'y')][i])
         left, right = calculate_left_and_right_coordinates(head, shoulders)
         position_data["x_left"].iloc[i] = left[0]
         position_data["y_left"].iloc[i] = left[1]
