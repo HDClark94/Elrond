@@ -6,6 +6,12 @@ from pathlib import Path
 import spikeinterface.full as si
 from neuroconv.utils.dict import load_dict_from_file, dict_deep_update
 
+def get_raw_recordings_from(recording_paths):
+    recordings = []
+    for recording_path in recording_paths:
+        recordings.append(si.read_openephys(recording_path))
+    return recordings
+
 def get_processed_paths(base_processed_path, recording_paths):
 
     if base_processed_path is None:

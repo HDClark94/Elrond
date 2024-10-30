@@ -6,9 +6,13 @@ from .auto_curate import auto_curation
 from .probe import add_probe 
 import Elrond.settings as settings
 
+from Elrond.P1_SpikeSort.defaults import sorter_kwargs_dict, pp_pipelines_dict, default_extensions_dict
+
 from os.path import expanduser
 si.set_global_job_kwargs(n_jobs=1)
 
+# this should be in spikeinterface soon
+# TODO: when it is, delete
 pp_function_to_class = {
     # filter stuff
     "filter": si.FilterRecording,
@@ -71,7 +75,7 @@ def save_spikes_to_dataframe(sorters, quality_metrics,
             new_spike_data = pd.concat([new_spike_data, cluster_df], ignore_index=True)
 
         # add quality metrics, these are shared across all recordings
-        new_spike_data = new_spike_data.merge(quality_metrics, on='cluster_id')
+        # new_spike_data = new_spike_data.merge(quality_metrics, on='cluster_id')
 
         pkl_folder = processed_path + sorterName + "/"
         print(pkl_folder)
@@ -79,7 +83,61 @@ def save_spikes_to_dataframe(sorters, quality_metrics,
         print("I am saving the spike dataframe for ", recording_path, " in ", pkl_folder)
         new_spike_data.to_pickle(pkl_folder + "spikes.pkl")
 
+def save_spikes_per_session(sorting, zarr_for_sorting_paths, deriv_path):
 
+    of1_path, of2_path, vr_path = [deriv_path + ["of1/", "of2/", "vr/"][a] for a in range(3)]
+    
+    recordings = [si.load_extractor(sorting_path +".zarr") for sorting_path in zarr_for_sorting_paths]
+    rec_samples = [recording.get_total_samples() for recording in recordings]
+    
+    cum_rec_samples = [0]
+    for a, rec_sample in enumerate(rec_samples):
+        cum_rec_samples.append( cum_rec_samples[a] + rec_sample ) 
+
+    # save spikes, split for sessions
+    sorters = [sorting.frame_slice(start_frame=cum_rec_samples[a],
+                                   end_frame=cum_rec_samples[a+1] ) for a in
+               range(len(rec_samples))] # get list of sorters
+    save_spikes_to_dataframe(sorters, None, rec_samples, [deriv_path, deriv_path, deriv_path], [of1_path, vr_path, of2_path], sorter_name)
+
+    return 
+
+
+def do_sorting(extractor_paths, sorter_name, sorter_path, deriv_path, sorter_kwargs=None):
+
+    if sorter_kwargs is None:
+        sorter_kwargs = sorter_kwargs_dict[sorter_name]
+
+    # sorting time! We assume the recording has been saved as a zarr file.
+    # If you're using raw data, use si.read_openephys (or similar)
+    recording_for_sort = si.concatenate_recordings( [
+        si.load_extractor(extractor_paths[a]+".zarr") for a in range(3) ] )
+    sorting = si.run_sorter_by_property(
+            recording=recording_for_sort,
+            sorter_name=sorter_name,
+            folder=sorter_path,
+            remove_existing_folder=True,
+            verbose=True, **sorter_kwargs,
+            grouping_property='group'
+    )
+
+    save_spikes_per_session(sorting, extractor_paths, deriv_path)
+    return sorting
+
+def do_postprocessing(sorting, zarr_for_post_paths, sa_path, extension_dict=None):
+
+    if extension_dict is None:
+        extension_dict = default_extensions_dict 
+
+    recording_for_post = si.concatenate_recordings( [
+        si.load_extractor(zarr_post+".zarr") for zarr_post in zarr_for_post_paths ] )
+    sa = si.create_sorting_analyzer(recording = recording_for_post, 
+                                    sorting=sorting, format="binary_folder",
+                                folder=sa_path, overwrite=True)
+    sa.compute(extension_dict)
+    return sa
+
+# TODO: delete!!
 def spikesort(
         recording_paths,
         local_path,
@@ -140,7 +198,7 @@ def spikesort(
             sorting = sorting_mono,
             recording=recording_mono,
             format="binary_folder",
-            folder=sorting_analyzer_path
+            folder=sorting_analyzer_path,
         )
     else:
         sorting_analyzer = si.load_sorting_analyzer(sorting_analyzer_path, load_extensions=True)

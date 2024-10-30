@@ -32,9 +32,8 @@ def get_recording_paths(data_path, mouse, day):
     """
     mouse_day = "M"+str(mouse)+"_D"+str(day)
     recording_paths = os.listdir(data_path)
-    recording_paths = [s for s in recording_paths if mouse_day in s]
+    recording_paths = [data_path + s + "/" for s in recording_paths if mouse_day in s]
 
-    print(recording_paths)
     return recording_paths
 
 def chronologize_paths(recording_paths):
