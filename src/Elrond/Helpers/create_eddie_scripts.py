@@ -91,15 +91,20 @@ def run_stageout_script(stageout_dict, script_file_path=None):
 
     return 
 
-def run_stagein_script(stagein_dict, script_file_path=None):
+def run_stagein_script(stagein_dict, script_file_path=None, job_name = None):
     """
     makes a stage out script from a stageout_dict of the form
     {'path/to/file/on/datastore': 'path/to/destination/on/eddie'}
     """
 
+
+
     script_text="""#!/bin/sh
 #$ -q staging
 #$ -l h_rt=00:29:59"""
+
+    if job_name is not None:
+        script_text += "#$ -N " + job_name + "\n" 
 
     for source, dest in stagein_dict.items():
         script_text = script_text + "\nrsync -r " + str(source) + " " + str(dest)
@@ -108,7 +113,7 @@ def run_stagein_script(stagein_dict, script_file_path=None):
 
     return 
 
-def stagein_data(mouse, day, project_path):
+def stagein_data(mouse, day, project_path, job_name=None):
 
     filenames_path = project_path + f"data/M{mouse}_D{day}/data_folder_names.txt"
 
@@ -126,7 +131,7 @@ def stagein_data(mouse, day, project_path):
 
     stagein_dict = dict(zip(paths_on_datastore, dest_on_eddie))
 
-    run_stagein_script(stagein_dict)
+    run_stagein_script(stagein_dict, job_name)
 
     return
 
