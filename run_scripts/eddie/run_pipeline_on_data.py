@@ -8,8 +8,6 @@ import spikeinterface.full as si
 from Elrond.Helpers.upload_download import get_chronologized_recording_paths
 from Elrond.Helpers.zarr import make_zarrs
 
-from Elrond.P1_SpikeSort.defaults import pp_pipelines_dict
-from Elrond.P1_SpikeSort.defaults import pp_pipelines_dict
 from Elrond.P1_SpikeSort.spikesort import do_sorting, compute_sorting_analyzer
 
 import Elrond.P2_PostProcess.VirtualReality.vr as vr
@@ -35,7 +33,7 @@ def do_sorting_pipeline(mouse, day, sorter_name, project_path, pp_for_sorting=No
     #       derivatives/M??/D??/
     #           full/
     #               sorter_name/
-    #                   lotsa stuff
+    #                   lotsa stuff: zarrs, sorting_output, sorting_analyzer, report
     #           of1/
     #               sorter_name/
     #                   spikes.pkl
@@ -45,34 +43,29 @@ def do_sorting_pipeline(mouse, day, sorter_name, project_path, pp_for_sorting=No
     #           vr/
     #               sorter_name/
     #                   spikes.pkl
-
+    #   
     # If your, e.g. recordings, are somewhere else, just pass
     # recording_paths = [path/to/rec1, path/to/rec2] etc.
 
-    if pp_for_sorting is None:
-        pp_for_sorting = pp_pipelines_dict[sorter_name]["sort"] 
-    if pp_for_post is None:
-        pp_for_post = pp_pipelines_dict[sorter_name]["post"]
+
     if data_path is None:
         data_path = project_path + f"data/M{mouse}_D{day}/"
     if deriv_path is None:
         deriv_path = project_path + f"derivatives/M{mouse}/D{day}/"
     Path(deriv_path).mkdir(exist_ok=True, parents=True)
     if zarr_folder is None:
-        zarr_folder = deriv_path + "full/zarr_recordings/"
+        zarr_folder = deriv_path + "full/{sorter_name}/zarr_recordings/"
     zarr_for_sorting_paths = [f"{zarr_folder}/zarr_for_sorting_{a}" for a in range(3)]
     zarr_for_post_paths = [f"{zarr_folder}/zarr_for_post_{a}" for a in range(3)]
-    if pp_for_sorting == pp_for_post:
-        zarr_for_post_paths = zarr_for_sorting_paths
 
     if recording_paths is None:
         recording_paths = [data_path+"of1/", data_path+"vr/", data_path+"of2/"]
     if sorter_path is None: 
-        sorter_path = deriv_path + "full/" + sorter_name + "_sorting/"
+        sorter_path = deriv_path + "full/{sorter_name}/" + sorter_name + "_sorting/"
     if sa_path is None:
-        sa_path = deriv_path + "full/" + sorter_name + "_sa"
+        sa_path = deriv_path + "full/{sorter_name}/" + sorter_name + "_sa"
     if report_path is None:
-        report_path = deriv_path + "full/" + sorter_name + "_report/"
+        report_path = deriv_path + "full/{sorter_name}/" + sorter_name + "_report/"
 
 
     si.set_global_job_kwargs(n_jobs=4)
