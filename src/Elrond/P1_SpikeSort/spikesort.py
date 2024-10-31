@@ -103,7 +103,14 @@ def save_spikes_per_session(sorting, sorter_name, zarr_for_sorting_paths, deriv_
     return 
 
 
-def do_sorting(extractor_paths, sorter_name, sorter_path, deriv_path, sorter_kwargs=None):
+def do_sorting(recording_paths, sorter_name, sorter_path, deriv_path, sorter_kwargs=None):
+    """
+    Does a spike sorting for all paths in `recording_paths`. These recordings should already
+    have been preprocessed. The recordings are concatenated together. The spike trains are saved
+    for each recording, assuming a 3 recording structure, into of1/, vr/, of2/ folders (based on
+    the ... experiment structure). If this is not the strucutre of the experiment, this step
+    will (cleanly) fail.
+    """
 
     if sorter_kwargs is None:
         sorter_kwargs = sorter_kwargs_dict[sorter_name]
@@ -111,7 +118,7 @@ def do_sorting(extractor_paths, sorter_name, sorter_path, deriv_path, sorter_kwa
     # sorting time! We assume the preprocessed recording has been saved as a zarr file.
     # If you're using raw data, use si.read_openephys (or similar) and apply a preprocessor.
     recording_for_sort = si.concatenate_recordings( [
-        si.load_extractor(extractor_path + ".zarr") for extractor_path in extractor_paths ] )
+        si.load_extractor(recording_path + ".zarr") for recording_path in recording_paths ] )
     sorting = si.run_sorter_by_property(
             recording=recording_for_sort,
             sorter_name=sorter_name,
@@ -122,13 +129,18 @@ def do_sorting(extractor_paths, sorter_name, sorter_path, deriv_path, sorter_kwa
     )
     
     try:
-        save_spikes_per_session(sorting, sorter_name, extractor_paths, deriv_path)
+        save_spikes_per_session(sorting, sorter_name, recording_paths, deriv_path)
     except:
         print("Couldn't save spikes.pkl file for of1, vr, of2 experiment.")
     
     return sorting
 
 def compute_sorting_analyzer(sorting, zarr_for_post_paths, sa_path, extension_dict=None):
+    """
+    Create a `sorting_analyzer` object, from spikeinterface, which combines the recording
+    and sorting together for postprocessing. The extensions in `extension_dict` are
+    computed. If None are supplied a computationally minimal set are computed, from the
+    Elrond/P1_SpikeSort/defaults.py file"""
 
     if extension_dict is None:
         extension_dict = default_extensions_dict 

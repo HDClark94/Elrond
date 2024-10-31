@@ -76,7 +76,7 @@ def run_stageout_script(stageout_dict, script_file_path=None):
     """
     makes a stage out script from a stageout_dict of the form
     {'path/to/file/on/eddie': 'path/to/destination/on/datastore'}
-    Note: let's NEVER stageout to the raw data file, to avoid risk of deletion
+    Note: let's never stageout to the raw data folder, to avoid risk of deletion
     """
 
     script_text="""#!/bin/sh
@@ -96,9 +96,6 @@ def run_stagein_script(stagein_dict, script_file_path=None, job_name = None):
     makes a stage out script from a stageout_dict of the form
     {'path/to/file/on/datastore': 'path/to/destination/on/eddie'}
     """
-
-
-
     script_text="""#!/bin/sh
 #$ -cwd
 #$ -q staging
