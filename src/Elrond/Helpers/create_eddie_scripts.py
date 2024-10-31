@@ -80,9 +80,9 @@ def run_stageout_script(stageout_dict, script_file_path=None):
     """
 
     script_text="""#!/bin/sh
-
-    #$ -q staging
-    #$ -l h_rt=00:29:59"""
+#$ -cwd
+#$ -q staging
+#$ -l h_rt=00:29:59"""
 
     for source, dest in stageout_dict.items():
         script_text = script_text + "\nrsync -r " + str(source) + " " + str(dest)
@@ -100,6 +100,7 @@ def run_stagein_script(stagein_dict, script_file_path=None, job_name = None):
 
 
     script_text="""#!/bin/sh
+#$ -cwd
 #$ -q staging
 #$ -l h_rt=00:59:59"""
 
