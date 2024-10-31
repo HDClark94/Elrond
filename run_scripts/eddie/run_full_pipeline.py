@@ -16,7 +16,7 @@ Path(data_path).mkdir(exist_ok=True)
 
 # check if raw recordings are on eddie. If not, stage them
 stagein_name = None
-if len(os.listdir()) < 3:
+if len(os.listdir(data_path)) < 3:
     stagein_name = f"stagein_M{mouse}_D{day}"
     stagein_data(mouse, day, project_path, job_name = stagein_name)
 
