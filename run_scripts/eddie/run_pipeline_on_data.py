@@ -1,20 +1,21 @@
-from Elrond.P1_SpikeSort.defaults import sorter_kwargs_dict, pp_pipelines_dict
-from pathlib import Path
-import spikeinterface.full as si
 import sys
+import os
+from pathlib import Path
+import pandas as pd
 
-from Elrond.P2_PostProcess.OpenField.spatial_data import run_dlc_of
-from Elrond.P2_PostProcess.VirtualReality.spatial_data import run_dlc_vr
+import spikeinterface.full as si
+
+from Elrond.Helpers.upload_download import get_chronologized_recording_paths
+from Elrond.Helpers.zarr import make_zarrs
 
 from Elrond.P1_SpikeSort.defaults import pp_pipelines_dict
-
-from Elrond.Helpers.zarr import make_zarrs
+from Elrond.P1_SpikeSort.defaults import pp_pipelines_dict
 from Elrond.P1_SpikeSort.spikesort import do_sorting, compute_sorting_analyzer
 
-from pathlib import Path
 import Elrond.P2_PostProcess.VirtualReality.vr as vr
 import Elrond.P2_PostProcess.OpenField.of as of
-import pandas as pd
+from Elrond.P2_PostProcess.OpenField.spatial_data import run_dlc_of
+from Elrond.P2_PostProcess.VirtualReality.spatial_data import run_dlc_vr
 
 
 mouse = sys.argv[1]
@@ -28,7 +29,7 @@ def do_sorting_pipeline(mouse, day, sorter_name, project_path, pp_for_sorting=No
     # setting up default paths for everything. Default structure is following:
     #   project_path/
     #       data/M??_D??/
-    #           of1/ zarr formatted
+    #           of1/ raw
     #           of2/ recordings are
     #           vr/  here
     #       derivatives/M??/D??/
@@ -120,7 +121,6 @@ def do_postprocessing(mouse, day, sorter_name, project_path, data_path=None,
     if of2_dlc_folder is None:
         of2_dlc_folder = deriv_path + "of2/dlc/"
 
-
     # vr
     vr.process(recording_paths[1], deriv_path + "vr/", **{"sorterName":
                                                           sorter_name})
@@ -135,8 +135,8 @@ def do_postprocessing(mouse, day, sorter_name, project_path, data_path=None,
     of2_dlc_data = pd.read_csv(of2_dlc_csv_path, header=[1, 2], index_col=0) 
     of.process(recording_paths[2], deriv_path + "of2/" , of2_dlc_data, **{"sorterName": sorter_name})
 
-
-do_sorting_pipeline(mouse, day, sorter_name, project_path)
+raw_recording_paths = get_chronologized_recording_paths(project_path + "data/", mouse, day)
+do_sorting_pipeline(mouse, day, sorter_name, project_path, recording_paths = raw_recording_paths)
 do_dlc_pipeline(mouse, day, dlc_of_model_path = project_path + "derivatives/dlc_models/of_cohort12-krs-2024-10-30/")
 do_postprocessing(mouse, day, sorter_name, project_path)
 

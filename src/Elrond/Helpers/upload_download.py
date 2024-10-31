@@ -23,6 +23,10 @@ def get_processed_paths(base_processed_path, recording_paths):
 
     return processed_paths
 
+def get_chronologized_recording_paths(data_path, mouse, day):
+    recording_paths = get_recording_paths(data_path, mouse, day)
+    return chronologize_paths(recording_paths)
+
 def get_recording_paths(data_path, mouse, day):
     """
     Get recording paths based on mouse and day.

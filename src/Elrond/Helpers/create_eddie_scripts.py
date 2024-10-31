@@ -22,8 +22,11 @@ def make_run_python_script(python_arg, venv=None, cores=None, email=None, h_rt=N
         email_script = ""
     if venv is None:
         venv = "elrond"
+    
+    
     if cores is None:
         cores = 8
+
     if h_rt is None:
         h_rt = "47:59:59"
     if h_vmem is None:
@@ -34,11 +37,15 @@ def make_run_python_script(python_arg, venv=None, cores=None, email=None, h_rt=N
         name_script = ""
     if staging:
         staging_script = " -q staging"
+        core_script = ""
+        vmem_script = ""
     else:
         staging_script = ""
+        core_script = f" -pe sharedmem {cores}"
+        vmem_script = f",h_vmem={h_vmem}G"
 
     script_content = f"""#!/bin/bash
-#$ -cwd{staging_script} -pe sharedmem {cores} -l h_vmem={h_vmem}G,h_rt={h_rt}{hold_script}{email_script}{name_script}
+#$ -cwd{staging_script}{core_script} -l rl9=true{vmem_script},h_rt={h_rt}{hold_script}{email_script}{name_script}
 source /etc/profile.d/modules.sh
 module load anaconda
 conda activate {venv}
@@ -58,9 +65,9 @@ def save_and_run_script(script_content, script_file_path):
     compute_string = "qsub " + script_file_path
     subprocess.run( compute_string.split() )
 
-def run_python_script(python_arg, venv, cores, email, h_rt, h_vmem, hold_jid, script_file_path=None):
+def run_python_script(python_arg, venv=None, cores=None, email=None, h_rt=None, h_vmem=None, hold_jid=None, script_file_path=None, staging=False):
 
-    script_content = make_run_python_script(python_arg, venv, cores, email, h_rt, h_vmem, hold_jid)
+    script_content = make_run_python_script(python_arg, venv=venv, cores=cores, email=email, h_rt=h_rt, h_vmem=h_vmem, hold_jid=hold_jid, staging=staging)
     save_and_run_script(script_content, f"run_python_" + datetime.now().strftime("%Y-%m-%d_%H-%M-%S") + ".sh")
 
     return
@@ -91,8 +98,8 @@ def run_stagein_script(stagein_dict, script_file_path=None):
     """
 
     script_text="""#!/bin/sh
-    #$ -q staging
-    #$ -l h_rt=00:29:59"""
+#$ -q staging
+#$ -l h_rt=00:29:59"""
 
     for source, dest in stagein_dict.items():
         script_text = script_text + "\nrsync -r " + str(source) + " " + str(dest)
@@ -127,5 +134,5 @@ def get_filepaths_on_datastore(mouse, day, project_path):
 
     import Elrond
     elrond_path = Elrond.__path__[0]
-    make_run_python_script(python_arg = f"{elrond_path}/../../run_scripts/eddie_get_filenames.py {mouse} {day} {project_path}", venv="elrond", staging=True, h_rt="0:29:59", cores=1)
+    run_python_script(python_arg = f"{elrond_path}/../../run_scripts/eddie_get_filenames.py {mouse} {day} {project_path}", venv="elrond", staging=True, h_rt="0:29:59", cores=1)
     return 
