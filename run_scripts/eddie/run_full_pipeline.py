@@ -1,4 +1,5 @@
 import sys
+import os
 from Elrond.Helpers.create_eddie_scripts import stagein_data, run_python_script
 
 
@@ -12,7 +13,7 @@ elrond_path = Elrond.__path__[0]
 
 
 # check if raw recordings are on eddie. If not, stage them
-stagein_name = ""
+stagein_name = None
 if len(os.listdir(project_path + f"data/M{mouse}_D{day}")) > 1:
     stagein_name = f"stagein_M{mouse}_D{day}"
     stagein_data(mouse, day, project_path, job_name = stagein_name)

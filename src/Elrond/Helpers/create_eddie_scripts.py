@@ -101,7 +101,7 @@ def run_stagein_script(stagein_dict, script_file_path=None, job_name = None):
 
     script_text="""#!/bin/sh
 #$ -q staging
-#$ -l h_rt=00:29:59"""
+#$ -l h_rt=00:59:59"""
 
     if job_name is not None:
         script_text += "#$ -N " + job_name + "\n" 
