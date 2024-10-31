@@ -140,5 +140,5 @@ def get_filepaths_on_datastore(mouse, day, project_path):
 
     import Elrond
     elrond_path = Elrond.__path__[0]
-    run_python_script(python_arg = f"{elrond_path}/../../run_scripts/eddie_get_filenames.py {mouse} {day} {project_path}", venv="elrond", staging=True, h_rt="0:29:59", cores=1)
+    run_python_script(python_arg = f"{elrond_path}/../../run_scripts/eddie/eddie_get_filenames.py {mouse} {day} {project_path}", venv="elrond", staging=True, h_rt="0:29:59", cores=1)
     return 
