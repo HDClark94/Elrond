@@ -1,6 +1,6 @@
 import sys
 import os
-from Elrond.Helpers.create_eddie_scripts import stagein_data, run_python_script
+from Elrond.Helpers.create_eddie_scripts import stagein_data, run_python_script, run_stageout_script
 from pathlib import Path
 
 mouse = sys.argv[1]
@@ -22,3 +22,7 @@ if len(os.listdir(data_path)) < 3:
 
 # Now run full pipeline on eddie
 run_python_script(elrond_path + "/../../run_scripts/eddie/run_pipeline_on_data.py " + mouse + " " + day + " " + sorter_name + " " + project_path, hold_jid=stagein_name)
+
+run_stageout_script({
+    project_path + "derivatives/M"+mouse+"/D"+day+"/": "/exports/cmvm/datastore/sbms/groups/CDBS_SIDB_storage/NolanLab/ActiveProjects/Chris/Cohort12/derivatives/M"+mouse+"/D"+day+"/"
+    })
