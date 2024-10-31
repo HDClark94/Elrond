@@ -9,7 +9,7 @@ from Elrond.P2_PostProcess.VirtualReality.spatial_data import run_dlc_vr
 from Elrond.P1_SpikeSort.defaults import pp_pipelines_dict
 
 from Elrond.Helpers.zarr import make_zarrs
-from Elrond.P1_SpikeSort.spikesort import do_sorting, do_postprocessing
+from Elrond.P1_SpikeSort.spikesort import do_sorting, compute_sorting_analyzer
 
 from pathlib import Path
 import Elrond.P2_PostProcess.VirtualReality.vr as vr
@@ -77,7 +77,7 @@ def do_sorting_pipeline(mouse, day, sorter_name, project_path, pp_for_sorting=No
     si.set_global_job_kwargs(n_jobs=4)
     make_zarrs(recording_paths, zarr_for_sorting_paths, zarr_for_post_paths, pp_for_sorting, pp_for_post)
     sorting = do_sorting(zarr_for_sorting_paths, sorter_name, sorter_path, deriv_path)
-    sorting_analyzer = do_postprocessing(sorting, zarr_for_post_paths, sa_path)
+    sorting_analyzer = compute_sorting_analyzer(sorting, zarr_for_post_paths, sa_path)
     si.export_report(sorting_analyzer, report_path)
 
 def do_dlc_pipeline(mouse, day, dlc_of_model_path=None, dlc_vr_model_path =

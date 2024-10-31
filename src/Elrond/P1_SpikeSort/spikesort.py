@@ -128,7 +128,7 @@ def do_sorting(extractor_paths, sorter_name, sorter_path, deriv_path, sorter_kwa
     
     return sorting
 
-def do_postprocessing(sorting, zarr_for_post_paths, sa_path, extension_dict=None):
+def compute_sorting_analyzer(sorting, zarr_for_post_paths, sa_path, extension_dict=None):
 
     if extension_dict is None:
         extension_dict = default_extensions_dict 
