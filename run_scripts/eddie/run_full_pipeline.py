@@ -15,14 +15,23 @@ data_path = project_path + f"data/M{mouse}_D{day}"
 Path(data_path).mkdir(exist_ok=True)
 
 # check if raw recordings are on eddie. If not, stage them
-stagein_name = None
+stagein_job_name = None
 if len(os.listdir(data_path)) < 3:
-    stagein_name = f"stagein_M{mouse}_D{day}"
-    stagein_data(mouse, day, project_path, job_name = stagein_name)
+    stagein_job_name = f"stagein_M{mouse}_D{day}"
+    stagein_data(mouse, day, project_path, job_name = stagein_job_name)
+
+pipeline_job_name = mouse + "_" + day + "_" + sorter_name + "_pipe_full"
 
 # Now run full pipeline on eddie
-run_python_script(elrond_path + "/../../run_scripts/eddie/run_pipeline_on_data.py " + mouse + " " + day + " " + sorter_name + " " + project_path, hold_jid=stagein_name)
+run_python_script(
+    elrond_path + "/../../run_scripts/eddie/run_pipeline_on_data.py " + mouse + " " + day + " " + sorter_name + " " + project_path, 
+    hold_jid = stagein_job_name,
+    job_name = pipeline_job_name
+    )
 
 run_stageout_script({
     project_path + "derivatives/M"+mouse+"/D"+day+"/": "/exports/cmvm/datastore/sbms/groups/CDBS_SIDB_storage/NolanLab/ActiveProjects/Chris/Cohort12/derivatives/M"+mouse+"/D"+day+"/"
-    })
+    },
+    hold_jid = pipeline_job_name,
+    job_name = mouse + "_" + day + "_out_" + sorter_name
+    )

@@ -23,9 +23,9 @@ project_path = sys.argv[4]
 # One of the main tasks in this script is to set up default paths for everything. Default structure is following:
 #   project_path/
 #       data/M??_D??/
-#           of1/ raw
-#           of2/ recordings are
-#           vr/  here
+#           M??_D??-date-time-OF1/ raw
+#           M??_D??-date-time-OF2/ recordings are
+#           M??_D??-date-time-VR/  here
 #       derivatives/M??/D??/
 #           full/
 #               sorter_name/
@@ -62,18 +62,18 @@ def do_sorting_pipeline(mouse, day, sorter_name, project_path, pp_for_sorting=No
         deriv_path = project_path + f"derivatives/M{mouse}/D{day}/"
     Path(deriv_path).mkdir(exist_ok=True, parents=True)
     if zarr_folder is None:
-        zarr_folder = deriv_path + "full/{sorter_name}/zarr_recordings/"
+        zarr_folder = deriv_path + f"full/{sorter_name}/zarr_recordings/"
     zarr_for_sorting_paths = [f"{zarr_folder}/zarr_for_sorting_{a}" for a in range(3)]
     zarr_for_post_paths = [f"{zarr_folder}/zarr_for_post_{a}" for a in range(3)]
 
     if recording_paths is None:
         recording_paths = [data_path+"of1/", data_path+"vr/", data_path+"of2/"]
     if sorter_path is None: 
-        sorter_path = deriv_path + "full/{sorter_name}/" + sorter_name + "_sorting/"
+        sorter_path = deriv_path + f"full/{sorter_name}/" + sorter_name + "_sorting/"
     if sa_path is None:
-        sa_path = deriv_path + "full/{sorter_name}/" + sorter_name + "_sa"
+        sa_path = deriv_path + f"full/{sorter_name}/" + sorter_name + "_sa"
     if report_path is None:
-        report_path = deriv_path + "full/{sorter_name}/" + sorter_name + "_report/"
+        report_path = deriv_path + f"full/{sorter_name}/" + sorter_name + "_report/"
 
 
     si.set_global_job_kwargs(n_jobs=8)
@@ -144,13 +144,7 @@ def do_behavioural_postprocessing(mouse, day, sorter_name, project_path, data_pa
     of2_dlc_data = pd.read_csv(of2_dlc_csv_path, header=[1, 2], index_col=0) 
     of.process(recording_paths[2], deriv_path + "of2/" , of2_dlc_data, **{"sorterName": sorter_name})
 
-raw_recording_paths = get_chronologized_recording_paths(project_path + "data/", mouse, day)
+raw_recording_paths = get_chronologized_recording_paths(project_path, mouse, day)
 do_sorting_pipeline(mouse, day, sorter_name, project_path, recording_paths = raw_recording_paths)
 do_dlc_pipeline(mouse, day, dlc_of_model_path = project_path + "derivatives/dlc_models/of_cohort12-krs-2024-10-30/")
 do_behavioural_postprocessing(mouse, day, sorter_name, project_path)
-
-
-
-
-
-

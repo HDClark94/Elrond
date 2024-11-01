@@ -65,35 +65,41 @@ def save_and_run_script(script_content, script_file_path):
     compute_string = "qsub " + script_file_path
     subprocess.run( compute_string.split() )
 
-def run_python_script(python_arg, venv=None, cores=None, email=None, h_rt=None, h_vmem=None, hold_jid=None, script_file_path=None, staging=False):
+def run_python_script(python_arg, venv=None, cores=None, email=None, h_rt=None, h_vmem=None, hold_jid=None, script_file_path=None, staging=False, job_name=None):
 
-    script_content = make_run_python_script(python_arg, venv=venv, cores=cores, email=email, h_rt=h_rt, h_vmem=h_vmem, hold_jid=hold_jid, staging=staging)
+    script_content = make_run_python_script(python_arg, venv=venv, cores=cores, email=email, h_rt=h_rt, h_vmem=h_vmem, hold_jid=hold_jid, staging=staging, job_name=job_name)
     save_and_run_script(script_content, f"run_python_" + datetime.now().strftime("%Y-%m-%d_%H-%M-%S") + ".sh")
 
     return
 
-def run_stageout_script(stageout_dict, script_file_path=None):
+def run_stageout_script(stageout_dict, script_file_path=None, hold_jid=None, job_name=None):
+
+    if hold_jid is not None:
+        hold_script = f" -hold_jid {hold_jid}"
+    if job_name is not None:
+        name_script = f" -N {job_name}"
+
     """
     makes a stage out script from a stageout_dict of the form
     {'path/to/file/on/eddie': 'path/to/destination/on/datastore'}
     Note: let's never stageout to the raw data folder, to avoid risk of deletion
     """
 
-    script_text="""#!/bin/sh
+    script_text=f"""#!/bin/sh
 #$ -cwd
 #$ -q staging
-#$ -l h_rt=00:29:59"""
+#$ -l h_rt=00:29:59{hold_script}{name_script}"""
 
     for source, dest in stageout_dict.items():
-        script_text = script_text + "\nrsync -r " + str(source) + " " + str(dest)
-
+        script_text = script_text + "\nrsync -r --exclude='*.zarr*' " + str(source) + " " + str(dest)
+    
     save_and_run_script(script_text, script_file_path)
 
     return 
 
 def run_stagein_script(stagein_dict, script_file_path=None, job_name = None):
     """
-    makes a stage out script from a stageout_dict of the form
+    makes a stage in script from a stageout_dict of the form
     {'path/to/file/on/datastore': 'path/to/destination/on/eddie'}
     """
     script_text="""#!/bin/sh
@@ -105,7 +111,7 @@ def run_stagein_script(stagein_dict, script_file_path=None, job_name = None):
         script_text += "#$ -N " + job_name + "\n" 
 
     for source, dest in stagein_dict.items():
-        script_text = script_text + "\nrsync -r " + str(source) + " " + str(dest)
+        script_text = script_text + "\nrsync -r --exclude='*side_capture.avi*' " + str(source) + " " + str(dest)
 
     save_and_run_script(script_text, script_file_path)
 
@@ -124,8 +130,9 @@ def stagein_data(mouse, day, project_path, job_name=None):
     with open(filenames_path) as f:
         paths_on_datastore = f.read().splitlines()
 
-    folder_names = [path_on_datastore.split('/')[-1] for path_on_datastore in paths_on_datastore]
-    dest_on_eddie = [project_path + f"data/M{mouse}_D{day}/" + folder_name for folder_name in folder_names]
+    # TODO: delete this comment
+    #folder_names = [path_on_datastore.split('/')[-1] + "/" for path_on_datastore in paths_on_datastore]
+    dest_on_eddie = [project_path + f"data/M{mouse}_D{day}/" ]*len(paths_on_datastore)
 
     stagein_dict = dict(zip(paths_on_datastore, dest_on_eddie))
 
@@ -137,5 +144,11 @@ def get_filepaths_on_datastore(mouse, day, project_path):
 
     import Elrond
     elrond_path = Elrond.__path__[0]
-    run_python_script(python_arg = f"{elrond_path}/../../run_scripts/eddie/eddie_get_filenames.py {mouse} {day} {project_path}", venv="elrond", staging=True, h_rt="0:29:59", cores=1)
+    run_python_script(
+        python_arg = f"{elrond_path}/../../run_scripts/eddie/eddie_get_filenames.py {mouse} {day} {project_path}", 
+        venv="elrond", 
+        staging=True, 
+        h_rt="0:29:59", 
+        cores=1,
+        job_name=f"{mouse}_{day}_getfilenames")
     return 
