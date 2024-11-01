@@ -77,7 +77,7 @@ def do_sorting_pipeline(mouse, day, sorter_name, project_path, pp_for_sorting=No
 
 
     si.set_global_job_kwargs(n_jobs=8)
-    make_zarrs(recording_paths, zarr_for_sorting_paths, zarr_for_post_paths, pp_for_sorting, pp_for_post)
+    make_zarrs(recording_paths, sorter_name, zarr_for_sorting_paths, zarr_for_post_paths, pp_for_sorting, pp_for_post)
     sorting = do_sorting(zarr_for_sorting_paths, sorter_name, sorter_path, deriv_path)
     sorting_analyzer = compute_sorting_analyzer(sorting, zarr_for_post_paths, sa_path)
     si.export_report(sorting_analyzer, report_path)

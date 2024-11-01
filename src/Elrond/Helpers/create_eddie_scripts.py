@@ -105,7 +105,7 @@ def run_stagein_script(stagein_dict, script_file_path=None, job_name = None):
     script_text="""#!/bin/sh
 #$ -cwd
 #$ -q staging
-#$ -l h_rt=00:59:59"""
+#$ -l h_rt=00:59:59\n"""
 
     if job_name is not None:
         script_text += "#$ -N " + job_name + "\n" 
@@ -150,5 +150,5 @@ def get_filepaths_on_datastore(mouse, day, project_path):
         staging=True, 
         h_rt="0:29:59", 
         cores=1,
-        job_name=f"{mouse}_{day}_getfilenames")
+        job_name=f"M{mouse}_{day}_getfilenames")
     return 

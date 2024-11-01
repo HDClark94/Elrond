@@ -20,7 +20,7 @@ if len(os.listdir(data_path)) < 3:
     stagein_job_name = f"stagein_M{mouse}_D{day}"
     stagein_data(mouse, day, project_path, job_name = stagein_job_name)
 
-pipeline_job_name = mouse + "_" + day + "_" + sorter_name + "_pipe_full"
+pipeline_job_name = "M" + mouse + "_" + day + "_" + sorter_name + "_pipe_full"
 
 # Now run full pipeline on eddie
 run_python_script(
@@ -33,5 +33,5 @@ run_stageout_script({
     project_path + "derivatives/M"+mouse+"/D"+day+"/": "/exports/cmvm/datastore/sbms/groups/CDBS_SIDB_storage/NolanLab/ActiveProjects/Chris/Cohort12/derivatives/M"+mouse+"/D"+day+"/"
     },
     hold_jid = pipeline_job_name,
-    job_name = mouse + "_" + day + "_out_" + sorter_name
+    job_name = "M" + mouse + "_" + day + "_out_" + sorter_name
     )

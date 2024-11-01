@@ -41,12 +41,14 @@ def get_recording_folders(cohort_folder, mouse, day):
         recording_folders += list(Path(cohort_folder).glob(f'vr/M{mouse}_D{day}*'))
 
     elif len(list(Path(data_path).glob(f"*M{mouse}_D{day}"))) > 0:
-        recording_folders = list(Path(data_path + f"M{mouse}_D{day}/").glob("*/")) 
+        recording_folders = list(Path(data_path + f"M{mouse}_D{day}/").glob("*/"))
 
     for a, recording_folder in enumerate(recording_folders):
         if this_is_zarr(recording_folder) and len(list(Path(recording_folder).rglob('*recording.zarr/'))) > 0:
             recording_folders[a] = list(Path(recording_folder).rglob('*recording.zarr/'))[0]
 
+    for a, recording_folder in enumerate(recording_folders):
+        recording_folders[a] = str(recording_folder)
 
     return recording_folders
 
