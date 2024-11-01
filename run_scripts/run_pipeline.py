@@ -75,7 +75,6 @@ def do_sorting_pipeline(mouse, day, sorter_name, project_path, pp_for_sorting=No
     if report_path is None:
         report_path = deriv_path + f"full/{sorter_name}/" + sorter_name + "_report/"
 
-
     si.set_global_job_kwargs(n_jobs=8)
     make_zarrs(recording_paths, sorter_name, zarr_for_sorting_paths, zarr_for_post_paths, pp_for_sorting, pp_for_post)
     sorting = do_sorting(zarr_for_sorting_paths, sorter_name, sorter_path, deriv_path)

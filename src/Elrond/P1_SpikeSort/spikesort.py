@@ -127,6 +127,7 @@ def do_sorting(recording_paths, sorter_name, sorter_path, deriv_path, sorter_kwa
             verbose=True, **sorter_kwargs,
             grouping_property='group'
     )
+    sorting = si.remove_excess_spikes(recording=recording_for_sort, sorting=sorting)
     
     try:
         save_spikes_per_session(sorting, sorter_name, recording_paths, deriv_path)
