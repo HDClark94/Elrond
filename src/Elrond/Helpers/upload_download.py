@@ -31,13 +31,13 @@ def get_recording_folders(cohort_folder, mouse, day):
     the raw data but is used when processing.
     """
 
-    recording_folders = None
+    recording_folders = []
     data_path = cohort_folder
     if len(list(Path(cohort_folder).glob('data/')))>0:
         data_path += 'data/'
 
     if len(list(Path(data_path).glob('of/'))) > 0:
-        recording_folders = list(Path(cohort_folder + 'of/').glob(f"M{mouse}_D{day}*"))
+        recording_folders = list(Path(cohort_folder).glob(f"of/M{mouse}_D{day}*"))
         recording_folders += list(Path(cohort_folder).glob(f'vr/M{mouse}_D{day}*'))
 
     elif len(list(Path(data_path).glob(f"*M{mouse}_D{day}"))) > 0:
