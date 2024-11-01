@@ -1,6 +1,5 @@
 from Elrond.P1_SpikeSort.spikesort import apply_pipeline
 from Elrond.Helpers.upload_download import get_raw_recordings_from
-from Elrond.P1_SpikeSort.defaults import pp_pipelines_dict
 
 def save_one_zarr(rec, zarr_path, preprocessing_pipeline):
     if preprocessing_pipeline == {}:
@@ -36,14 +35,6 @@ def make_zarrs(recording_paths, sorter_name, zarr_for_sorting_paths, zarr_for_po
         E.g. {"common_reference": {"operator": "average"}, "highpass_filter": {}}
         If None, applies default preprocessing for sorter from 'P1_SpikeSort/defaults.py'
     """
-
-    if pp_for_sorting is None:
-        pp_for_sorting = pp_pipelines_dict[sorter_name]["sort"] 
-    if pp_for_post is None:
-        pp_for_post = pp_pipelines_dict[sorter_name]["post"]
-
-    if pp_for_sorting == pp_for_post:
-        zarr_for_post_paths = zarr_for_sorting_paths
 
     recordings = get_raw_recordings_from(recording_paths)
     for rec, zarr_sorting_path, zarr_post_path in zip(recordings, zarr_for_sorting_paths, zarr_for_post_paths):

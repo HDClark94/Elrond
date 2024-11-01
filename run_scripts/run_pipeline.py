@@ -14,6 +14,8 @@ import Elrond.P2_PostProcess.VirtualReality.vr as vr
 import Elrond.P2_PostProcess.OpenField.of as of
 from Elrond.P2_PostProcess.OpenField.spatial_data import run_dlc_of
 from Elrond.P2_PostProcess.VirtualReality.spatial_data import run_dlc_vr
+from Elrond.P1_SpikeSort.defaults import pp_pipelines_dict
+
 
 mouse = sys.argv[1]
 day = sys.argv[2]
@@ -64,7 +66,16 @@ def do_sorting_pipeline(mouse, day, sorter_name, project_path, pp_for_sorting=No
     if zarr_folder is None:
         zarr_folder = deriv_path + f"full/{sorter_name}/zarr_recordings/"
     zarr_for_sorting_paths = [f"{zarr_folder}/zarr_for_sorting_{a}" for a in range(3)]
-    zarr_for_post_paths = [f"{zarr_folder}/zarr_for_post_{a}" for a in range(3)]
+    
+    if pp_for_sorting is None:
+        pp_for_sorting = pp_pipelines_dict[sorter_name]["sort"] 
+    if pp_for_post is None:
+        pp_for_post = pp_pipelines_dict[sorter_name]["post"]
+
+    if pp_for_sorting == pp_for_post:
+        zarr_for_post_paths = zarr_for_sorting_paths
+    else:
+        zarr_for_post_paths = [f"{zarr_folder}/zarr_for_post_{a}" for a in range(3)]
 
     if recording_paths is None:
         recording_paths = [data_path+"of1/", data_path+"vr/", data_path+"of2/"]
