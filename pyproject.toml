@@ -61,6 +61,7 @@ postprocessing = [
 
 full = [
     "neo@git+https://github.com/NeuralEnsemble/python-neo.git",
+    "deeplabcut@git+https://github.com/DeepLabCut/DeepLabCut.git@pytorch_dlc#egg=deeplabcut[wandb]",
     "pyyaml",
     "numpy",
     "spikeinterface",
