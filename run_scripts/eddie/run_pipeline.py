@@ -139,22 +139,24 @@ def do_behavioural_postprocessing(mouse, day, sorter_name, project_path, data_pa
     if of2_dlc_folder is None:
         of2_dlc_folder = deriv_path + "of2/dlc/"
 
-    # vr
-    vr.process(recording_paths[1], deriv_path + "vr/", **{"sorterName":
-                                                          sorter_name})
-    # of1
-    of1_dlc_csv_path = list(Path(of1_dlc_folder).glob("*200.csv"))[0]
-    of1_dlc_data = pd.read_csv(of1_dlc_csv_path, header=[1, 2], index_col=0) 
-    of.process(recording_paths[0], deriv_path + "of1/" , of1_dlc_data, **{"sorterName": sorter_name})
-
-    # of2
-    of2_dlc_csv_path = list(Path(of2_dlc_folder).glob("*200.csv"))[0]
-    of2_dlc_data = pd.read_csv(of2_dlc_csv_path, header=[1, 2], index_col=0) 
-    of.process(recording_paths[2], deriv_path + "of2/" , of2_dlc_data, **{"sorterName": sorter_name})
+    for recording_path in recording_paths:
+        end_of_name = recording_path.split("_")[-1]
+        if end_of_name == 'OF1':
+            of1_dlc_csv_path = list(Path(of1_dlc_folder).glob("*200.csv"))[0]
+            of1_dlc_data = pd.read_csv(of1_dlc_csv_path, header=[1, 2], index_col=0) 
+            of.process(recording_path, deriv_path + "of1/" , of1_dlc_data, **{"sorterName": sorter_name})
+        elif end_of_name == 'OF2':
+            of2_dlc_csv_path = list(Path(of2_dlc_folder).glob("*200.csv"))[0]
+            of2_dlc_data = pd.read_csv(of2_dlc_csv_path, header=[1, 2], index_col=0) 
+            of.process(recording_path, deriv_path + "of2/" , of2_dlc_data, **{"sorterName": sorter_name})
+        elif end_of_name == 'VR':
+            vr.process(recording_path, deriv_path + "vr/", **{"sorterName": sorter_name})
+        elif end_of_name == 'MCVR1':
+            print('I need to process the visual something whatnot')
 
 if __name__ == "__main__":
 
     raw_recording_paths = get_chronologized_recording_paths(project_path, mouse, day)
     do_sorting_pipeline(mouse, day, sorter_name, project_path, recording_paths = raw_recording_paths)
-    do_dlc_pipeline(mouse, day, dlc_of_model_path = project_path + "derivatives/dlc_models/of_cohort12-krs-2024-10-30/")
-    do_behavioural_postprocessing(mouse, day, sorter_name, project_path)
+    do_dlc_pipeline(mouse, day, dlc_of_model_path = project_path + "derivatives/dlc_models/of_cohort12-krs-2024-10-30/", recording_paths = raw_recording_paths)
+    do_behavioural_postprocessing(mouse, day, sorter_name, project_path, recording_paths = raw_recording_paths)
