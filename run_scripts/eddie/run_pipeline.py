@@ -156,7 +156,9 @@ def do_behavioural_postprocessing(mouse, day, sorter_name, project_path, data_pa
     of2_dlc_data = pd.read_csv(of2_dlc_csv_path, header=[1, 2], index_col=0) 
     of.process(recording_paths[2], deriv_path + "of2/" , of2_dlc_data, **{"sorterName": sorter_name})
 
-raw_recording_paths = get_chronologized_recording_paths(project_path, mouse, day)
-do_sorting_pipeline(mouse, day, sorter_name, project_path, recording_paths = raw_recording_paths)
-do_dlc_pipeline(mouse, day, dlc_of_model_path = project_path + "derivatives/dlc_models/of_cohort12-krs-2024-10-30/")
-do_behavioural_postprocessing(mouse, day, sorter_name, project_path)
+if __name__ == "__main__":
+
+    raw_recording_paths = get_chronologized_recording_paths(project_path, mouse, day)
+    do_sorting_pipeline(mouse, day, sorter_name, project_path, recording_paths = raw_recording_paths)
+    do_dlc_pipeline(mouse, day, dlc_of_model_path = project_path + "derivatives/dlc_models/of_cohort12-krs-2024-10-30/")
+    do_behavioural_postprocessing(mouse, day, sorter_name, project_path)
