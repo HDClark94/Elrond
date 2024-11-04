@@ -2,11 +2,11 @@ import sys
 import os
 from pathlib import Path
 import pandas as pd
-
+import subprocess
 import spikeinterface.full as si
 
 from Elrond.Helpers.upload_download import get_chronologized_recording_paths
-from Elrond.Helpers.zarr import make_zarrs
+from Elrond.Helpers.zarr import make_zarrs, delete_zarrs
 
 from Elrond.P1_SpikeSort.spikesort import do_sorting, compute_sorting_analyzer
 
@@ -87,10 +87,11 @@ def do_sorting_pipeline(mouse, day, sorter_name, project_path, pp_for_sorting=No
         report_path = deriv_path + f"full/{sorter_name}/" + sorter_name + "_report/"
 
     si.set_global_job_kwargs(n_jobs=8)
-    make_zarrs(recording_paths, sorter_name, zarr_for_sorting_paths, zarr_for_post_paths, pp_for_sorting, pp_for_post)
+    make_zarrs(recording_paths, zarr_for_sorting_paths, zarr_for_post_paths, pp_for_sorting, pp_for_post)
     sorting = do_sorting(zarr_for_sorting_paths, sorter_name, sorter_path, deriv_path)
     sorting_analyzer = compute_sorting_analyzer(sorting, zarr_for_post_paths, sa_path)
     si.export_report(sorting_analyzer, report_path)
+    delete_zarrs(zarr_for_sorting_paths, zarr_for_post_paths)
 
 def do_dlc_pipeline(mouse, day, dlc_of_model_path=None, dlc_vr_model_path =
                     None, data_path = None, recording_paths=None,

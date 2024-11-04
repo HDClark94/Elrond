@@ -1,5 +1,6 @@
 from Elrond.P1_SpikeSort.spikesort import apply_pipeline
 from Elrond.Helpers.upload_download import get_raw_recordings_from
+import subprocess
 
 def save_one_zarr(rec, zarr_path, preprocessing_pipeline):
     if preprocessing_pipeline == {}:
@@ -8,7 +9,7 @@ def save_one_zarr(rec, zarr_path, preprocessing_pipeline):
         apply_pipeline(rec, preprocessing_pipeline).save_to_zarr(zarr_path)
 
 
-def make_zarrs(recording_paths, sorter_name, zarr_for_sorting_paths, zarr_for_post_paths, pp_for_sorting=None, pp_for_post=None):
+def make_zarrs(recording_paths, zarr_for_sorting_paths, zarr_for_post_paths, pp_for_sorting=None, pp_for_post=None):
     """
     Creates preprocessed zarr files from raw recordings.
     
@@ -20,8 +21,6 @@ def make_zarrs(recording_paths, sorter_name, zarr_for_sorting_paths, zarr_for_po
     ----------
     recording_paths : list of str
         List of paths pointing to the raw data
-    sorter_name : str
-        Sorter being used, e.g. 'kilosort4' or 'herdingspikes'
     zarr_for_sorting_paths : list of str
         List of paths of where to saw the preprocessed data for sorting
     zarr_for_post_paths : list of str
@@ -43,4 +42,13 @@ def make_zarrs(recording_paths, sorter_name, zarr_for_sorting_paths, zarr_for_po
             save_one_zarr(rec, zarr_post_path, pp_for_post)
 
     recordings = None
+    return
+
+
+def delete_zarrs(zarr_for_sorting_paths, zarr_for_post_paths):
+    
+    for zarr_path in zarr_for_sorting_paths + zarr_for_post_paths:
+        if '.zarr' in zarr_path:
+            subprocess.run(['rm', '-r', zarr_path])
+
     return
