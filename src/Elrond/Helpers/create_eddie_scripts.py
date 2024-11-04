@@ -53,7 +53,7 @@ python {python_arg}"""
     
     return script_content
 
-def save_script(script_content, script_file_path):
+def save_and_run_script(script_content, script_file_path):
 
     if script_file_path is None:
         script_file_path = f"run_" + datetime.now().strftime("%Y-%m-%d_%H-%M-%S") + ".sh"
@@ -62,23 +62,17 @@ def save_script(script_content, script_file_path):
     f.write(script_content)
     f.close()
 
-    return
-
-def run_script(script_file_path):
-
     compute_string = "qsub " + script_file_path
     subprocess.run( compute_string.split() )
 
-def run_python_script(python_arg, venv=None, cores=None, email=None, h_rt=None, h_vmem=None, hold_jid=None, script_file_path=None, staging=False, job_name=None, run=True):
+def run_python_script(python_arg, venv=None, cores=None, email=None, h_rt=None, h_vmem=None, hold_jid=None, script_file_path=None, staging=False, job_name=None):
 
     script_content = make_run_python_script(python_arg, venv=venv, cores=cores, email=email, h_rt=h_rt, h_vmem=h_vmem, hold_jid=hold_jid, staging=staging, job_name=job_name)
-    save_script(script_content, script_file_path)
-    if run:
-        run_script(script_file_path)
-    
+    save_and_run_script(script_content, f"run_python_" + datetime.now().strftime("%Y-%m-%d_%H-%M-%S") + ".sh")
+
     return
 
-def run_stageout_script(stageout_dict, script_file_path=None, hold_jid=None, job_name=None, run=True):
+def run_stageout_script(stageout_dict, script_file_path=None, hold_jid=None, job_name=None):
 
     if hold_jid is not None:
         hold_script = f" -hold_jid {hold_jid}"
@@ -99,13 +93,11 @@ def run_stageout_script(stageout_dict, script_file_path=None, hold_jid=None, job
     for source, dest in stageout_dict.items():
         script_text = script_text + "\nrsync -r --exclude='*.zarr*' " + str(source) + " " + str(dest)
     
-    save_script(script_text, script_file_path)
-    if run:
-        run_script(script_file_path)
+    save_and_run_script(script_text, script_file_path)
 
     return 
 
-def run_stagein_script(stagein_dict, script_file_path=None, job_name = None, run=True):
+def run_stagein_script(stagein_dict, script_file_path=None, job_name = None):
     """
     makes a stage in script from a stageout_dict of the form
     {'path/to/file/on/datastore': 'path/to/destination/on/eddie'}
@@ -121,13 +113,11 @@ def run_stagein_script(stagein_dict, script_file_path=None, job_name = None, run
     for source, dest in stagein_dict.items():
         script_text = script_text + "\nrsync -r --exclude='*side_capture.avi*' " + str(source) + " " + str(dest)
 
-    save_script(script_text, script_file_path)
-    if run:
-        run_script(script_file_path)
+    save_and_run_script(script_text, script_file_path)
 
     return 
 
-def stagein_data(mouse, day, project_path, job_name=None, run=False):
+def stagein_data(mouse, day, project_path, job_name=None):
 
     filenames_path = project_path + f"data/M{mouse}_D{day}/data_folder_names.txt"
 
@@ -146,7 +136,7 @@ def stagein_data(mouse, day, project_path, job_name=None, run=False):
 
     stagein_dict = dict(zip(paths_on_datastore, dest_on_eddie))
 
-    run_stagein_script(stagein_dict, job_name, run=False, script_file_path="M{mouse}_D{day}_in.sh")
+    run_stagein_script(stagein_dict, job_name)
 
     return
 
