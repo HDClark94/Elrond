@@ -1,4 +1,4 @@
-from ..run_pipeline import do_behavioural_postprocessing
+from run_pipeline import do_behavioural_postprocessing
 import sys
 
 mouse = sys.argv[1]

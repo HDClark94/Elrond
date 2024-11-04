@@ -16,7 +16,6 @@ from Elrond.P2_PostProcess.OpenField.spatial_data import run_dlc_of
 from Elrond.P2_PostProcess.VirtualReality.spatial_data import run_dlc_vr
 from Elrond.P1_SpikeSort.defaults import pp_pipelines_dict
 
-
 mouse = sys.argv[1]
 day = sys.argv[2]
 sorter_name = sys.argv[3]

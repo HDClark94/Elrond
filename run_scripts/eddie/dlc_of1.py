@@ -1,4 +1,4 @@
-from ..run_pipeline import do_dlc_pipeline
+from run_pipeline import do_dlc_pipeline
 import sys
 
 mouse = sys.argv[1]

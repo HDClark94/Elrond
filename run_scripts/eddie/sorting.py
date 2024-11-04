@@ -1,4 +1,4 @@
-from ..run_pipeline import do_sorting_pipeline
+from run_pipeline import do_sorting_pipeline
 from Elrond.Helpers.upload_download import get_chronologized_recording_paths
 import sys
 
