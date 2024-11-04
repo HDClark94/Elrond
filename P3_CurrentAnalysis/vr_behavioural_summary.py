@@ -11,7 +11,7 @@ import scipy.stats as stats
 
 
 def plot_speed_distibutions(position_data, save_path, title, track_length):
-    fig, axs = plt.subplots(5, 6, figsize=(15, 10), sharex=True, sharey=False)
+    fig, axs = plt.subplots(7, 7, figsize=(15, 10), sharex=True, sharey=False)
     fig.suptitle(title, fontsize=16)
  
     days = np.unique(position_data["session_number"])
@@ -41,7 +41,7 @@ def plot_speed_distibutions(position_data, save_path, title, track_length):
 
 
 def plot_vr_stop_hists(processed_position_data, save_path, title, track_length):
-    fig, axs = plt.subplots(5, 6, figsize=(15, 10), sharex=True, sharey=False)
+    fig, axs = plt.subplots(7, 7, figsize=(15, 10), sharex=True, sharey=False)
     fig.suptitle(title, fontsize=16)
 
     days = np.unique(processed_position_data["session_number"])
@@ -145,7 +145,7 @@ def plot_vr_hits_across_mice(processed_position_data, save_path, track_length):
 
 
 def plot_vr_stop_rasters(processed_position_data, save_path, title, track_length):
-    fig, axs = plt.subplots(5, 6, figsize=(15, 10), sharex=True, sharey=False)
+    fig, axs = plt.subplots(7, 7, figsize=(15, 10), sharex=True, sharey=False)
     fig.suptitle(title, fontsize=16)
 
     days = np.unique(processed_position_data["session_number"])
@@ -231,9 +231,9 @@ def main():
     all_position = pd.read_pickle("/mnt/datastore/Harry/"+cohort+"/summary/all_position.pkl")
 
     plot_vr_hits_across_mice(all_processed_position,save_path="/mnt/datastore/Harry/"+cohort+"/summary/", track_length=200)
-    for mouse in np.unique(all_processed_position["mouse_id"]): 
+    for mouse in ["M22", "M26"]: 
         plot_speed_distibutions(all_position[all_position["mouse_id"] == mouse], save_path="/mnt/datastore/Harry/"+cohort+"/summary/",title=mouse, track_length=200)
         plot_vr_stop_hists(all_processed_position[all_processed_position["mouse_id"] == mouse], save_path="/mnt/datastore/Harry/"+cohort+"/summary/",title=mouse, track_length=200)
         plot_vr_stop_rasters(all_processed_position[all_processed_position["mouse_id"] == mouse], save_path="/mnt/datastore/Harry/"+cohort+"/summary/",title=mouse, track_length=200)
-if __name__ == '__main__':
+if __name__ == '__main__': 
     main()

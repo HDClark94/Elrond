@@ -126,17 +126,19 @@ def get_recording_paths(project_path, mouse, day):
 
 
 def main():
-    if settings.suppress_warnings: 
-        warnings.filterwarnings("ignore")
+    if settings.suppress_warnings:  
+        warnings.filterwarnings("ignore")   
 
-    for mouse in [22, 23, 24]: 
-        for day in np.arange(1, 24):   
+    for mouse in ["22"]: 
+        for day in [42,43]:
             try:
                 mouse_day = "M"+str(mouse)+"_D"+str(day)
                 project_path = "/mnt/datastore/Harry/Cohort12_august2024/"
+                #project_path = "/mnt/datastore/Harry/Cohort11_april2024/"
 
                 recording_paths = [] 
-                recording_paths.extend([f.path for f in os.scandir(project_path+"vr") if f.is_dir()])
+                #recording_paths.extend([f.path for f in os.scandir(project_path+"vr") if f.is_dir()])
+                recording_paths.extend([f.path for f in os.scandir(project_path+"vr_multi_context") if f.is_dir()])
                 #recording_paths.extend([f.path for f in os.scandir(project_path+"of") if f.is_dir()])
                 #recording_paths.extend([f.path for f in os.scandir(project_path+"allen_brain_observatory_visual_coding") if f.is_dir()])
                 recording_paths = [s for s in recording_paths if mouse_day+"_" in s]
@@ -157,7 +159,7 @@ def main():
                     deeplabcut_of_model_path = settings.of_deeplabcut_project_path,
                     deeplabcut_vr_pupil_model_path = settings.vr_deeplabcut_pupil_project_path,
                     deeplabcut_vr_licks_model_path = settings.vr_deeplabcut_licks_project_path,
-                    sorterName="kilosort4", 
+                    sorterName="kilosort4",
                     sorter_kwargs={'do_CAR': False, 'do_correction': True} 
                 )
             except Exception as ex:

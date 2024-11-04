@@ -2,6 +2,7 @@ from Helpers.upload_download import *
 
 #from P2_PostProcess.Shared import shared as shared
 from P2_PostProcess.VirtualReality import vr as vr
+from P2_PostProcess.VirtualRealityMultiContext import vrmc as vrmc
 from P2_PostProcess.OpenField import of as of
 from P2_PostProcess.Opto import opto as opto
 from P2_PostProcess.Sleep import sleep as sleep
@@ -15,6 +16,8 @@ def postprocess(processed_folder_name, processed_paths, recording_paths, **kwarg
     for recording_path, type, processed_path in zip(recording_paths, recording_types, processed_paths):
         if type == "vr":  
             vr.process(recording_path, processed_path,  **kwargs)
+        elif type == "vr_multi_context":
+            vrmc.process(recording_path, processed_path,  **kwargs)
         elif type == "openfield":
             of.process(recording_path, processed_path, **kwargs)
         elif type == "opto":

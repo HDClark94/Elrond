@@ -1,10 +1,10 @@
 from P2_PostProcess.VirtualReality.behaviour_from_blender import *
 from P2_PostProcess.VirtualReality.behaviour_from_ADC_channels import *
 from P2_PostProcess.VirtualReality.spatial_firing import *
-from P2_PostProcess.VirtualReality.plotting import *
 from P2_PostProcess.VirtualReality.video import *
 from P3_CurrentAnalysis.basic_lomb_scargle_estimator import lomb_scargle
 from P3_CurrentAnalysis.ramp_score import calculate_ramp_scores, calculate_ramp_scores_parallel
+from P2_PostProcess.VirtualRealityMultiContext.plotting import *
 
 def process(recording_path, processed_path, **kwargs):
     track_length = get_track_length(recording_path)
