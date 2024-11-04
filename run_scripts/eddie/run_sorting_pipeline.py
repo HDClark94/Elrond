@@ -24,7 +24,7 @@ pipeline_job_name = "M" + mouse + "_" + day + "_" + sorter_name + "_pipe_full"
 
 # Now run full pipeline on eddie
 run_python_script(
-    elrond_path + "/../../run_scripts/eddie/sorting_pipeline.py " + mouse + " " + day + " " + sorter_name + " " + project_path, 
+    elrond_path + "/../../run_scripts/sorting_pipeline.py " + mouse + " " + day + " " + sorter_name + " " + project_path, 
     hold_jid = stagein_job_name,
     job_name = pipeline_job_name
     )
