@@ -29,5 +29,5 @@ pp_pipelines_dict = {
     }
 }
 
-# which sorting analyzer extensions to compute by defauly. Currently this is a "fast" list
-default_extensions_dict = {"noise_levels": {}, "random_spikes": {}, "templates": {}, "correlograms": {}, "spike_amplitudes": {}, "template_similarity": {}, "quality_metrics": {}}
+# which sorting analyzer extensions to compute by default. TODO : remove waveforms when si updates.
+default_extensions_dict = {"noise_levels": {}, "random_spikes": {}, "waveforms": {}, "templates": {}, "correlograms": {}, "spike_amplitudes": {}, "template_similarity": {}, "quality_metrics": {}}
