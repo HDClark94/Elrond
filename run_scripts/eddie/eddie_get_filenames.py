@@ -6,7 +6,7 @@ mouse = sys.argv[1]
 day = sys.argv[2]
 project_path = sys.argv[3]
 
-if mouse > 21:
+if int(mouse) > 21:
     data_path = "/exports/cmvm/datastore/sbms/groups/CDBS_SIDB_storage/NolanLab/ActiveProjects/Harry/Cohort12_august2024/"
 else:
     data_path = "/exports/cmvm/datastore/sbms/groups/CDBS_SIDB_storage/NolanLab/ActiveProjects/Harry/Cohort11_april2024/"
