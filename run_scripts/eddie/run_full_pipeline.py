@@ -1,33 +1,37 @@
 import sys
 import os
+from Elrond.Helpers.create_eddie_scripts import stagein_data, run_python_script, run_stageout_script
 from pathlib import Path
-import subprocess
 
-python_file = sys.argv[0]
 mouse = sys.argv[1]
 day = sys.argv[2]
 sorter_name = sys.argv[3]
 project_path = sys.argv[4]
 
-path_to_python_script_on_eddie = str(Path(python_file).parent)
+import Elrond
+elrond_path = Elrond.__path__[0]
 
-if project_path[0] == '/': 
-    current_directory = ''
-else:
-    current_directory = os.getcwd() + '/'
+data_path = project_path + f"data/M{mouse}_D{day}"
+Path(data_path).mkdir(exist_ok=True)
 
-script_content = """#!/bin/bash
-#$ -cwd -q staging -l rl9=true,h_vmem=8G,h_rt=0:29:59 -N full_pipe
-source /etc/profile.d/modules.sh
-module load anaconda
-conda activate elrond
-python """ + current_directory + path_to_python_script_on_eddie + "/run_stagein_full_stageout.py " +  mouse + " " + day + " " + sorter_name + " " + project_path
+# check if raw recordings are on eddie. If not, stage them
+stagein_job_name = None
+if len(os.listdir(data_path)) < 3:
+    stagein_job_name = f"stagein_M{mouse}_D{day}"
+    stagein_data(mouse, day, project_path, job_name = stagein_job_name)
 
-script_file_path = "M" + mouse + "_" + day + "_full.sh"
+pipeline_job_name = "M" + mouse + "_" + day + "_" + sorter_name + "_pipe_full"
 
-f = open(script_file_path, "w")
-f.write(script_content)
-f.close()
+# Now run full pipeline on eddie
+run_python_script(
+    elrond_path + "/../../run_scripts/run_pipeline.py " + mouse + " " + day + " " + sorter_name + " " + project_path, 
+    hold_jid = stagein_job_name,
+    job_name = pipeline_job_name
+    )
 
-compute_string = "qsub " + script_content
-subprocess.run( compute_string.split() )
+run_stageout_script({
+    project_path + "derivatives/M"+mouse+"/D"+day+"/": "/exports/cmvm/datastore/sbms/groups/CDBS_SIDB_storage/NolanLab/ActiveProjects/Chris/Cohort12/derivatives/M"+mouse+"/D"+day+"/"
+    },
+    hold_jid = pipeline_job_name,
+    job_name = "M" + mouse + "_" + day + "_out_" + sorter_name
+    )
