@@ -111,17 +111,14 @@ def do_dlc_pipeline(mouse, day, dlc_of_model_path=None, dlc_vr_model_path =
     if vr_save_path is None:
         vr_save_path = f"{project_path}derivatives/M{mouse}/D{day}/of2/vr/"
   
-    of1_path, vr_path, of2_path = [data_path + "of1/", data_path + "vr/",
-                                   data_path + "of2/"]
-
     if dlc_of_model_path is not None:
         if do_of1 is True:
-            run_dlc_of(of1_path, of1_save_path, **{"deeplabcut_of_model_path": dlc_of_model_path})
+            run_dlc_of(recording_paths[0], of1_save_path, **{"deeplabcut_of_model_path": dlc_of_model_path})
         if do_of2 is True:
-            run_dlc_of(of2_path, of2_save_path, **{"deeplabcut_of_model_path": dlc_of_model_path})
+            run_dlc_of(recording_paths[2], of2_save_path, **{"deeplabcut_of_model_path": dlc_of_model_path})
     
     if dlc_vr_model_path is not None and do_vr is True:
-        run_dlc_vr(vr_path, vr_save_path, **{"deeplabcut_of_model_path": dlc_vr_model_path})
+        run_dlc_vr(recording_paths[1], vr_save_path, **{"deeplabcut_of_model_path": dlc_vr_model_path})
 
 def do_behavioural_postprocessing(mouse, day, sorter_name, project_path, data_path=None,
                       recording_paths=None, deriv_path=None, of1_dlc_folder=None,
@@ -145,7 +142,6 @@ def do_behavioural_postprocessing(mouse, day, sorter_name, project_path, data_pa
     # vr
     vr.process(recording_paths[1], deriv_path + "vr/", **{"sorterName":
                                                           sorter_name})
-
     # of1
     of1_dlc_csv_path = list(Path(of1_dlc_folder).glob("*200.csv"))[0]
     of1_dlc_data = pd.read_csv(of1_dlc_csv_path, header=[1, 2], index_col=0) 

@@ -67,8 +67,10 @@ def save_and_run_script(script_content, script_file_path):
 
 def run_python_script(python_arg, venv=None, cores=None, email=None, h_rt=None, h_vmem=None, hold_jid=None, script_file_path=None, staging=False, job_name=None):
 
+    if job_name is None:
+        job_name = "run_python"
     script_content = make_run_python_script(python_arg, venv=venv, cores=cores, email=email, h_rt=h_rt, h_vmem=h_vmem, hold_jid=hold_jid, staging=staging, job_name=job_name)
-    save_and_run_script(script_content, f"run_python_" + datetime.now().strftime("%Y-%m-%d_%H-%M-%S") + ".sh")
+    save_and_run_script(script_content, f"{job_name}" + datetime.now().strftime("%Y-%m-%d_%H-%M-%S") + ".sh")
 
     return
 
