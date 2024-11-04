@@ -76,7 +76,7 @@ full = [
     "scikit-image",
     "cmocean",
     "herdingspikes",
-    "kilosort",
+    "kilosort==4.0.16",
     "numba"
 ]
 
