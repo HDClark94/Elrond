@@ -7,8 +7,7 @@ import pandas as pd
 from Elrond.Helpers import open_ephys_IO
 from Elrond.Helpers.array_utility import *
 import Elrond.settings as settings
-from neuroconv.utils.dict import load_dict_from_file, dict_deep_update
-
+import yaml
 
 
 def get_video_sync_on_and_off_times(video_data):
@@ -267,7 +266,8 @@ def get_ttl_pulse_array_in_ADC_channel(recording_path):
     # retrieve TTL sync pulses from recording
 
     if os.path.exists(recording_path + "/params.yml"):
-        params = load_dict_from_file(recording_path + "/params.yml")
+        with open(recording_path + "/params.yml", 'r') as f:
+            params = yaml.safe_load(f)
         if ("probe_manufacturer" in params.keys()) and ("recording_aquisition" in params.keys()):
             if (params["probe_manufacturer"] == 'neuropixel') and (params["recording_aquisition"] == 'openephys'):
                 recording = si.read_openephys(recording_path, load_sync_channel=True)
