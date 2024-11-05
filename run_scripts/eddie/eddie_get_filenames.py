@@ -11,8 +11,11 @@ if int(mouse) > 21:
 else:
     data_path = "/exports/cmvm/datastore/sbms/groups/CDBS_SIDB_storage/NolanLab/ActiveProjects/Harry/Cohort11_april2024/"
 
+of_paths = [data_path + "of/" + s for s in os.listdir(data_path + "of/") if str(mouse)+"_D"+str(day) in s]
+vr_paths = [data_path + "vr/" + s for s in os.listdir(data_path + "vr/") if str(mouse)+"_D"+str(day) in s] 
+vr_multi_context_paths = [data_path + "vr_multi_context/" + s for s in os.listdir(data_path + "vr_multi_context/") if str(mouse)+"_D"+str(day) in s]
 
-recording_paths = [data_path + "of/" + s for s in os.listdir(data_path + "of/") if str(mouse)+"_D"+str(day) in s] + [data_path + "vr/" + s for s in os.listdir(data_path + "vr/") if str(mouse)+"_D"+str(day) in s] 
+recording_paths = of_paths + vr_paths + vr_multi_context_paths
 data_path_on_eddie = project_path + "data/M" + mouse + "_D" + day + "/"
 Path(data_path_on_eddie).mkdir(exist_ok=True)
 
