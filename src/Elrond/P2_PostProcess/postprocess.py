@@ -2,6 +2,7 @@ from Elrond.Helpers.upload_download import *
 
 #from P2_PostProcess.Shared import shared as shared
 from .VirtualReality import vr as vr
+from .VirtualRealityMultiContext import vrmc as vrmc
 from .OpenField import of as of
 from .Opto import opto as opto
 from .Sleep import sleep as sleep
@@ -20,6 +21,9 @@ def postprocess(processed_folder_name, processed_paths, recording_paths, **kwarg
         if type == "vr":
             run_dlc_vr(recording_path, save_path = processed_path+"video/", **kwargs)
             vr.process(recording_path, processed_path,  **kwargs)
+        elif type == "vr_multi_context":
+            #TODO add dlc for multicontext 
+            vrmc.process(recording_path, processed_path,  **kwargs)
         elif type == "openfield":
             dlc_position_data = run_dlc_of(recording_path, save_path = processed_path+"video/", **kwargs)
             of.process(recording_path, processed_path, dlc_position_data, **kwargs)

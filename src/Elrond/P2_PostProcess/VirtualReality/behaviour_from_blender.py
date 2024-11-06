@@ -10,8 +10,8 @@ from Elrond.Helpers.upload_download import *
 def generate_position_data_from_blender_file(recording_path, processed_path):
     blender_files = [f for f in Path(recording_path).iterdir() if "blender.csv" in f.name and f.is_file()]
     assert len(blender_files) == 1, "I need one blender.csv file, There isn't exactly one"
-    assert get_recording_types([recording_path])[0] == "vr", "recording type must be vr if attempting to generate position data from a blender file"
-
+    assert get_recording_types([recording_path])[0].split("_")[0]=="vr", "recording type must be vr if attempting to generate position data from a blender file"
+    
     blender_data = pd.read_csv(blender_files[0], skiprows=4, sep=";",
                                names=["Time", "Position-X", "Speed", "Speed/gain_mod", "Reward_received",
                                       "Reward_failed", "Lick_detected", "Tone_played", "Position-Y",

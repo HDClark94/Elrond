@@ -149,6 +149,16 @@ def style_vr_plot(ax, x_max=None):
         plt.ylim(0, x_max)
     return ax
 
+def style_track_plot_only_black_boxes(ax, track_length, alpha=0.25):
+    ax.axvspan(0, 30, facecolor='k', linewidth =0, alpha=.25) # black box
+    ax.axvspan(track_length-30, track_length, facecolor='k', linewidth =0, alpha=alpha)# black box
+    
+def style_track_plot_multicontext(ax, track_length, alpha=0.25):
+    ax.axvspan(90, 110, facecolor='DarkGreen', alpha=alpha, linewidth =0)
+    ax.axvspan(120, 140, facecolor='orange', alpha=alpha, linewidth =0)
+    ax.axvspan(0, 30, facecolor='k', linewidth =0, alpha=.25) # black box
+    ax.axvspan(track_length-30, track_length, facecolor='k', linewidth =0, alpha=alpha)# black box
+
 def style_track_plot(ax, track_length, alpha=0.25):
     ax.axvspan(track_length-60-30-20, track_length-60-30, facecolor='DarkGreen', alpha=alpha, linewidth =0)
     ax.axvspan(0, 30, facecolor='k', linewidth =0, alpha=.25) # black box

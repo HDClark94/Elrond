@@ -3,7 +3,7 @@ import numpy as np
 import pandas as pd
 
 def create_schema_file(new_filename, initial_line, strings_list, num_lines):
-    new_string_list = np.random.choice(strings_list, p=[0.5, 0.5], size=num_lines)
+    new_string_list = np.random.choice(strings_list, p=[0.25, 0.75], size=num_lines)
 
     # Create a DataFrame from the list
     df = pd.DataFrame(new_string_list, columns=[initial_line])
@@ -18,6 +18,6 @@ initial_line = "Length(min);30;Day;10;ExpGroup;1;Mouse;M2;DOB;20170402;Strain;PV
 num_lines = 1000 # set n_lines to more trials than can be expected of a mouse in a 30 minute session
 
 for training_day in np.arange(1, 50, 1):
-    create_schema_file(new_filename="/mnt/datastore/Harry/vr_scipts/blender_scripts/trial_schemas_ratio_11_no_probe_pseudorandom/"
+    create_schema_file(new_filename="/mnt/datastore/Harry/vr_scipts/blender_scripts/trial_schemas_ratio_13_no_probe_pseudorandom/"
                                   "trial_schemas_ratio_11_no_probe_pseudorandom_training_day_"+str(training_day)+".csv",
                      initial_line=initial_line, strings_list=my_strings, num_lines=num_lines)
