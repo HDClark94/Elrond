@@ -50,8 +50,8 @@ project_path = sys.argv[4]
 #                   pupil/
 #               behavioural data
 
-def do_sorting_pipeline(mouse, day, sorter_name, project_path, pp_for_sorting=None, pp_for_post=None, data_path=None, deriv_path=None, zarr_folder=None ,
-              recording_paths=None, sorter_path=None, sa_path=None, report_path=None):
+
+def do_sorting_pipeline(mouse, day, sorter_name, project_path, pp_for_sorting=None, pp_for_post=None, data_path=None, deriv_path=None, zarr_folder=None, recording_paths=None, sorter_path=None, sa_path=None, report_path=None):
     """
     Do everything related to sorting.
     Start with raw data, end with a sorting_analyzer.
@@ -59,26 +59,28 @@ def do_sorting_pipeline(mouse, day, sorter_name, project_path, pp_for_sorting=No
 
     if data_path is None:
         data_path = project_path + f"data/M{mouse}_D{day}/"
+    if recording_paths is None:
+        recording_paths = [data_path+"of1/", data_path+"vr/", data_path+"of2/"]
+
+    num_recordings = len(recording_paths)
+
     if deriv_path is None:
         deriv_path = project_path + f"derivatives/M{mouse}/D{day}/"
     Path(deriv_path).mkdir(exist_ok=True, parents=True)
     if zarr_folder is None:
         zarr_folder = deriv_path + f"full/{sorter_name}/zarr_recordings/"
-    zarr_for_sorting_paths = [f"{zarr_folder}/zarr_for_sorting_{a}" for a in range(3)]
-    
+    zarr_for_sorting_paths = [f"{zarr_folder}/zarr_for_sorting_{a}" for a in range(num_recordings)]
+
     if pp_for_sorting is None:
-        pp_for_sorting = pp_pipelines_dict[sorter_name]["sort"] 
+        pp_for_sorting = pp_pipelines_dict[sorter_name]["sort"]
     if pp_for_post is None:
         pp_for_post = pp_pipelines_dict[sorter_name]["post"]
 
     if pp_for_sorting == pp_for_post:
         zarr_for_post_paths = zarr_for_sorting_paths
     else:
-        zarr_for_post_paths = [f"{zarr_folder}/zarr_for_post_{a}" for a in range(3)]
-
-    if recording_paths is None:
-        recording_paths = [data_path+"of1/", data_path+"vr/", data_path+"of2/"]
-    if sorter_path is None: 
+        zarr_for_post_paths = [f"{zarr_folder}/zarr_for_post_{a}" for a in range(num_recordings)]
+    if sorter_path is None:
         sorter_path = deriv_path + f"full/{sorter_name}/" + sorter_name + "_sorting/"
     if sa_path is None:
         sa_path = deriv_path + f"full/{sorter_name}/" + sorter_name + "_sa"
@@ -91,6 +93,7 @@ def do_sorting_pipeline(mouse, day, sorter_name, project_path, pp_for_sorting=No
     sorting_analyzer = compute_sorting_analyzer(sorting, zarr_for_post_paths, sa_path)
     si.export_report(sorting_analyzer, report_path)
     delete_zarrs(zarr_for_sorting_paths, zarr_for_post_paths)
+
 
 def do_dlc_pipeline(mouse, day, dlc_of_model_path=None, dlc_vr_model_path =
                     None, data_path = None, recording_paths=None,

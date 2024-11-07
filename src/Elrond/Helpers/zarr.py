@@ -10,9 +10,9 @@ def save_one_zarr(rec, zarr_path, preprocessing_pipeline):
 
     for group_recording in recordings:
 
-        bad_channels , _ = si.detect_bad_channels(group_recording)
+        bad_channels, _ = si.detect_bad_channels(group_recording)
         group_recording = group_recording.remove_channels(remove_channel_ids=bad_channels)
-        group_recording = apply_pipeline(group_recording)
+        group_recording = apply_pipeline(group_recording, preprocessing_pipeline)
         
         pp_recordings.append(apply_pipeline(group_recording, preprocessing_pipeline))
 
@@ -47,9 +47,15 @@ def make_zarrs(recording_paths, zarr_for_sorting_paths, zarr_for_post_paths, pp_
 
     recordings = get_raw_recordings_from(recording_paths)
     for rec, zarr_sorting_path, zarr_post_path in zip(recordings, zarr_for_sorting_paths, zarr_for_post_paths):
-        save_one_zarr(rec, zarr_sorting_path, pp_for_sorting)
+        try:
+            save_one_zarr(rec, zarr_sorting_path, pp_for_sorting)
+        except:
+            print(f"Couldn't save {zarr_sorting_path}. Probably exists already.")
         if pp_for_sorting != pp_for_post:
-            save_one_zarr(rec, zarr_post_path, pp_for_post)
+            try:
+                save_one_zarr(rec, zarr_post_path, pp_for_post)
+            except:
+                print(f"Couldn't save {zarr_post_path}. Probably exists already.")
 
     recordings = None
     return
