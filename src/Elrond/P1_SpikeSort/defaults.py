@@ -3,8 +3,9 @@
 # which kwargs to use for each sorter
 sorter_kwargs_dict = {
     "herdingspikes": {}, 
-    "mountainsort5": {"scheme": "3"}, 
-    "kilosort4": {"do_correction": False}
+    "mountainsort5": {"scheme": "3"},
+    "kilosort4": {"do_correction": False},
+    "spykingcircus2": {}
 }
 
 # which preprocessing steps to apply for each sorter, before sorting and before
@@ -24,6 +25,26 @@ pp_pipelines_dict = {
         "sort": {},
         "post": {
             "common_reference": {"operator": "average"},
+            "highpass_filter": {},
+        }
+    },
+    "mountainsort5": {
+        "sort": {
+            "bandpass_filter": {},
+            "whiten": {},
+        },
+        "post": {
+            "bandpass_filter": {},
+            "whiten": {},
+        }
+    },
+    "spykingcircus2": {
+        "sort": {
+            "common_reference": {"operator": "median"},
+            "highpass_filter": {},
+        },
+        "post": {
+            "common_reference": {"operator": "median"},
             "highpass_filter": {},
         }
     }
