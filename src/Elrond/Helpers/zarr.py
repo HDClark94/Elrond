@@ -1,13 +1,23 @@
 from Elrond.P1_SpikeSort.spikesort import apply_pipeline
 from Elrond.Helpers.upload_download import get_raw_recordings_from
 import subprocess
+import spikeinterface.full as si
 
 def save_one_zarr(rec, zarr_path, preprocessing_pipeline):
-    if preprocessing_pipeline == {}:
-        rec.save_to_zarr(zarr_path)
-    else:
-        apply_pipeline(rec, preprocessing_pipeline).save_to_zarr(zarr_path)
 
+    recordings = rec.split_by('group', outputs='list')
+    pp_recordings = []
+
+    for group_recording in recordings:
+
+        bad_channels , _ = si.detect_bad_channels(group_recording)
+        group_recording = group_recording.remove_channels(remove_channel_ids=bad_channels)
+        group_recording = apply_pipeline(group_recording)
+        
+        pp_recordings.append(apply_pipeline(group_recording, preprocessing_pipeline))
+
+    pp_recording = si.aggregate_channels(pp_recordings)
+    pp_recording.save_to_zarr(zarr_path)
 
 def make_zarrs(recording_paths, zarr_for_sorting_paths, zarr_for_post_paths, pp_for_sorting=None, pp_for_post=None):
     """
