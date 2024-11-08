@@ -1,8 +1,6 @@
 import sys
-import os
 from pathlib import Path
 import pandas as pd
-import subprocess
 import spikeinterface.full as si
 
 from Elrond.P1_SpikeSort.plotting import plot_simple_np_probe_layout
@@ -16,6 +14,8 @@ import Elrond.P2_PostProcess.OpenField.of as of
 from Elrond.P2_PostProcess.OpenField.spatial_data import run_dlc_of
 from Elrond.P2_PostProcess.VirtualReality.spatial_data import run_dlc_vr
 from Elrond.P1_SpikeSort.defaults import pp_pipelines_dict
+
+from Elrond.P2_PostProcess.Shared.theta_phase import compute_channel_theta_phase
 
 mouse = sys.argv[1]
 day = sys.argv[2]
@@ -158,6 +158,19 @@ def do_behavioural_postprocessing(mouse, day, sorter_name, project_path, data_pa
             vr.process(recording_path, deriv_path + "vr/", **{"sorterName": sorter_name})
         elif end_of_name == 'MCVR1':
             print('I need to process the visual something whatnot')
+
+        return
+
+def do_theta_phase(mouse, day, project_path, recording_paths):
+
+    of1_path = recording_paths[0]
+    save_path = project_path + f"derivatives/M{mouse}/D{day}/of1/"
+
+    # just take of1
+    compute_channel_theta_phase(of1_path, save_path)
+    
+    return
+
 
 if __name__ == "__main__":
 
