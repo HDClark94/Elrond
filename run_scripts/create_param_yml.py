@@ -24,6 +24,10 @@ def get_recording_type(recording):
         return "openfield"
     elif sub_folder == "vr" or sub_folder == "VirtualReality":
         return "vr"
+    elif sub_folder == "vr_multi_context":
+        return "vr_multi_context"
+    elif sub_folder == "ephys_test":
+        return "ephys_test"
     elif sub_folder == "allen_brain_visual_coding" or sub_folder == "allen_brain_observatory_visual_coding":
         return "allen_brain_observatory_visual_coding"
     else:
@@ -145,6 +149,10 @@ def main():
     #process_recordings(recording_paths, parameter_helper_path=parameter_helper_path, allow_overwrite=True)
  
     recording_paths = []
+    recording_paths.extend([f.path for f in os.scandir("/mnt/datastore/Harry/cohort12_august2024/ephys_test") if f.is_dir()])
+    recording_paths.extend([f.path for f in os.scandir("/mnt/datastore/Harry/cohort12_august2024/allen_brain_observatory_visual_coding") if f.is_dir()])
+    recording_paths.extend([f.path for f in os.scandir("/mnt/datastore/Harry/cohort12_august2024/vr_multi_context") if f.is_dir()])
+    recording_paths.extend([f.path for f in os.scandir("/mnt/datastore/Harry/cohort12_august2024/vr") if f.is_dir()])
     recording_paths.extend([f.path for f in os.scandir("/mnt/datastore/Harry/cohort12_august2024/vr") if f.is_dir()])
     recording_paths.extend([f.path for f in os.scandir("/mnt/datastore/Harry/cohort12_august2024/of") if f.is_dir()])
     parameter_helper_path = "/mnt/datastore/Harry/cohort12_august2024/parameter_helper.csv"
