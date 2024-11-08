@@ -5,6 +5,7 @@ import pandas as pd
 import subprocess
 import spikeinterface.full as si
 
+from Elrond.P1_SpikeSort.plotting import plot_simple_np_probe_layout
 from Elrond.Helpers.upload_download import get_chronologized_recording_paths
 from Elrond.Helpers.zarr import make_zarrs, delete_zarrs
 
@@ -91,6 +92,7 @@ def do_sorting_pipeline(mouse, day, sorter_name, project_path, pp_for_sorting=No
     make_zarrs(recording_paths, zarr_for_sorting_paths, zarr_for_post_paths, pp_for_sorting, pp_for_post)
     sorting = do_sorting(zarr_for_sorting_paths, sorter_name, sorter_path, deriv_path)
     sorting_analyzer = compute_sorting_analyzer(sorting, zarr_for_post_paths, sa_path)
+    plot_simple_np_probe_layout(sorting_analyzer.recording,  deriv_path)
     si.export_report(sorting_analyzer, report_path)
     delete_zarrs(zarr_for_sorting_paths, zarr_for_post_paths)
 
