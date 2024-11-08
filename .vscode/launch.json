@@ -1,0 +1,13 @@
+{
+    "configurations": [
+        {"name":"Python Debugger: Current File","type":"debugpy","request":"launch","program":"${file}","console":"integratedTerminal"},
+        {
+            "name": "Python Debugger: Current File",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${file}",
+            "env": {"PYDEVD_WARN_EVALUATION_TIMEOUT": "500"},
+            "console": "integratedTerminal"
+        }
+    ]
+}

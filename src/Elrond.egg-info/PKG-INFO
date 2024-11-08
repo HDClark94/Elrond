@@ -30,6 +30,9 @@ Provides-Extra: sorting
 Provides-Extra: postprocessing
 Provides-Extra: full
 Requires-Dist: neo@ git+https://github.com/NeuralEnsemble/python-neo.git ; extra == "full"
+Requires-Dist: torch==2.5.0; extra == "full"
+Requires-Dist: torchvision==0.20.0; extra == "full"
+Requires-Dist: deeplabcut@ git+https://github.com/DeepLabCut/DeepLabCut.git@pytorch_dlc#egg=deeplabcut[wandb] ; extra == "full"
 Requires-Dist: pyyaml; extra == "full"
 Requires-Dist: numpy; extra == "full"
 Requires-Dist: spikeinterface; extra == "full"

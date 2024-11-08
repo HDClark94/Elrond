@@ -12,6 +12,7 @@ src/Elrond/Helpers/Logger.py
 src/Elrond/Helpers/OpenEphys.py
 src/Elrond/Helpers/__init__.py
 src/Elrond/Helpers/array_utility.py
+src/Elrond/Helpers/create_eddie_scripts.py
 src/Elrond/Helpers/file_utility.py
 src/Elrond/Helpers/kuiper.py
 src/Elrond/Helpers/math_utility.py
@@ -21,9 +22,11 @@ src/Elrond/Helpers/plot_utility.py
 src/Elrond/Helpers/spikeinterfaceHelper.py
 src/Elrond/Helpers/test_kuiper.py
 src/Elrond/Helpers/upload_download.py
+src/Elrond/Helpers/zarr.py
 src/Elrond/P0_Format/__init__.py
 src/Elrond/P1_SpikeSort/__init__.py
 src/Elrond/P1_SpikeSort/auto_curate.py
+src/Elrond/P1_SpikeSort/defaults.py
 src/Elrond/P1_SpikeSort/openphys.py
 src/Elrond/P1_SpikeSort/preprocess.py
 src/Elrond/P1_SpikeSort/probe.py
@@ -31,6 +34,16 @@ src/Elrond/P1_SpikeSort/spikesort.py
 src/Elrond/P1_SpikeSort/waveforms.py
 src/Elrond/P2_PostProcess/__init__.py
 src/Elrond/P2_PostProcess/postprocess.py
+src/Elrond/P2_PostProcess/Shared/__init__.py
+src/Elrond/P2_PostProcess/Shared/cross_correlogram.py
+src/Elrond/P2_PostProcess/Shared/dlc.py
+src/Elrond/P2_PostProcess/Shared/lfp.py
+src/Elrond/P2_PostProcess/Shared/plotting.py
+src/Elrond/P2_PostProcess/Shared/power_spectra.py
+src/Elrond/P2_PostProcess/Shared/shared.py
+src/Elrond/P2_PostProcess/Shared/theta_modulation.py
+src/Elrond/P2_PostProcess/Shared/time_sync.py
+src/Elrond/P2_PostProcess/Shared/traces.py
 src/Elrond/P3_CurrentAnalysis/__init__.py
 src/Elrond/P3_CurrentAnalysis/basic_lomb_scargle_estimator.py
 src/Elrond/P3_CurrentAnalysis/ramp_score.py
