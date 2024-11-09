@@ -17,11 +17,6 @@ from Elrond.P1_SpikeSort.defaults import pp_pipelines_dict
 
 from Elrond.P2_PostProcess.Shared.theta_phase import compute_channel_theta_phase
 
-mouse = sys.argv[1]
-day = sys.argv[2]
-sorter_name = sys.argv[3]
-project_path = sys.argv[4]
-
 # One of the main tasks in this script is to set up default paths for everything. Default structure is following:
 #   project_path/
 #       data/M??_D??/
@@ -97,7 +92,7 @@ def do_sorting_pipeline(mouse, day, sorter_name, project_path, pp_for_sorting=No
     delete_zarrs(zarr_for_sorting_paths, zarr_for_post_paths)
 
 
-def do_dlc_pipeline(mouse, day, dlc_of_model_path=None, dlc_vr_model_path =
+def do_dlc_pipeline(mouse, day, project_path, dlc_of_model_path=None, dlc_vr_model_path =
                     None, data_path = None, recording_paths=None,
                     of1_save_path=None, of2_save_path=None, vr_save_path=None, do_of1=True, do_of2=True, do_vr=True):
     """
@@ -163,18 +158,23 @@ def do_behavioural_postprocessing(mouse, day, sorter_name, project_path, data_pa
 
 def do_theta_phase(mouse, day, project_path, recording_paths):
 
-    of1_path = recording_paths[0]
-    save_path = project_path + f"derivatives/M{mouse}/D{day}/of1/"
+    deriv_path = project_path + f"derivatives/M{mouse}/D{day}/"
+    save_paths = [deriv_path + session for session in ["of1/", "vr/", "of2/"]]
 
-    # just take of1
-    compute_channel_theta_phase(of1_path, save_path)
-    
+    for recording_path, save_path in zip(recording_paths, save_paths):
+        compute_channel_theta_phase(recording_path, save_path)
+
     return
 
 
 if __name__ == "__main__":
 
+    mouse = sys.argv[1]
+    day = sys.argv[2]
+    sorter_name = sys.argv[3]
+    project_path = sys.argv[4]
+
     raw_recording_paths = get_chronologized_recording_paths(project_path, mouse, day)
     do_sorting_pipeline(mouse, day, sorter_name, project_path, recording_paths = raw_recording_paths)
-    do_dlc_pipeline(mouse, day, dlc_of_model_path = project_path + "derivatives/dlc_models/of_cohort12-krs-2024-10-30/", recording_paths = raw_recording_paths)
+    do_dlc_pipeline(mouse, day, project_path, dlc_of_model_path = project_path + "derivatives/dlc_models/of_cohort12-krs-2024-10-30/", recording_paths = raw_recording_paths)
     do_behavioural_postprocessing(mouse, day, sorter_name, project_path, recording_paths = raw_recording_paths)

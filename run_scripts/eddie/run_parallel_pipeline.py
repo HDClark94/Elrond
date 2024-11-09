@@ -2,13 +2,13 @@ import sys
 import os
 from Elrond.Helpers.create_eddie_scripts import stagein_data, run_python_script, run_stageout_script
 from pathlib import Path
+import Elrond
 
 mouse = sys.argv[1]
 day = sys.argv[2]
 sorter_name = sys.argv[3]
 project_path = sys.argv[4]
 
-import Elrond
 elrond_path = Elrond.__path__[0]
 
 data_path = project_path + f"data/M{mouse}_D{day}"
@@ -23,6 +23,7 @@ if len(os.listdir(data_path)) < 3:
 mouseday_string = "M" + mouse + "_" + day + "_"
 
 pipeline_job_name = mouseday_string + sorter_name + "_pipe_full"
+theta_job_name = mouseday_string + "theta"
 of1_job_name = mouseday_string + "1dlc"
 of2_job_name = mouseday_string + "2dlc"
 behaviour_job_name = mouseday_string + "behave"
@@ -32,7 +33,14 @@ run_python_script(
     elrond_path + "/../../run_scripts/eddie/sorting.py " + mouse + " " + day + " " + sorter_name + " " + project_path, 
     hold_jid = stagein_job_name,
     job_name = pipeline_job_name,
-    cores=16
+    )
+
+# Run theta phase
+run_python_script(
+    elrond_path + "/../../run_scripts/eddie/run_theta_phase.py " + mouse + " " + day + " " + project_path,
+    hold_jid = stagein_job_name,
+    job_name = of1_job_name,
+    cores=3,
     )
 
 # Run DLC on of1
@@ -40,7 +48,6 @@ run_python_script(
     elrond_path + "/../../run_scripts/eddie/dlc_of1.py " + mouse + " " + day + " " + sorter_name + " " + project_path, 
     hold_jid = stagein_job_name,
     job_name = of1_job_name,
-    cores=16
     )
 
 # Run DLC on of2
@@ -48,15 +55,15 @@ run_python_script(
     elrond_path + "/../../run_scripts/eddie/dlc_of2.py " + mouse + " " + day + " " + sorter_name + " " + project_path, 
     hold_jid = stagein_job_name,
     job_name = of2_job_name,
-    cores=16
     )
 
 # Run behaviour, once everything else is done
 run_python_script(
     elrond_path + "/../../run_scripts/eddie/behaviour.py " + mouse + " " + day + " " + sorter_name + " " + project_path, 
     hold_jid = pipeline_job_name + "," + of1_job_name + "," + of2_job_name,
-    job_name = behaviour_job_name
-    )
+    job_name = behaviour_job_name,
+    cores=3,
+)
 
 run_stageout_script({
     project_path + "derivatives/M"+mouse+"/D"+day+"/": "/exports/cmvm/datastore/sbms/groups/CDBS_SIDB_storage/NolanLab/ActiveProjects/Chris/Cohort12/derivatives/M"+mouse+"/D"+day+"/"
