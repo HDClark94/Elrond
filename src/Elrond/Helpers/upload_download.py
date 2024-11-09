@@ -44,13 +44,6 @@ def get_recording_folders(cohort_folder, mouse, day):
     elif len(list(Path(data_path).glob(f"*M{mouse}_D{day}"))) > 0:
         recording_folders = list(Path(data_path + f"M{mouse}_D{day}/").glob("*/"))
 
-    for a, recording_folder in enumerate(recording_folders):
-        if this_is_zarr(recording_folder) and len(list(Path(recording_folder).rglob('*recording.zarr/'))) > 0:
-            recording_folders[a] = list(Path(recording_folder).rglob('*recording.zarr/'))[0]
-
-    for a, recording_folder in enumerate(recording_folders):
-        recording_folders[a] = str(recording_folder)
-
     return recording_folders
 
 
@@ -79,7 +72,10 @@ def get_recording_from(recording_folder):
 def get_raw_recordings_from(recording_paths):
     recordings = []
     for recording_path in recording_paths:
-        recordings.append(si.read_openephys(recording_path))
+        if Path(recording_path).glob('*recording.zarr'):
+            recordings.append(si.read_zarr(recording_path / Path("recording.zarr")))
+        else:
+            recordings.append(si.read_openephys(recording_path))
     return recordings
 
 def get_processed_paths(base_processed_path, recording_paths):
