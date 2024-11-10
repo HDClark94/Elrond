@@ -72,7 +72,7 @@ def get_recording_from(recording_folder):
 def get_raw_recordings_from(recording_paths):
     recordings = []
     for recording_path in recording_paths:
-        if Path(recording_path).glob('*recording.zarr'):
+        if list(Path(recording_path).glob('*recording.zarr')):
             recordings.append(si.read_zarr(recording_path / Path("recording.zarr")))
         else:
             recordings.append(si.read_openephys(recording_path))

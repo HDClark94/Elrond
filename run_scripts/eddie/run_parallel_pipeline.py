@@ -39,7 +39,7 @@ run_python_script(
 run_python_script(
     elrond_path + "/../../run_scripts/eddie/run_theta_phase.py " + mouse + " " + day + " " + project_path,
     hold_jid = stagein_job_name,
-    job_name = of1_job_name,
+    job_name = theta_job_name,
     cores=3,
     )
 
