@@ -13,7 +13,7 @@ from Elrond.P1_SpikeSort.spikesort import do_sorting, compute_sorting_analyzer
 
 import Elrond.P2_PostProcess.VirtualReality.vr as vr
 import Elrond.P2_PostProcess.OpenField.of as of
-import Elrond.P2_PostProcess.ABOVisualCoding.of as vc
+import Elrond.P2_PostProcess.ABOVisualCoding.visual_coding as vc
 from Elrond.P2_PostProcess.OpenField.spatial_data import run_dlc_of
 from Elrond.P2_PostProcess.VirtualReality.spatial_data import run_dlc_vr
 from Elrond.P1_SpikeSort.defaults import pp_pipelines_dict
