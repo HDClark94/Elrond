@@ -93,7 +93,7 @@ def run_python_script(python_arg, venv=None, cores=None, email=None, h_rt=None, 
 
     return
 
-def run_python_gpu_script(python_arg, venv=None, cores=None, email=None, h_rt=None, h_vmem=None, hold_jid=None, script_file_path=None, staging=False, job_name=None):
+def run_gpu_python_script(python_arg, venv=None, cores=None, email=None, h_rt=None, h_vmem=None, hold_jid=None, script_file_path=None, staging=False, job_name=None):
 
     if job_name is None:
         job_name = "run_python"

@@ -33,7 +33,7 @@ behaviour_job_name = mouseday_string + "behave"
 
 # Now run full pipeline on eddie
 run_python_script(
-    elrond_path + "/../../run_scripts/eddie/zarr.py " + mouse + " " + day + " " + sorter_name + " " + project_path, 
+    elrond_path + "/../../run_scripts/eddie/zarr_time.py " + mouse + " " + day + " " + sorter_name + " " + project_path, 
     hold_jid = stagein_job_name,
     job_name = zarr_job_name,
     )
