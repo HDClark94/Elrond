@@ -54,7 +54,7 @@ python {python_arg}"""
     return script_content
 
 
-def make_gpu_python_script(python_arg,  h_rt=None):
+def make_gpu_python_script(python_arg,  job_name, h_rt=None):
     """
     Makes a python script, which will run
     >>  python python_arg
@@ -64,7 +64,7 @@ def make_gpu_python_script(python_arg,  h_rt=None):
         h_rt = "0:59:59"
 
     script_content = f"""#!/bin/bash
-#$ -cwd -q gpu -pe gpu-a100 1 -l rl9=true,h_vmem=30G,h_rt={h_rt} -N gpu_ks
+#$ -cwd -q gpu -pe gpu-a100 1 -l rl9=true,h_vmem=30G,h_rt={h_rt} -N {job_name}
 source /etc/profile.d/modules.sh
 module load anaconda
 conda activate elrond
@@ -97,7 +97,7 @@ def run_gpu_python_script(python_arg, venv=None, cores=None, email=None, h_rt=No
 
     if job_name is None:
         job_name = "run_python"
-    script_content = make_gpu_python_script(python_arg, h_rt=h_rt)
+    script_content = make_gpu_python_script(python_arg, job_name, h_rt=h_rt)
     save_and_run_script(script_content, f"{job_name}" + datetime.now().strftime("%Y-%m-%d_%H-%M-%S") + ".sh")
 
     return
