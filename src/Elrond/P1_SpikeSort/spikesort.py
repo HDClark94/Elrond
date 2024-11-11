@@ -299,3 +299,28 @@ def make_recording_from_paths_and_get_times(recording_paths):
     except: mono_recording, _ = add_probe(mono_recording, recording_paths[0])
 
     return mono_recording, rec_times
+
+def read_grouped_sorting(sorter_path, recording_path):
+
+    recording = get_recording_from(recording_path)
+
+    grouping_property = 'group'
+    recording_dict = recording.split_by(grouping_property)
+
+    paths = list(Path(sorter_path).glob('*'))
+
+    sorting_list=[]
+    for path in paths:
+        sorting = si.read_kilosort(path / Path("sorter_output"))
+        sorting_list.append(sorting)
+
+    unit_groups = []
+    for sorting, group in zip(sorting_list, recording_dict.keys()):
+        num_units = sorting.get_unit_ids().size
+        unit_groups.extend([group] * num_units)
+    unit_groups = np.array(unit_groups)
+
+    aggregate_sorting = si.aggregate_units(sorting_list)
+    aggregate_sorting.set_property(key='group', values=unit_groups)
+
+    return aggregate_sorting

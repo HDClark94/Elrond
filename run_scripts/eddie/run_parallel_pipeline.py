@@ -1,6 +1,6 @@
 import sys
 import os
-from Elrond.Helpers.create_eddie_scripts import stagein_data, run_python_script, run_stageout_script
+from Elrond.Helpers.create_eddie_scripts import stagein_data, run_python_script, run_stageout_script, run_gpu_python_script
 from pathlib import Path
 import Elrond
 
@@ -22,7 +22,10 @@ if len(os.listdir(data_path)) < 3:
 
 mouseday_string = "M" + mouse + "_" + day + "_"
 
-pipeline_job_name = mouseday_string + sorter_name + "_pipe_full"
+zarr_job_name =  mouseday_string + "z_" + sorter_name
+sort_job_name =  mouseday_string + sorter_name
+sspp_job_name =  mouseday_string + "sspp_" + sorter_name
+
 theta_job_name = mouseday_string + "theta"
 of1_job_name = mouseday_string + "1dlc"
 of2_job_name = mouseday_string + "2dlc"
@@ -30,10 +33,29 @@ behaviour_job_name = mouseday_string + "behave"
 
 # Now run full pipeline on eddie
 run_python_script(
-    elrond_path + "/../../run_scripts/eddie/sorting.py " + mouse + " " + day + " " + sorter_name + " " + project_path, 
+    elrond_path + "/../../run_scripts/eddie/zarr.py " + mouse + " " + day + " " + sorter_name + " " + project_path, 
     hold_jid = stagein_job_name,
-    job_name = pipeline_job_name,
+    job_name = zarr_job_name,
     )
+
+if sorter_name == "kilosort4":
+    run_gpu_python_script(
+        elrond_path + "/../../run_scripts/eddie/sort.py " + mouse + " " + day + " " + sorter_name + " " + project_path, 
+        hold_jid = sort_job_name,
+        job_name = zarr_job_name,
+        )
+else:
+    run_python_script(
+        elrond_path + "/../../run_scripts/eddie/sort.py " + mouse + " " + day + " " + sorter_name + " " + project_path, 
+        hold_jid = sort_job_name,
+        job_name = sspp_job_name,
+    )
+
+run_python_script(
+    elrond_path + "/../../run_scripts/eddie/sspp.py " + mouse + " " + day + " " + sorter_name + " " + project_path, 
+    hold_jid = sort_job_name,
+    job_name = sspp_job_name,
+)
 
 # Run theta phase
 run_python_script(
