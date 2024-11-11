@@ -41,8 +41,8 @@ run_python_script(
 if sorter_name == "kilosort4":
     run_gpu_python_script(
         elrond_path + "/../../run_scripts/eddie/sort.py " + mouse + " " + day + " " + sorter_name + " " + project_path, 
-        hold_jid = sort_job_name,
-        job_name = zarr_job_name,
+        hold_jid = zarr_job_name,
+        job_name = sort_job_name,
         )
 else:
     run_python_script(
@@ -82,7 +82,7 @@ run_python_script(
 # Run behaviour, once everything else is done
 run_python_script(
     elrond_path + "/../../run_scripts/eddie/behaviour.py " + mouse + " " + day + " " + sorter_name + " " + project_path, 
-    hold_jid = pipeline_job_name + "," + of1_job_name + "," + of2_job_name,
+    hold_jid = sspp_job_name + "," + of1_job_name + "," + of2_job_name,
     job_name = behaviour_job_name,
     cores=3,
 )
