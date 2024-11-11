@@ -63,7 +63,7 @@ def do_zarrs(mouse, day, sorter_name, project_path, pp_for_sorting=None, pp_for_
         deriv_path = project_path + f"derivatives/M{mouse}/D{day}/"
     Path(deriv_path).mkdir(exist_ok=True, parents=True)
     if zarr_folder is None:
-        zarr_folder = deriv_path + f"full/{sorter_name}/zarr_recordings/"
+        zarr_folder = deriv_path + f"full/{sorter_name}/zarr_recordings"
     zarr_for_sorting_paths = [f"{zarr_folder}/zarr_for_sorting_{a}" for a in range(num_recordings)]
 
     if pp_for_sorting is None:
