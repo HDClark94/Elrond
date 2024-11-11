@@ -149,7 +149,7 @@ def run_stagein_script(stagein_dict, script_file_path=None, job_name = None, hol
     if hold_jid is not None:
         hold_script = f" -hold_jid {hold_jid}"
 
-    script_text="""#!/bin/sh
+    script_text=f"""#!/bin/sh
 #$ -cwd
 #$ -q staging
 #$ -l h_rt=00:59:59{hold_script}\n"""
