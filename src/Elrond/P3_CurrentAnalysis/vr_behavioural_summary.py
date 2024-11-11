@@ -60,7 +60,7 @@ def plot_lick_rasters(deriv_path):
 
 
 def plot_speed_distibutions(position_data, save_path, title, track_length):
-    fig, axs = plt.subplots(5, 6, figsize=(15, 10), sharex=True, sharey=False)
+    fig, axs = plt.subplots(7, 7, figsize=(15, 10), sharex=True, sharey=False)
     fig.suptitle(title, fontsize=16)
  
     days = np.unique(position_data["session_number"])
@@ -90,7 +90,7 @@ def plot_speed_distibutions(position_data, save_path, title, track_length):
 
 
 def plot_vr_stop_hists(processed_position_data, save_path, title, track_length):
-    fig, axs = plt.subplots(5, 6, figsize=(15, 10), sharex=True, sharey=False)
+    fig, axs = plt.subplots(7, 7, figsize=(15, 10), sharex=True, sharey=False)
     fig.suptitle(title, fontsize=16)
 
     days = np.unique(processed_position_data["session_number"])
@@ -194,7 +194,7 @@ def plot_vr_hits_across_mice(processed_position_data, save_path, track_length):
 
 
 def plot_vr_stop_rasters(processed_position_data, save_path, title, track_length):
-    fig, axs = plt.subplots(5, 6, figsize=(15, 10), sharex=True, sharey=False)
+    fig, axs = plt.subplots(7, 7, figsize=(15, 10), sharex=True, sharey=False)
     fig.suptitle(title, fontsize=16)
 
     days = np.unique(processed_position_data["session_number"])
@@ -280,8 +280,8 @@ def main():
     all_position = pd.read_pickle("/mnt/datastore/Harry/"+cohort+"/summary/all_position.pkl")
 
     plot_vr_hits_across_mice(all_processed_position,save_path="/mnt/datastore/Harry/"+cohort+"/summary/", track_length=200)
-    deriv_path = f"/home/nolanlab/Chris/Sorting/Cohort12/derivatives/"
-    plot_lick_rasters(deriv_path)
+    #deriv_path = f"/home/nolanlab/Chris/Sorting/Cohort12/derivatives/"
+    #plot_lick_rasters(deriv_path)
 
     for mouse in np.unique(all_processed_position["mouse_id"]): 
         plot_speed_distibutions(all_position[all_position["mouse_id"] == mouse], save_path="/mnt/datastore/Harry/"+cohort+"/summary/",title=mouse, track_length=200)

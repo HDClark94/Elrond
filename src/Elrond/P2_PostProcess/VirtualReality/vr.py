@@ -24,8 +24,7 @@ def process(recording_path, processed_path, dlc_data=None, **kwargs):
         position_data = generate_position_data_from_ADC_channels(recording_path, processed_path)
     else: 
         print("I couldn't find any source of position data")
-        return
-    
+
     if dlc_data is not None:
         # syncrhonise position data and video data
         position_data, video_data = synchronise_position_data_via_column_ttl_pulses(position_data, video_data, processed_path, recording_path)
