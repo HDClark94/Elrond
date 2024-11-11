@@ -110,7 +110,11 @@ def do_dlc_pipeline(mouse, day, project_path, dlc_of_model_path=None, dlc_vr_mod
         of2_save_path = f"{project_path}derivatives/M{mouse}/D{day}/of2/dlc/"
     if vr_save_path is None:
         vr_save_path = f"{project_path}derivatives/M{mouse}/D{day}/of2/vr/"
-  
+
+    Path(of1_save_path).mkdir(exist_ok=True, parents=True)
+    Path(of2_save_path).mkdir(exist_ok=True, parents=True)
+    Path(vr_save_path).mkdir(exist_ok=True, parents=True)
+
     if dlc_of_model_path is not None:
         if do_of1 is True:
             run_dlc_of(recording_paths[0], of1_save_path, **{"deeplabcut_of_model_path": dlc_of_model_path})
@@ -142,11 +146,11 @@ def do_behavioural_postprocessing(mouse, day, sorter_name, project_path, data_pa
     for recording_path in recording_paths:
         end_of_name = recording_path.split("_")[-1]
         if end_of_name == 'OF1':
-            of1_dlc_csv_path = list(Path(of1_dlc_folder).glob("*200.csv"))[0]
+            of1_dlc_csv_path = list(Path(of1_dlc_folder).glob("*200_filtered.csv"))[0]
             of1_dlc_data = pd.read_csv(of1_dlc_csv_path, header=[1, 2], index_col=0) 
             of.process(recording_path, deriv_path + "of1/" , of1_dlc_data, **{"sorterName": sorter_name})
         elif end_of_name == 'OF2':
-            of2_dlc_csv_path = list(Path(of2_dlc_folder).glob("*200.csv"))[0]
+            of2_dlc_csv_path = list(Path(of2_dlc_folder).glob("*200_filtered.csv"))[0]
             of2_dlc_data = pd.read_csv(of2_dlc_csv_path, header=[1, 2], index_col=0) 
             of.process(recording_path, deriv_path + "of2/" , of2_dlc_data, **{"sorterName": sorter_name})
         elif end_of_name == 'VR':
@@ -162,6 +166,7 @@ def do_theta_phase(mouse, day, project_path, recording_paths):
     save_paths = [deriv_path + session for session in ["of1/", "vr/", "of2/"]]
 
     for recording_path, save_path in zip(recording_paths, save_paths):
+        Path(save_path).mkdir(exist_ok=True, parents=True)
         compute_channel_theta_phase(recording_path, save_path)
 
     return

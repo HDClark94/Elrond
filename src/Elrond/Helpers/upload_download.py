@@ -63,6 +63,8 @@ def this_is_zarr(recording_folder):
 def get_recording_from(recording_folder):
 
     if this_is_zarr(recording_folder):
+        if '.zarr' not in str(recording_folder):
+            recording_folder = Path(recording_folder) / Path('recording.zarr')
         recording = si.load_extractor(recording_folder)
     else:
         recording = si.read_openephys(recording_folder)

@@ -2,9 +2,13 @@ import numpy as np
 import pandas as pd
 import spikeinterface.full as si
 from scipy.signal import hilbert
+from Elrond.Helpers.upload_download import get_recording_from
+from pathlib import Path
 
 def compute_channel_theta_phase(raw_path, save_path, resample_rate=1000):
-    raw = si.read_openephys(raw_path)
+    raw = get_recording_from(raw_path)
+
+    Path(save_path).mkdir(exist_ok=True, parents=True)
 
     # Compute downsampled LFP
     processed = si.bandpass_filter(
