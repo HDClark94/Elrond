@@ -50,7 +50,7 @@ from Elrond.P2_PostProcess.Shared.theta_phase import compute_channel_theta_phase
 #               behavioural data
 
 
-def do_zarrs(mouse, day, sorter_name, project_path, pp_for_sorting=None, pp_for_post=None, data_path=None, deriv_path=None, zarr_folder=None, recording_paths=None, sorter_path=None, sa_path=None, report_path=None):
+def do_zarrs(mouse, day, sorter_name, project_path, pp_for_sorting=None, pp_for_post=None, data_path=None, deriv_path=None, zarr_folder=None, recording_paths=None, sorter_path=None, sa_path=None, report_path=None, zarr_number=None):
 
     if data_path is None:
         data_path = project_path + f"data/M{mouse}_D{day}/"
@@ -59,12 +59,17 @@ def do_zarrs(mouse, day, sorter_name, project_path, pp_for_sorting=None, pp_for_
 
     num_recordings = len(recording_paths)
 
+
     if deriv_path is None:
         deriv_path = project_path + f"derivatives/M{mouse}/D{day}/"
     Path(deriv_path).mkdir(exist_ok=True, parents=True)
     if zarr_folder is None:
         zarr_folder = deriv_path + f"full/{sorter_name}/zarr_recordings"
-    zarr_for_sorting_paths = [f"{zarr_folder}/zarr_for_sorting_{a}" for a in range(num_recordings)]
+
+    if zarr_number is None:
+        zarr_for_sorting_paths = [f"{zarr_folder}/zarr_for_sorting_{a}" for a in range(num_recordings)]
+    else:
+        zarr_for_sorting_paths = f"{zarr_folder}/zarr_for_sorting_{zarr_number}"
 
     if pp_for_sorting is None:
         pp_for_sorting = pp_pipelines_dict[sorter_name]["sort"]
@@ -74,7 +79,10 @@ def do_zarrs(mouse, day, sorter_name, project_path, pp_for_sorting=None, pp_for_
     if pp_for_sorting == pp_for_post:
         zarr_for_post_paths = zarr_for_sorting_paths
     else:
-        zarr_for_post_paths = [f"{zarr_folder}/zarr_for_post_{a}" for a in range(num_recordings)]
+        if zarr_number is None:
+            zarr_for_post_paths = [f"{zarr_folder}/zarr_for_post_{a}" for a in range(num_recordings)]
+        else:
+            zarr_for_post_paths = f"{zarr_folder}/zarr_for_post_{zarr_number}"
 
     si.set_global_job_kwargs(n_jobs=8)
     make_zarrs(recording_paths, zarr_for_sorting_paths, zarr_for_post_paths, pp_for_sorting, pp_for_post)
