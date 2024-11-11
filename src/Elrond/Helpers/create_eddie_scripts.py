@@ -148,6 +148,9 @@ def run_stagein_script(stagein_dict, script_file_path=None, job_name = None, hol
 
     if hold_jid is not None:
         hold_script = f" -hold_jid {hold_jid}"
+    else:
+        hold_script=""
+
 
     script_text=f"""#!/bin/sh
 #$ -cwd
