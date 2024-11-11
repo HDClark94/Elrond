@@ -60,6 +60,10 @@ postprocessing = [
 ]
 
 full = [
+    "neo@git+https://github.com/NeuralEnsemble/python-neo.git",
+    "torch==2.5.0",
+    "torchvision==0.20.0",
+    "deeplabcut@git+https://github.com/DeepLabCut/DeepLabCut.git@pytorch_dlc#egg=deeplabcut[wandb]",
     "pyyaml",
     "numpy",
     "spikeinterface",
@@ -71,5 +75,8 @@ full = [
     "statsmodels",
     "scikit-image",
     "cmocean",
-    "deeplabcut"
+    "herdingspikes",
+    "kilosort==4.0.16",
+    "numba"
 ]
+

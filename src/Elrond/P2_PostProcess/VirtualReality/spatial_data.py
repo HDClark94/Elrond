@@ -7,6 +7,18 @@ from astropy.convolution import convolve, Gaussian1DKernel
 import Elrond.Helpers.metadata_extraction as metadata_extraction
 from neuroconv.utils.dict import load_dict_from_file
 from scipy.interpolate import interp1d
+from Elrond.P2_PostProcess.VirtualReality.video import process_video
+
+def run_dlc_vr(recording_path, save_path, **kwargs):
+
+    if kwargs != {}:
+        dlc_data = process_video(recording_path, save_path, 
+                                    pupil_model_path=kwargs["deeplabcut_vr_pupil_model_path"],
+                                    licks_model_path=kwargs["deeplabcut_vr_licks_model_path"]) 
+    else:
+        dlc_data = pd.DataFrame()
+
+    return dlc_data
 
 def read_bonsai_file(bonsai_csv_path):
     bonsai_df = pd.read_csv(bonsai_csv_path, header=None, names=["frame_id", "timestamp", "syncLED", "empty1", "empty2", "empty3"])

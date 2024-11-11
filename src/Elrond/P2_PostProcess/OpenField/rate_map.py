@@ -104,6 +104,80 @@ def rate_map_vectorised(cluster_id, smooth, spike_data, positions_x, positions_y
     return np.transpose(firing_rate_map), np.transpose(occupancies)
 
 
+
+from numba import njit
+
+@njit()
+def get_xy_locs_and_occupancies(smooth, positions_x, positions_y,
+                        number_of_bins_x, number_of_bins_y, bin_size_pixels,min_dwell_distance_pixels):
+
+    smooth_squared = np.power(smooth,2)
+
+    x = np.linspace((bin_size_pixels/2), (bin_size_pixels*number_of_bins_x)-(bin_size_pixels/2), number_of_bins_x)
+    y = np.linspace((bin_size_pixels/2), (bin_size_pixels*number_of_bins_y)-(bin_size_pixels/2), number_of_bins_y)
+
+    occupancies = np.zeros( shape=( x.shape[0], y.shape[0]) )
+    all_xy_locs = np.empty( shape=( x.shape[0], y.shape[0]) )
+
+    for i in range(x.shape[0]):
+        for j in range(y.shape[0]):
+            xn = x[i]
+            yn = y[j]
+        
+            xy_locs = 0
+            for a in range(positions_x.size):
+                temp_loc = np.exp((np.power(xn - positions_x[a],2) + np.power(yn - positions_y[a],2))/(2*smooth_squared) * (-1))
+                if np.isnan(temp_loc) is False:
+                    xy_locs = xy_locs + temp_loc
+                if temp_loc < min_dwell_distance_pixels:
+                    occupancies[i,j] = occupancies[i,j] + 1
+
+            all_xy_locs[i,j] = xy_locs
+
+    return all_xy_locs, occupancies
+
+
+@njit()
+def rate_map_vectorised(spike_positions_x, spike_positions_y, smooth, xy_locs,
+                        number_of_bins_x, number_of_bins_y, bin_size_pixels, min_dwell, occupancies):
+
+    print('calculating a rate map')
+
+    minus_one_over_two_smooth_squared = (-1.0)/(2*np.power(smooth,2))
+
+    x = np.linspace((bin_size_pixels/2), (bin_size_pixels*number_of_bins_x)-(bin_size_pixels/2), number_of_bins_x)
+    y = np.linspace((bin_size_pixels/2), (bin_size_pixels*number_of_bins_y)-(bin_size_pixels/2), number_of_bins_y)
+    
+    firing_rate_map = np.empty( shape=( x.shape[0], y.shape[0]) )
+    num_positions = spike_positions_x.size
+
+    x_exp =  np.empty( shape=( x.shape[0], num_positions) )
+    y_exp =  np.empty( shape=( y.shape[0], num_positions) )
+
+    for a in range(num_positions):
+        for i in range(x.shape[0]):
+            x_exp[i,a] = np.exp(minus_one_over_two_smooth_squared*np.power(x[i] - spike_positions_x[a],2))
+        for j in range(y.shape[0]):
+            y_exp[j,a] = np.exp(minus_one_over_two_smooth_squared*np.power(y[j] - spike_positions_y[a],2))
+        
+
+    for i in range(x.shape[0]):
+        for j in range(y.shape[0]):
+            xy_spikes = 0
+            for a in range(num_positions):
+                temp_loc = x_exp[i,a]*y_exp[j,a]
+                if np.isnan(temp_loc) is False:
+                    xy_spikes = xy_spikes + temp_loc
+            
+            if occupancies[i,j] > min_dwell:
+                firing_rate_map[i,j] = np.divide(xy_spikes,xy_locs[i,j])
+            else:
+                firing_rate_map[i,j] = 0
+
+    return firing_rate_map
+
+
+
 def calculate_rate_maps(spike_data, spatial_data):
     print('I will calculate firing rate maps now.')
     dt_position_ms = spatial_data.synced_time.diff().mean()*1000
@@ -115,17 +189,12 @@ def calculate_rate_maps(spike_data, spatial_data):
     firing_rate_maps = []
     max_firing_rates = []
     occupancy_maps = []
-    for i, cluster_id in enumerate(spike_data["cluster_id"]):
-        if settings.use_vectorised_rate_map_function:
-            firing_rate_map, occupancy_map = rate_map_vectorised(cluster_id, smooth, spike_data, spatial_data.position_x_pixels.values,
-                                                                 spatial_data.position_y_pixels.values, number_of_bins_x, number_of_bins_y, bin_size_pixels,
-                                                                 min_dwell, min_dwell_distance_pixels, dt_position_ms)
-        else:
-            firing_rate_map, occupancy_map = rate_map(cluster_id, smooth, spike_data, spatial_data.position_x_pixels.values,
-                                                      spatial_data.position_y_pixels.values, number_of_bins_x, number_of_bins_y, bin_size_pixels,
-                                                      min_dwell, min_dwell_distance_pixels, dt_position_ms)
+    xy_locs, occupancies = get_xy_locs_and_occupancies(smooth, spatial_data.position_x_pixels.values, spatial_data.position_y_pixels.values, number_of_bins_x, number_of_bins_y, bin_size_pixels,min_dwell_distance_pixels)
+    for _, cluster in spike_data.iterrows():
+        firing_rate_map = rate_map_vectorised(np.array(cluster.position_x_pixels), np.array(cluster.position_y_pixels), smooth, xy_locs,  number_of_bins_x, number_of_bins_y, bin_size_pixels, min_dwell, occupancies)
+
         firing_rate_maps.append(firing_rate_map)
-        occupancy_maps.append(occupancy_map)
+        occupancy_maps.append(occupancies)
         max_firing_rates.append(np.nanmax(firing_rate_map.flatten()))
 
     spike_data['firing_maps'] = firing_rate_maps

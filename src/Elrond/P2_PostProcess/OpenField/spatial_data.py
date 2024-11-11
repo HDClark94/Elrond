@@ -8,7 +8,7 @@ import csv
 import shutil
 import math
 
-
+from Elrond.P2_PostProcess.Shared.dlc import extract_from_dlc
 from pathlib import Path
 from scipy.interpolate import interp1d
 from Elrond.Helpers import math_utility
@@ -231,7 +231,7 @@ def get_position_heatmap(spatial_data,
                 position_heat_map[x, y] = np.nan
     return position_heat_map
 
-
+# TODO: delete this
 def extract_position_from_dlc(recording_path, processed_path, model_path):
     
     import deeplabcut as dlc
@@ -294,7 +294,7 @@ def add_dlc_markers(position_data, dlc_position_data):
     position_data.reset_index(drop=True)
     for i in range(len(position_data)):
         head = (dlc_position_data[('head', 'x')][i], dlc_position_data[('head', 'y')][i])
-        shoulders = (dlc_position_data[('shoulders', 'x')][i], dlc_position_data[('shoulders', 'y')][i])
+        shoulders = (dlc_position_data[('shoulder', 'x')][i], dlc_position_data[('shoulder', 'y')][i])
         left, right = calculate_left_and_right_coordinates(head, shoulders)
         position_data["x_left"].iloc[i] = left[0]
         position_data["y_left"].iloc[i] = left[1]
@@ -302,14 +302,26 @@ def add_dlc_markers(position_data, dlc_position_data):
         position_data["y_right"].iloc[i] = right[1]
     return position_data 
 
-def process_position_data(recording_path, processed_path, **kwargs):
+
+def run_dlc_of(recording_path, save_path, **kwargs):
+
+    avi_paths = [os.path.abspath(os.path.join(recording_path, filename)) for filename in os.listdir(recording_path) if filename.endswith(".avi")]
+    if len(avi_paths)==1 and settings.use_dlc_for_open_field:
+        dlc_position_data = extract_from_dlc(avi_paths[0], save_path, 
+                                                    model_path=kwargs["deeplabcut_of_model_path"])
+    else:
+        dlc_position_data = pd.DataFrame()
+
+    return dlc_position_data
+
+
+def process_position_data(recording_path, dlc_position_data, **kwargs):
+    
     bonsai_position_data = read_bonsai_file(recording_path)
     position_data = proces_bonsai_position(bonsai_position_data)
-    if settings.use_dlc_for_open_field:
-        dlc_position_data = extract_position_from_dlc(recording_path, processed_path, 
-                                                      model_path=kwargs["deeplabcut_of_model_path"])
-        shortest_length = min(len(dlc_position_data), len(position_data))
-        position_data = add_dlc_markers(position_data[:shortest_length], 
+
+    shortest_length = min(len(dlc_position_data), len(position_data))
+    position_data = add_dlc_markers(position_data[:shortest_length], 
                                         dlc_position_data[:shortest_length])
 
     position_data = resample_position_data(position_data, 30) 
