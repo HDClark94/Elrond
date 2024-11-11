@@ -44,6 +44,8 @@ auto_curation_thresholds = [('snr', '>', 1),
 # VR
 
 vr_deeplabcut_project_path = "/mnt/datastore/Harry/deeplabcut/vr-hc-2024-03-14/"
+vr_deeplabcut_pupil_project_path = "/mnt/datastore/Harry/deeplabcut/vr-hc-2024-03-14/"
+vr_deeplabcut_licks_project_path = "/mnt/datastore/Harry/deeplabcut/Mouse_Licks-Harry_Clark-2024-09-10/" 
 #vr_deeplabcut_project_path = ("/run/user/1000/gvfs/smb-share:server=cmvm.datastore.ed.ac.uk,share=cmvm/"
 #                           "sbms/groups/CDBS_SIDB_storage/NolanLab/ActiveProjects/Harry/deeplabcut/vr-hc-2024-03-14")
 vr_bin_size_cm = 1
