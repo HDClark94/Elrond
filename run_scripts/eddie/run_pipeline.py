@@ -249,7 +249,7 @@ def do_behavioural_postprocessing(mouse, day, sorter_name, project_path, data_pa
         elif end_of_name == 'VR':
             vr.process(recording_path, deriv_path + "vr/", **{"sorterName": sorter_name})
         elif end_of_name == 'MCVR1':
-            vr.process(recording_path, deriv_path + "vr_multi_context/", **{"sorterName": sorter_name})
+            vc.process(recording_path, deriv_path + "vr_multi_context/", **{"sorterName": sorter_name})
 
         return
 

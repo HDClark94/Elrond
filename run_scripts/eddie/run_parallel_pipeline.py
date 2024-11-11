@@ -62,7 +62,7 @@ else:
 if sorter_name == "kilosort4":
     run_gpu_python_script(
         elrond_path + "/../../run_scripts/eddie/sort.py " + mouse + " " + day + " " + sorter_name + " " + project_path, 
-        hold_jid = zarr_job_name,
+        hold_jid = zarr_job_name + "vr",
         job_name = sort_job_name,
         )
 else:
