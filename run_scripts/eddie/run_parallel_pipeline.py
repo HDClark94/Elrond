@@ -18,7 +18,10 @@ Path(data_path).mkdir(exist_ok=True)
 stagein_job_name = None
 if len(os.listdir(data_path)) < 3:
     stagein_job_name = f"stagein_M{mouse}_D{day}"
-    stagein_data(mouse, day, project_path, job_name = stagein_job_name)
+    stagein_data(mouse, day, project_path, job_name = stagein_job_name, which_rec=0)
+    if len(os.listdir(data_path)) > 2:
+        stagein_data(mouse, day, project_path, job_name = stagein_job_name, which_rec=1)
+        stagein_data(mouse, day, project_path, job_name = stagein_job_name, which_rec=2)
 
 mouseday_string = "M" + mouse + "_" + day + "_"
 
@@ -32,11 +35,29 @@ of2_job_name = mouseday_string + "2dlc"
 behaviour_job_name = mouseday_string + "behave"
 
 # Now run full pipeline on eddie
-run_python_script(
-    elrond_path + "/../../run_scripts/eddie/zarr_time.py " + mouse + " " + day + " " + sorter_name + " " + project_path, 
-    hold_jid = stagein_job_name,
-    job_name = zarr_job_name,
-    )
+
+if len(os.listdir(data_path)) > 2:
+        run_python_script(
+        elrond_path + "/../../run_scripts/eddie/zarr_of1.py " + mouse + " " + day + " " + sorter_name + " " + project_path, 
+        hold_jid = stagein_job_name,
+        job_name = zarr_job_name + "of1",
+        )
+        run_python_script(
+        elrond_path + "/../../run_scripts/eddie/zarr_of2.py " + mouse + " " + day + " " + sorter_name + " " + project_path, 
+        hold_jid = stagein_job_name,
+        job_name = zarr_job_name + "of2",
+        )
+        run_python_script(
+        elrond_path + "/../../run_scripts/eddie/zarr_vr.py " + mouse + " " + day + " " + sorter_name + " " + project_path, 
+        hold_jid = stagein_job_name,
+        job_name = zarr_job_name + "vr",
+        )
+else:
+    run_python_script(
+        elrond_path + "/../../run_scripts/eddie/zarr_time.py " + mouse + " " + day + " " + sorter_name + " " + project_path, 
+        hold_jid = stagein_job_name,
+        job_name = zarr_job_name,
+        )
 
 if sorter_name == "kilosort4":
     run_gpu_python_script(

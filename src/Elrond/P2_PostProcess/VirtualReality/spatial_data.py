@@ -7,9 +7,10 @@ from astropy.convolution import convolve, Gaussian1DKernel
 import Elrond.Helpers.metadata_extraction as metadata_extraction
 from neuroconv.utils.dict import load_dict_from_file
 from scipy.interpolate import interp1d
-from Elrond.P2_PostProcess.VirtualReality.video import process_video
 
 def run_dlc_vr(recording_path, save_path, **kwargs):
+
+    from Elrond.P2_PostProcess.VirtualReality.video import process_video
 
     if kwargs != {}:
         dlc_data = process_video(recording_path, save_path, 

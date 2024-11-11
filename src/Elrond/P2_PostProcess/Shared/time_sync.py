@@ -290,7 +290,7 @@ def get_ttl_pulse_array_in_ADC_channel(recording_path):
 # Note: we'll need to change this when we switch to full zarr
 def get_downsampled_ttl_pulse_array(recording_path, spatial_data, ephys_sampling_freq=30000):
 
-    if Path((channel_sync_path := recording_path / "channel_sync.zarr")).exists():
+    if Path((channel_sync_path := (recording_path + "channel_sync.zarr"))).exists():
         recording = si.read_zarr(channel_sync_path)
         raw_sync_data = recording.get_traces()
     else:

@@ -78,15 +78,17 @@ def save_spikes_to_dataframe(sorters, quality_metrics,
         # new_spike_data = new_spike_data.merge(quality_metrics, on='cluster_id')
 
         pkl_folder = processed_path + sorterName + "/"
-        print(pkl_folder)
         Path(pkl_folder).mkdir(parents=True, exist_ok=True)
         print("I am saving the spike dataframe for ", recording_path, " in ", pkl_folder)
         new_spike_data.to_pickle(pkl_folder + "spikes.pkl")
 
-def save_spikes_per_session(sorting, sorter_name, zarr_for_sorting_paths, deriv_path):
+def save_spikes_per_session(sorting, sorter_name, zarr_for_sorting_paths, deriv_path, vr_multi_context=False):
 
-    of1_path, of2_path, vr_path = [deriv_path + ["of1/", "of2/", "vr/"][a] for a in range(3)]
-    
+    if vr_multi_context is False:
+        output_paths = [deriv_path + ["of1/", "of2/", "vr/"][a] for a in range(3)]
+    else:
+        output_paths = ['vr_multi_context/']
+
     recordings = [si.load_extractor(sorting_path +".zarr") for sorting_path in zarr_for_sorting_paths]
     rec_samples = [recording.get_total_samples() for recording in recordings]
     
@@ -98,7 +100,7 @@ def save_spikes_per_session(sorting, sorter_name, zarr_for_sorting_paths, deriv_
     sorters = [sorting.frame_slice(start_frame=cum_rec_samples[a],
                                    end_frame=cum_rec_samples[a+1] ) for a in
                range(len(rec_samples))] # get list of sorters
-    save_spikes_to_dataframe(sorters, None, rec_samples, [deriv_path, deriv_path, deriv_path], [of1_path, vr_path, of2_path], sorter_name)
+    save_spikes_to_dataframe(sorters, None, rec_samples, [deriv_path]*len(zarr_for_sorting_paths), output_paths, sorter_name)
 
     return 
 
@@ -129,8 +131,10 @@ def do_sorting(recording_paths, sorter_name, sorter_path, deriv_path, sorter_kwa
     )
     sorting = si.remove_excess_spikes(recording=recording_for_sort, sorting=sorting)
     
+    vr_multi_context = str(recording_paths[0]).split("_")[-1] == 'vr_multi_context'
+
     try:
-        save_spikes_per_session(sorting, sorter_name, recording_paths, deriv_path)
+        save_spikes_per_session(sorting, sorter_name, recording_paths, deriv_path, vr_multi_context=vr_multi_context)
     except:
         print("Couldn't save spikes.pkl file for of1, vr, of2 experiment.")
     

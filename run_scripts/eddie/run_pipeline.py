@@ -13,6 +13,7 @@ from Elrond.P1_SpikeSort.spikesort import do_sorting, compute_sorting_analyzer
 
 import Elrond.P2_PostProcess.VirtualReality.vr as vr
 import Elrond.P2_PostProcess.OpenField.of as of
+import Elrond.P2_PostProcess.ABOVisualCoding.of as vc
 from Elrond.P2_PostProcess.OpenField.spatial_data import run_dlc_of
 from Elrond.P2_PostProcess.VirtualReality.spatial_data import run_dlc_vr
 from Elrond.P1_SpikeSort.defaults import pp_pipelines_dict
@@ -118,7 +119,7 @@ def do_spikesort_postprocessing(mouse, day, sorter_name, project_path, pp_for_so
     Path(deriv_path).mkdir(exist_ok=True, parents=True)
     if zarr_folder is None:
         zarr_folder = deriv_path + f"full/{sorter_name}/zarr_recordings/"
-    zarr_for_sorting_paths = [f"{zarr_folder}/zarr_for_sorting_{a}" for a in range(num_recordings)]
+    zarr_for_sorting_paths = [f"{zarr_folder}/zarr_for_sorting_{a}.zarr" for a in range(num_recordings)]
 
     if pp_for_sorting is None:
         pp_for_sorting = pp_pipelines_dict[sorter_name]["sort"]
@@ -128,7 +129,7 @@ def do_spikesort_postprocessing(mouse, day, sorter_name, project_path, pp_for_so
     if pp_for_sorting == pp_for_post:
         zarr_for_post_paths = zarr_for_sorting_paths
     else:
-        zarr_for_post_paths = [f"{zarr_folder}/zarr_for_post_{a}" for a in range(num_recordings)]
+        zarr_for_post_paths = [f"{zarr_folder}/zarr_for_post_{a}.zarr" for a in range(num_recordings)]
     if sorter_path is None:
         sorter_path = deriv_path + f"full/{sorter_name}/" + sorter_name + "_sorting/"
     if sa_path is None:
@@ -248,7 +249,7 @@ def do_behavioural_postprocessing(mouse, day, sorter_name, project_path, data_pa
         elif end_of_name == 'VR':
             vr.process(recording_path, deriv_path + "vr/", **{"sorterName": sorter_name})
         elif end_of_name == 'MCVR1':
-            print('I need to process the visual something whatnot')
+            vr.process(recording_path, deriv_path + "vr_multi_context/", **{"sorterName": sorter_name})
 
         return
 

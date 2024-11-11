@@ -140,15 +140,19 @@ def run_stageout_script(stageout_dict, script_file_path=None, hold_jid=None, job
 
     return 
 
-def run_stagein_script(stagein_dict, script_file_path=None, job_name = None):
+def run_stagein_script(stagein_dict, script_file_path=None, job_name = None, hold_jid=None):
     """
     makes a stage in script from a stageout_dict of the form
     {'path/to/file/on/datastore': 'path/to/destination/on/eddie'}
     """
+
+    if hold_jid is not None:
+        hold_script = f" -hold_jid {hold_jid}"
+
     script_text="""#!/bin/sh
 #$ -cwd
 #$ -q staging
-#$ -l h_rt=00:59:59\n"""
+#$ -l h_rt=00:59:59{hold_script}\n"""
 
     if job_name is not None:
         script_text += "#$ -N " + job_name + "\n" 
@@ -160,7 +164,7 @@ def run_stagein_script(stagein_dict, script_file_path=None, job_name = None):
 
     return 
 
-def stagein_data(mouse, day, project_path, job_name=None):
+def stagein_data(mouse, day, project_path, job_name=None, which_rec=None):
 
     filenames_path = project_path + f"data/M{mouse}_D{day}/data_folder_names.txt"
 
@@ -176,6 +180,10 @@ def stagein_data(mouse, day, project_path, job_name=None):
     # TODO: delete this comment
     #folder_names = [path_on_datastore.split('/')[-1] + "/" for path_on_datastore in paths_on_datastore]
     dest_on_eddie = [project_path + f"data/M{mouse}_D{day}/" ]*len(paths_on_datastore)
+
+    if which_rec == 0 or which_rec == 1 or which_rec == 2:
+        paths_on_datastore = [paths_on_datastore[which_rec]]
+        dest_on_eddie = [dest_on_eddie[which_rec]]
 
     stagein_dict = dict(zip(paths_on_datastore, dest_on_eddie))
 
