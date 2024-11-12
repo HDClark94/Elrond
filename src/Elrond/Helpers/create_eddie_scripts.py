@@ -49,6 +49,7 @@ def make_run_python_script(python_arg, venv=None, cores=None, email=None, h_rt=N
 source /etc/profile.d/modules.sh
 module load anaconda
 conda activate {venv}
+module load uge
 python {python_arg}"""
     
     return script_content
@@ -81,6 +82,7 @@ def make_gpu_python_script(python_arg,  job_name=None, h_rt=None, hold_jid=None,
 source /etc/profile.d/modules.sh
 module load anaconda
 conda activate elrond
+module load uge
 python {python_arg}"""
 
     return script_content
