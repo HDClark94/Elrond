@@ -24,7 +24,7 @@ with open(filenames_path) as f:
 
 stagein_job_name = f"stagein_M{mouse}_D{day}"
 for a, path in enumerate(paths_on_datastore):
-    stagein_data(mouse, day, project_path, job_name = stagein_job_name+str(a), which_rec=a)
+    stagein_data(mouse, day, project_path, job_name = stagein_job_name + "_" + str(a), which_rec=a)
 
 mouseday_string = "M" + mouse + "_" + day + "_"
 
@@ -42,23 +42,23 @@ behaviour_job_name = mouseday_string + "behave"
 if len(paths_on_datastore) == 3:
         run_python_script(
         elrond_path + "/../../run_scripts/eddie/zarr_of1.py " + mouse + " " + day + " " + sorter_name + " " + project_path, 
-        hold_jid = stagein_job_name + '0',
+        hold_jid = stagein_job_name + '_0',
         job_name = zarr_job_name + "of1",
         )
         run_python_script(
         elrond_path + "/../../run_scripts/eddie/zarr_of2.py " + mouse + " " + day + " " + sorter_name + " " + project_path, 
-        hold_jid = stagein_job_name + '2',
+        hold_jid = stagein_job_name + '_2',
         job_name = zarr_job_name + "of2",
         )
         run_python_script(
         elrond_path + "/../../run_scripts/eddie/zarr_vr.py " + mouse + " " + day + " " + sorter_name + " " + project_path, 
-        hold_jid = stagein_job_name + '1',
+        hold_jid = stagein_job_name + '_1',
         job_name = zarr_job_name,
         )
 else:
     run_python_script(
         elrond_path + "/../../run_scripts/eddie/zarr_time.py " + mouse + " " + day + " " + sorter_name + " " + project_path, 
-        hold_jid = stagein_job_name + '0',
+        hold_jid = stagein_job_name + '_0,'+stagein_job_name + '_1,'+stagein_job_name + '_2',
         job_name = zarr_job_name,
         )
 
