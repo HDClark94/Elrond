@@ -84,7 +84,7 @@ run_python_script(
 # Run theta phase
 run_python_script(
     elrond_path + "/../../run_scripts/eddie/run_theta_phase.py " + mouse + " " + day + " " + project_path,
-    hold_jid = stagein_job_name,
+    hold_jid = stagein_job_name + "_0",
     job_name = theta_job_name,
     cores=3,
     )
@@ -92,14 +92,14 @@ run_python_script(
 # Run DLC on of1
 run_python_script(
     elrond_path + "/../../run_scripts/eddie/dlc_of1.py " + mouse + " " + day + " " + sorter_name + " " + project_path, 
-    hold_jid = stagein_job_name,
+    hold_jid = stagein_job_name + "_0",
     job_name = of1_job_name,
     )
 
 # Run DLC on of2
 run_python_script(
     elrond_path + "/../../run_scripts/eddie/dlc_of2.py " + mouse + " " + day + " " + sorter_name + " " + project_path, 
-    hold_jid = stagein_job_name,
+    hold_jid = stagein_job_name+ "_2",
     job_name = of2_job_name,
     )
 
