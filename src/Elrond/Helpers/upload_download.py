@@ -43,6 +43,9 @@ def get_recording_folders(cohort_folder, mouse, day):
 
     elif len(list(Path(data_path).glob(f"*M{mouse}_D{day}"))) > 0:
         recording_folders = list(Path(data_path + f"M{mouse}_D{day}/").glob("*/"))
+    
+    for a, recording_folder in enumerate(recording_folders):
+        recording_folders[a] = str(recording_folder)
 
     return recording_folders
 
