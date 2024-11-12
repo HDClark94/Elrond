@@ -75,7 +75,7 @@ def make_gpu_python_script(python_arg,  job_name=None, h_rt=None, hold_jid=None,
         hold_script = ""
 
     if h_rt is None:
-        h_rt = "0:59:59"
+        h_rt = "1:59:59"
 
     script_content = f"""#!/bin/bash
 #$ -cwd -q gpu -pe gpu-a100 1 -l rl9=true,h_vmem=30G,h_rt={h_rt}{hold_script}{email_script}{name_script}
