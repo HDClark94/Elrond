@@ -191,6 +191,9 @@ def do_sorting_pipeline(mouse, day, sorter_name, project_path, pp_for_sorting=No
     if report_path is None:
         report_path = deriv_path + f"full/{sorter_name}/" + sorter_name + "_report/"
 
+    do_zarrs(mouse, day, sorter_name, project_path, pp_for_sorting, pp_for_post, data_path, deriv_path, zarr_folder, recording_paths, sorter_path, sa_path, report_path, session_names)
+    do_just_sorting
+    do_spikesort_postprocessing
     
 def do_dlc_pipeline(mouse, day, project_path, dlc_of_model_path=None, dlc_vr_model_path =
                     None, data_path = None, recording_paths=None,
