@@ -105,7 +105,7 @@ def save_spikes_per_session(sorting, sorter_name, zarr_for_sorting_paths, deriv_
     return 
 
 
-def do_sorting(recording_paths, sorter_name, sorter_path, deriv_path, sorter_kwargs=None):
+def do_sorting(recording_paths, sorter_name, sorter_path, deriv_path, sorter_kwargs=None, vr_multi_context=False):
     """
     Does a spike sorting for all paths in `recording_paths`. These recordings should already
     have been preprocessed. The recordings are concatenated together. The spike trains are saved
@@ -131,8 +131,6 @@ def do_sorting(recording_paths, sorter_name, sorter_path, deriv_path, sorter_kwa
     )
     sorting = si.remove_excess_spikes(recording=recording_for_sort, sorting=sorting)
     
-    vr_multi_context = str(recording_paths[0]).split("_")[-1] == 'vr_multi_context'
-
     try:
         save_spikes_per_session(sorting, sorter_name, recording_paths, deriv_path, vr_multi_context=vr_multi_context)
     except:

@@ -14,8 +14,10 @@ else:
 of_paths = [data_path + "of/" + s for s in os.listdir(data_path + "of/") if str(mouse)+"_D"+str(day) in s]
 vr_paths = [data_path + "vr/" + s for s in os.listdir(data_path + "vr/") if str(mouse)+"_D"+str(day) in s] 
 vr_multi_context_paths = [data_path + "vr_multi_context/" + s for s in os.listdir(data_path + "vr_multi_context/") if str(mouse)+"_D"+str(day) in s]
+abo_paths = [data_path + "allen_brain_observatory_visual_coding/" + s for s in os.listdir(data_path + "allen_brain_observatory_visual_coding/") if str(mouse)+"_D"+str(day) in s]
 
-recording_paths = of_paths + vr_paths + vr_multi_context_paths
+
+recording_paths = of_paths + vr_paths + vr_multi_context_paths + abo_paths
 data_path_on_eddie = project_path + "data/M" + mouse + "_D" + day + "/"
 Path(data_path_on_eddie).mkdir(exist_ok=True)
 

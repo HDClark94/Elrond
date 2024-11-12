@@ -108,8 +108,11 @@ def do_just_sorting(mouse, day, sorter_name, project_path, pp_for_sorting=None, 
 
     if sorter_path is None:
         sorter_path = deriv_path + f"full/{sorter_name}/" + sorter_name + "_sorting/"
-    
-    do_sorting(zarr_for_sorting_paths, sorter_name, sorter_path, deriv_path)
+
+    if num_recordings == 2:
+        vr_multi_context = True
+  
+    do_sorting(zarr_for_sorting_paths, sorter_name, sorter_path, deriv_path, vr_multi_context=vr_multi_context)
 
 
 def do_spikesort_postprocessing(mouse, day, sorter_name, project_path, pp_for_sorting=None, pp_for_post=None, data_path=None, deriv_path=None, zarr_folder=None, recording_paths=None, sorter_path=None, sa_path=None, report_path=None):
