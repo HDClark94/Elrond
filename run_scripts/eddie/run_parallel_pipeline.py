@@ -22,15 +22,16 @@ filenames_path = project_path + f"data/M{mouse}_D{day}/data_folder_names.txt"
     
 stagein_job_name = f"stagein_M{mouse}_D{day}"
 
-stagein_data(mouse, day, project_path, job_name = stagein_job_name + "_" + str(0), which_rec=0)
-with open(filenames_path) as f:
-    paths_on_datastore = f.read().splitlines()
+if len(os.listdir(data_path)) < 2:
+    stagein_data(mouse, day, project_path, job_name = stagein_job_name + "_" + str(0), which_rec=0)
+    with open(filenames_path) as f:
+        paths_on_datastore = f.read().splitlines()
 
-for a, path in enumerate(paths_on_datastore):
-    if a == 0:
-        continue
-    else:
-        stagein_data(mouse, day, project_path, job_name = stagein_job_name + "_" + str(a), which_rec=a)
+    for a, path in enumerate(paths_on_datastore):
+        if a == 0:
+            continue
+        else:
+            stagein_data(mouse, day, project_path, job_name = stagein_job_name + "_" + str(a), which_rec=a)
 
 mouseday_string = "M" + mouse + "_" + day + "_"
 
