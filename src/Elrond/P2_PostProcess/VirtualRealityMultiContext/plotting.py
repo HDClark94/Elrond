@@ -7,8 +7,8 @@ from scipy import stats
 import matplotlib.ticker as ticker
 import Elrond.settings as settings
 from astropy.nddata import block_reduce
-from Helpers import plot_utility
-from Helpers.array_utility import pandas_collumn_to_2d_numpy_array
+from Elrond.Helpers import plot_utility
+from Elrond.Helpers.array_utility import pandas_collumn_to_2d_numpy_array
 from astropy.convolution import convolve, Gaussian1DKernel
 from Elrond.P3_CurrentAnalysis.basic_lomb_scargle_estimator import lomb_scargle, distance_from_integer, frequency
  
