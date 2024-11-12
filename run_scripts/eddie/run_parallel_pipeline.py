@@ -19,8 +19,9 @@ paths_on_datastore = []
 stagein_job_name = None
 
 filenames_path = project_path + f"data/M{mouse}_D{day}/data_folder_names.txt"
-with open(filenames_path) as f:
-    paths_on_datastore = f.read().splitlines()
+if os.path.exists(filenames_path):
+    with open(filenames_path) as f:
+        paths_on_datastore = f.read().splitlines()
 
 stagein_job_name = f"stagein_M{mouse}_D{day}"
 for a, path in enumerate(paths_on_datastore):
