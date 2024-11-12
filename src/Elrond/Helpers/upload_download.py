@@ -60,6 +60,26 @@ def this_is_zarr(recording_folder):
 
     return zarr_recording
 
+def get_session_names(raw_recording_paths):
+
+    session_names = []
+    for recording_path in raw_recording_paths:
+        end_of_name = str(recording_path).split("_")[-1]
+        if end_of_name == 'OF1':
+            session_names.append('of1')
+        elif end_of_name == 'OF2':
+            session_names.append('of2')
+        elif end_of_name == 'VR':
+            session_names.append('vr')
+        elif end_of_name in ['MCVR1', 'MCVR']:
+            session_names.append('vr_multi_context')
+        elif end_of_name in ['IM', 'IMSEQ', 'IM1']:
+            session_names.append('allen_brain_observatory_visual_coding')
+        else:
+            raise Exception("Don't know session type")
+        
+    return session_names
+
 def get_recording_from(recording_folder):
 
     if this_is_zarr(recording_folder):

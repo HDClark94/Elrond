@@ -4,7 +4,7 @@ import pandas as pd
 import spikeinterface.full as si
 
 from Elrond.P1_SpikeSort.plotting import plot_simple_np_probe_layout
-from Elrond.Helpers.upload_download import get_chronologized_recording_paths
+from Elrond.Helpers.upload_download import get_chronologized_recording_paths, get_session_names
 from Elrond.Helpers.zarr import make_zarrs, delete_zarrs
 
 from Elrond.P1_SpikeSort.spikesort import read_grouped_sorting
@@ -14,6 +14,7 @@ from Elrond.P1_SpikeSort.spikesort import do_sorting, compute_sorting_analyzer
 import Elrond.P2_PostProcess.VirtualReality.vr as vr
 import Elrond.P2_PostProcess.OpenField.of as of
 import Elrond.P2_PostProcess.ABOVisualCoding.visual_coding as vc
+import Elrond.P2_PostProcess.VirtualRealityMultiContext.vrmc as vrmc
 from Elrond.P2_PostProcess.OpenField.spatial_data import run_dlc_of
 from Elrond.P2_PostProcess.VirtualReality.spatial_data import run_dlc_vr
 from Elrond.P1_SpikeSort.defaults import pp_pipelines_dict
@@ -50,12 +51,12 @@ from Elrond.P2_PostProcess.Shared.theta_phase import compute_channel_theta_phase
 #               behavioural data
 
 
-def do_zarrs(mouse, day, sorter_name, project_path, pp_for_sorting=None, pp_for_post=None, data_path=None, deriv_path=None, zarr_folder=None, recording_paths=None, sorter_path=None, sa_path=None, report_path=None, zarr_number=None):
+def do_zarrs(mouse, day, sorter_name, project_path, pp_for_sorting=None, pp_for_post=None, data_path=None, deriv_path=None, zarr_folder=None, recording_paths=None, sorter_path=None, sa_path=None, report_path=None, zarr_number=None, session_names=None):
 
     if data_path is None:
         data_path = project_path + f"data/M{mouse}_D{day}/"
     if recording_paths is None:
-        recording_paths = [data_path+"of1/", data_path+"vr/", data_path+"of2/"]
+        recording_paths = [data_path + f"{session_name}/" for session_name in session_names]
 
     num_recordings = len(recording_paths)
 
@@ -88,12 +89,12 @@ def do_zarrs(mouse, day, sorter_name, project_path, pp_for_sorting=None, pp_for_
     make_zarrs(recording_paths, zarr_for_sorting_paths, zarr_for_post_paths, pp_for_sorting, pp_for_post)
 
 
-def do_just_sorting(mouse, day, sorter_name, project_path, pp_for_sorting=None, pp_for_post=None, data_path=None, deriv_path=None, zarr_folder=None, recording_paths=None, sorter_path=None, sa_path=None, report_path=None):
+def do_just_sorting(mouse, day, sorter_name, project_path, pp_for_sorting=None, pp_for_post=None, data_path=None, deriv_path=None, zarr_folder=None, recording_paths=None, sorter_path=None, sa_path=None, report_path=None, session_names=None):
 
     if data_path is None:
         data_path = project_path + f"data/M{mouse}_D{day}/"
     if recording_paths is None:
-        recording_paths = [data_path+"of1/", data_path+"vr/", data_path+"of2/"]
+        recording_paths = [data_path + f"{session_name}/" for session_name in session_names]
 
     num_recordings = len(recording_paths)
 
@@ -108,20 +109,17 @@ def do_just_sorting(mouse, day, sorter_name, project_path, pp_for_sorting=None, 
 
     if sorter_path is None:
         sorter_path = deriv_path + f"full/{sorter_name}/" + sorter_name + "_sorting/"
-
-    if num_recordings == 2:
-        vr_multi_context = True
   
-    do_sorting(zarr_for_sorting_paths, sorter_name, sorter_path, deriv_path, vr_multi_context=vr_multi_context)
+    do_sorting(zarr_for_sorting_paths, sorter_name, sorter_path, deriv_path, session_names=session_names)
 
 
-def do_spikesort_postprocessing(mouse, day, sorter_name, project_path, pp_for_sorting=None, pp_for_post=None, data_path=None, deriv_path=None, zarr_folder=None, recording_paths=None, sorter_path=None, sa_path=None, report_path=None):
+def do_spikesort_postprocessing(mouse, day, sorter_name, project_path, pp_for_sorting=None, pp_for_post=None, data_path=None, deriv_path=None, zarr_folder=None, recording_paths=None, sorter_path=None, sa_path=None, report_path=None, session_names=None):
 
 
     if data_path is None:
         data_path = project_path + f"data/M{mouse}_D{day}/"
     if recording_paths is None:
-        recording_paths = [data_path+"of1/", data_path+"vr/", data_path+"of2/"]
+        recording_paths = [data_path + f"{session_name}/" for session_name in session_names]
 
     num_recordings = len(recording_paths)
 
@@ -157,7 +155,7 @@ def do_spikesort_postprocessing(mouse, day, sorter_name, project_path, pp_for_so
     delete_zarrs(zarr_for_sorting_paths, zarr_for_post_paths)
 
 
-def do_sorting_pipeline(mouse, day, sorter_name, project_path, pp_for_sorting=None, pp_for_post=None, data_path=None, deriv_path=None, zarr_folder=None, recording_paths=None, sorter_path=None, sa_path=None, report_path=None):
+def do_sorting_pipeline(mouse, day, sorter_name, project_path, pp_for_sorting=None, pp_for_post=None, data_path=None, deriv_path=None, zarr_folder=None, recording_paths=None, sorter_path=None, sa_path=None, report_path=None, session_names=None):
     """
     Do everything related to sorting.
     Start with raw data, end with a sorting_analyzer.
@@ -166,7 +164,7 @@ def do_sorting_pipeline(mouse, day, sorter_name, project_path, pp_for_sorting=No
     if data_path is None:
         data_path = project_path + f"data/M{mouse}_D{day}/"
     if recording_paths is None:
-        recording_paths = [data_path+"of1/", data_path+"vr/", data_path+"of2/"]
+        recording_paths = [data_path + f"{session_name}/" for session_name in session_names]
 
     num_recordings = len(recording_paths)
 
@@ -194,8 +192,6 @@ def do_sorting_pipeline(mouse, day, sorter_name, project_path, pp_for_sorting=No
         report_path = deriv_path + f"full/{sorter_name}/" + sorter_name + "_report/"
 
     
-
-
 def do_dlc_pipeline(mouse, day, project_path, dlc_of_model_path=None, dlc_vr_model_path =
                     None, data_path = None, recording_paths=None,
                     of1_save_path=None, of2_save_path=None, vr_save_path=None, do_of1=True, do_of2=True, do_vr=True):
@@ -230,7 +226,7 @@ def do_dlc_pipeline(mouse, day, project_path, dlc_of_model_path=None, dlc_vr_mod
 
 def do_behavioural_postprocessing(mouse, day, sorter_name, project_path, data_path=None,
                       recording_paths=None, deriv_path=None, of1_dlc_folder=None,
-                      of2_dlc_folder=None):
+                      of2_dlc_folder=None, session_names=None):
     """
     Do everything related to behaviour, including combining spike and behaviour data.
     Start with the output of do_sorting_pipeline and do_dlc_pipeline, end with Figures and scores.
@@ -239,7 +235,7 @@ def do_behavioural_postprocessing(mouse, day, sorter_name, project_path, data_pa
     if data_path is None:
         data_path = project_path + f"data/M{mouse}_D{day}/"
     if recording_paths is None:
-        recording_paths = [data_path+"of1/", data_path+"vr/", data_path+"of2/"]
+        recording_paths = [data_path + f"{session_name}/" for session_name in session_names]
     if deriv_path is None:
         deriv_path = f"{project_path}derivatives/M{mouse}/D{day}/"
     if of1_dlc_folder is None:
@@ -247,20 +243,23 @@ def do_behavioural_postprocessing(mouse, day, sorter_name, project_path, data_pa
     if of2_dlc_folder is None:
         of2_dlc_folder = deriv_path + "of2/dlc/"
 
-    for recording_path in recording_paths:
-        end_of_name = str(recording_path).split("_")[-1]
-        if end_of_name == 'OF1':
+    for a, recording_path in enumerate(recording_paths):
+        session_name = session_names[a]
+        save_path = deriv_path + f"session_name/"
+        if session_name == 'of1':
             of1_dlc_csv_path = list(Path(of1_dlc_folder).glob("*200_filtered.csv"))[0]
             of1_dlc_data = pd.read_csv(of1_dlc_csv_path, header=[1, 2], index_col=0) 
-            of.process(recording_path, deriv_path + "of1/" , of1_dlc_data, **{"sorterName": sorter_name})
-        elif end_of_name == 'OF2':
+            of.process(recording_path, save_path , of1_dlc_data, **{"sorterName": sorter_name})
+        elif session_name == 'of2':
             of2_dlc_csv_path = list(Path(of2_dlc_folder).glob("*200_filtered.csv"))[0]
             of2_dlc_data = pd.read_csv(of2_dlc_csv_path, header=[1, 2], index_col=0) 
-            of.process(recording_path, deriv_path + "of2/" , of2_dlc_data, **{"sorterName": sorter_name})
-        elif end_of_name == 'VR':
-            vr.process(recording_path, deriv_path + "vr/", **{"sorterName": sorter_name})
-        elif end_of_name == 'MCVR1':
-            vc.process(recording_path, deriv_path + "vr_multi_context/", **{"sorterName": sorter_name})
+            of.process(recording_path, save_path , of2_dlc_data, **{"sorterName": sorter_name})
+        elif session_name == 'vr':
+            vr.process(recording_path, save_path, **{"sorterName": sorter_name})
+        elif session_name == 'vr_multi_context':
+            vrmc.process(recording_path, save_path, **{"sorterName": sorter_name})
+        elif session_name == 'allen_brain_observatory_visual_coding':
+            vc.process(recording_path, save_path, **{"sorterName": sorter_name})
 
         return
 
@@ -284,6 +283,7 @@ if __name__ == "__main__":
     project_path = sys.argv[4]
 
     raw_recording_paths = get_chronologized_recording_paths(project_path, mouse, day)
-    do_sorting_pipeline(mouse, day, sorter_name, project_path, recording_paths = raw_recording_paths)
-    do_dlc_pipeline(mouse, day, project_path, dlc_of_model_path = project_path + "derivatives/dlc_models/of_cohort12-krs-2024-10-30/", recording_paths = raw_recording_paths)
-    do_behavioural_postprocessing(mouse, day, sorter_name, project_path, recording_paths = raw_recording_paths)
+    session_names = get_session_names(raw_recording_paths)
+    do_sorting_pipeline(mouse, day, sorter_name, project_path, recording_paths = raw_recording_paths, session_names=session_names)
+    do_dlc_pipeline(mouse, day, project_path, dlc_of_model_path = project_path + "derivatives/dlc_models/of_cohort12-krs-2024-10-30/", recording_paths = raw_recording_paths, session_names=session_names)
+    do_behavioural_postprocessing(mouse, day, sorter_name, project_path, recording_paths = raw_recording_paths, session_names=session_names)

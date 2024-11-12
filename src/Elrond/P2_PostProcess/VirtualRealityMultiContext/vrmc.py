@@ -3,6 +3,7 @@ from ..VirtualReality.behaviour_from_ADC_channels import *
 from ..VirtualReality.spatial_firing import *
 from ..VirtualReality.video import *
 from .plotting import *
+
 def process(recording_path, processed_path, **kwargs):
     track_length = get_track_length(recording_path)
     stop_threshold = get_stop_threshold(recording_path)

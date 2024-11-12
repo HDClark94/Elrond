@@ -82,12 +82,10 @@ def save_spikes_to_dataframe(sorters, quality_metrics,
         print("I am saving the spike dataframe for ", recording_path, " in ", pkl_folder)
         new_spike_data.to_pickle(pkl_folder + "spikes.pkl")
 
-def save_spikes_per_session(sorting, sorter_name, zarr_for_sorting_paths, deriv_path, vr_multi_context=False):
+def save_spikes_per_session(sorting, sorter_name, zarr_for_sorting_paths, deriv_path, session_names=None):
 
-    if vr_multi_context is False:
-        output_paths = [deriv_path + ["of1/", "of2/", "vr/"][a] for a in range(3)]
-    else:
-        output_paths = ['vr_multi_context/']
+    
+    output_paths = [deriv_path + f"{session_name}/" for session_name in session_names]
 
     recordings = [si.load_extractor(sorting_path +".zarr") for sorting_path in zarr_for_sorting_paths]
     rec_samples = [recording.get_total_samples() for recording in recordings]
@@ -105,7 +103,7 @@ def save_spikes_per_session(sorting, sorter_name, zarr_for_sorting_paths, deriv_
     return 
 
 
-def do_sorting(recording_paths, sorter_name, sorter_path, deriv_path, sorter_kwargs=None, vr_multi_context=False):
+def do_sorting(recording_paths, sorter_name, sorter_path, deriv_path, sorter_kwargs=None, vr_multi_context=False, session_names = None):
     """
     Does a spike sorting for all paths in `recording_paths`. These recordings should already
     have been preprocessed. The recordings are concatenated together. The spike trains are saved
@@ -132,9 +130,9 @@ def do_sorting(recording_paths, sorter_name, sorter_path, deriv_path, sorter_kwa
     sorting = si.remove_excess_spikes(recording=recording_for_sort, sorting=sorting)
     
     try:
-        save_spikes_per_session(sorting, sorter_name, recording_paths, deriv_path, vr_multi_context=vr_multi_context)
+        save_spikes_per_session(sorting, sorter_name, recording_paths, deriv_path, session_names)
     except:
-        print("Couldn't save spikes.pkl file for of1, vr, of2 experiment.")
+        print("Couldn't save spikes.pkl files.")
     
     return sorting
 
