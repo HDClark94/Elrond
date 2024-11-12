@@ -15,11 +15,15 @@ data_path = project_path + f"data/M{mouse}_D{day}"
 Path(data_path).mkdir(exist_ok=True)
 
 # check if raw recordings are on eddie. If not, stage them
+paths_on_datastore = []
 stagein_job_name = None
 if len(os.listdir(data_path)) < 3:
     stagein_job_name = f"stagein_M{mouse}_D{day}"
     stagein_data(mouse, day, project_path, job_name = stagein_job_name, which_rec=0)
-    if len(os.listdir(data_path)) > 2:
+    filenames_path = project_path + f"data/M{mouse}_D{day}/data_folder_names.txt"
+    with open(filenames_path) as f:
+        paths_on_datastore = f.read().splitlines()
+    if len(paths_on_datastore) == 3:
         stagein_data(mouse, day, project_path, job_name = stagein_job_name, which_rec=1)
         stagein_data(mouse, day, project_path, job_name = stagein_job_name, which_rec=2)
 
@@ -36,7 +40,7 @@ behaviour_job_name = mouseday_string + "behave"
 
 # Now run full pipeline on eddie
 
-if len(os.listdir(data_path)) > 2:
+if len(paths_on_datastore) == 3:
         run_python_script(
         elrond_path + "/../../run_scripts/eddie/zarr_of1.py " + mouse + " " + day + " " + sorter_name + " " + project_path, 
         hold_jid = stagein_job_name,
