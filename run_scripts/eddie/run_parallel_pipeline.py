@@ -17,15 +17,14 @@ Path(data_path).mkdir(exist_ok=True)
 # check if raw recordings are on eddie. If not, stage them
 paths_on_datastore = []
 stagein_job_name = None
-if len(os.listdir(data_path)) < 3:
-    stagein_job_name = f"stagein_M{mouse}_D{day}"
-    stagein_data(mouse, day, project_path, job_name = stagein_job_name, which_rec=0)
-    filenames_path = project_path + f"data/M{mouse}_D{day}/data_folder_names.txt"
-    with open(filenames_path) as f:
-        paths_on_datastore = f.read().splitlines()
-    if len(paths_on_datastore) == 3:
-        stagein_data(mouse, day, project_path, job_name = stagein_job_name, which_rec=1)
-        stagein_data(mouse, day, project_path, job_name = stagein_job_name, which_rec=2)
+
+filenames_path = project_path + f"data/M{mouse}_D{day}/data_folder_names.txt"
+with open(filenames_path) as f:
+    paths_on_datastore = f.read().splitlines()
+
+stagein_job_name = f"stagein_M{mouse}_D{day}"
+for a, path in enumerate(paths_on_datastore):
+    stagein_data(mouse, day, project_path, job_name = stagein_job_name+str(a), which_rec=a)
 
 mouseday_string = "M" + mouse + "_" + day + "_"
 
@@ -43,23 +42,23 @@ behaviour_job_name = mouseday_string + "behave"
 if len(paths_on_datastore) == 3:
         run_python_script(
         elrond_path + "/../../run_scripts/eddie/zarr_of1.py " + mouse + " " + day + " " + sorter_name + " " + project_path, 
-        hold_jid = stagein_job_name,
+        hold_jid = stagein_job_name + '0',
         job_name = zarr_job_name + "of1",
         )
         run_python_script(
         elrond_path + "/../../run_scripts/eddie/zarr_of2.py " + mouse + " " + day + " " + sorter_name + " " + project_path, 
-        hold_jid = stagein_job_name,
+        hold_jid = stagein_job_name + '2',
         job_name = zarr_job_name + "of2",
         )
         run_python_script(
         elrond_path + "/../../run_scripts/eddie/zarr_vr.py " + mouse + " " + day + " " + sorter_name + " " + project_path, 
-        hold_jid = stagein_job_name,
+        hold_jid = stagein_job_name + '1',
         job_name = zarr_job_name,
         )
 else:
     run_python_script(
         elrond_path + "/../../run_scripts/eddie/zarr_time.py " + mouse + " " + day + " " + sorter_name + " " + project_path, 
-        hold_jid = stagein_job_name,
+        hold_jid = stagein_job_name + '0',
         job_name = zarr_job_name,
         )
 
