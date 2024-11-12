@@ -133,7 +133,8 @@ def run_stageout_script(stageout_dict, script_file_path=None, hold_jid=None, job
     script_text=f"""#!/bin/sh
 #$ -cwd
 #$ -q staging
-#$ -l h_rt=00:29:59{hold_script}{name_script}"""
+#$ -l h_rt=00:29:59{hold_script}{name_script}
+module load uge"""
 
     for source, dest in stageout_dict.items():
         script_text = script_text + "\nrsync -r --exclude='*.zarr*' " + str(source) + " " + str(dest)
@@ -157,7 +158,8 @@ def run_stagein_script(stagein_dict, script_file_path=None, job_name = None, hol
     script_text=f"""#!/bin/sh
 #$ -cwd
 #$ -q staging
-#$ -l h_rt=00:59:59{hold_script}\n"""
+#$ -l h_rt=00:59:59{hold_script}\n
+module load uge"""
 
     if job_name is not None:
         script_text += "#$ -N " + job_name + "\n" 
