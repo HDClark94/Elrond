@@ -247,7 +247,7 @@ def do_behavioural_postprocessing(mouse, day, sorter_name, project_path, data_pa
 
     for a, recording_path in enumerate(recording_paths):
         session_name = session_names[a]
-        save_path = deriv_path + f"session_name/"
+        save_path = deriv_path + f"{session_name}/"
         if session_name == 'of1':
             of1_dlc_csv_path = list(Path(of1_dlc_folder).glob("*200_filtered.csv"))[0]
             of1_dlc_data = pd.read_csv(of1_dlc_csv_path, header=[1, 2], index_col=0) 
