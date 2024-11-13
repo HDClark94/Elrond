@@ -262,6 +262,8 @@ def do_behavioural_postprocessing(mouse, day, sorter_name, project_path, data_pa
             vrmc.process(recording_path, save_path, **{"sorterName": sorter_name})
         elif session_name == 'allen_brain_observatory_visual_coding':
             vc.process(recording_path, save_path, **{"sorterName": sorter_name})
+        elif session_name == 'allen_brain_observatory_visual_sequences':
+            vc.process(recording_path, save_path, **{"sorterName": sorter_name})
 
         return
 

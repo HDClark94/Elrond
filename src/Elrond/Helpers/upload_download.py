@@ -74,10 +74,12 @@ def get_session_names(raw_recording_paths):
             session_names.append('of2')
         elif end_of_name == 'VR1':
             session_names.append('vr')
-        elif end_of_name in ['MCVR1', 'MCVR']:
+        elif end_of_name in ['MCVR1', 'MCVR', 'VRMC']:
             session_names.append('vr_multi_context')
-        elif end_of_name in ['IM', 'IMSEQ', 'IM1']:
+        elif end_of_name in ['IM', 'IM1']:
             session_names.append('allen_brain_observatory_visual_coding')
+        elif end_of_name == 'IMSEQ':
+            session_names.append('allen_brain_observatory_visual_sequences')
         else:
             raise Exception("Don't know session type")
         
