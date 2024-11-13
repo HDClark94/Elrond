@@ -139,6 +139,8 @@ module load uge"""
     for source, dest in stageout_dict.items():
         script_text = script_text + "\nrsync -r --exclude='*.zarr*' " + str(source) + " " + str(dest)
     
+    script_file_path = job_name + ".sh"
+
     save_and_run_script(script_text, script_file_path)
 
     return 

@@ -43,6 +43,7 @@ theta_job_name = mouseday_string + "theta"
 of1_job_name = mouseday_string + "1dlc"
 of2_job_name = mouseday_string + "2dlc"
 behaviour_job_name = mouseday_string + "behave"
+out_job_name = mouseday_string + "out_" + sorter_name
 
 # Now run full pipeline on eddie
 
@@ -131,5 +132,5 @@ run_stageout_script({
     project_path + "derivatives/M"+mouse+"/D"+day+"/": "/exports/cmvm/datastore/sbms/groups/CDBS_SIDB_storage/NolanLab/ActiveProjects/Chris/Cohort12/derivatives/M"+mouse+"/D"+day+"/"
     },
     hold_jid = behaviour_job_name,
-    job_name = mouseday_string + "out_" + sorter_name
+    job_name = out_job_name
     )
