@@ -51,22 +51,26 @@ if len(paths_on_datastore) == 3:
         elrond_path + "/../../run_scripts/eddie/zarr_of1.py " + mouse + " " + day + " " + sorter_name + " " + project_path, 
         hold_jid = stagein_job_name + '_0',
         job_name = zarr_job_name + "of1",
+        h_rt = "0:59:00"
         )
         run_python_script(
         elrond_path + "/../../run_scripts/eddie/zarr_of2.py " + mouse + " " + day + " " + sorter_name + " " + project_path, 
         hold_jid = stagein_job_name + '_2',
         job_name = zarr_job_name + "of2",
+        h_rt = "0:59:00"
         )
         run_python_script(
         elrond_path + "/../../run_scripts/eddie/zarr_vr.py " + mouse + " " + day + " " + sorter_name + " " + project_path, 
         hold_jid = stagein_job_name + '_1',
         job_name = zarr_job_name,
+        h_rt = "0:59:00"
         )
 else:
     run_python_script(
         elrond_path + "/../../run_scripts/eddie/zarr_time.py " + mouse + " " + day + " " + sorter_name + " " + project_path, 
         hold_jid = stagein_job_name + '_0,'+stagein_job_name + '_1,'+stagein_job_name + '_2',
         job_name = zarr_job_name,
+        h_rt = "0:59:00"
         )
 
 # if sorter_name == "kilosort4":
@@ -80,12 +84,14 @@ run_python_script(
     elrond_path + "/../../run_scripts/eddie/sort.py " + mouse + " " + day + " " + sorter_name + " " + project_path, 
     hold_jid = zarr_job_name,
     job_name = sort_job_name,
+    h_rt = "23:59:59"
 )
 
 run_python_script(
     elrond_path + "/../../run_scripts/eddie/sspp.py " + mouse + " " + day + " " + sorter_name + " " + project_path, 
     hold_jid = sort_job_name,
     job_name = sspp_job_name,
+    h_rt = "1:59:00"
 )
 
 # Run theta phase
@@ -101,6 +107,7 @@ run_python_script(
     elrond_path + "/../../run_scripts/eddie/dlc_of1.py " + mouse + " " + day + " " + sorter_name + " " + project_path, 
     hold_jid = stagein_job_name + "_0",
     job_name = of1_job_name,
+    h_rt = "1:59:00"
     )
 
 # Run DLC on of2
@@ -108,6 +115,7 @@ run_python_script(
     elrond_path + "/../../run_scripts/eddie/dlc_of2.py " + mouse + " " + day + " " + sorter_name + " " + project_path, 
     hold_jid = stagein_job_name+ "_2",
     job_name = of2_job_name,
+    h_rt = "1:59:00"
     )
 
 # Run behaviour, once everything else is done
@@ -116,6 +124,7 @@ run_python_script(
     hold_jid = sspp_job_name + "," + of1_job_name + "," + of2_job_name,
     job_name = behaviour_job_name,
     cores=3,
+    h_rt = "1:59:00"
 )
 
 run_stageout_script({
