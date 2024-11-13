@@ -147,7 +147,7 @@ def compute_sorting_analyzer(sorting, zarr_for_post_paths, sa_path, extension_di
         extension_dict = default_extensions_dict 
 
     recording_for_post = si.concatenate_recordings( [
-        si.load_extractor(zarr_post+".zarr") for zarr_post in zarr_for_post_paths ] )
+        si.load_extractor(zarr_post) for zarr_post in zarr_for_post_paths ] )
     sa = si.create_sorting_analyzer(recording = recording_for_post, 
                                     sorting=sorting, format="binary_folder",
                                 folder=sa_path, overwrite=True)

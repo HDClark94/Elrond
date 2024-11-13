@@ -72,7 +72,7 @@ def get_session_names(raw_recording_paths):
             session_names.append('of1')
         elif end_of_name == 'OF2':
             session_names.append('of2')
-        elif end_of_name == 'VR':
+        elif end_of_name == 'VR1':
             session_names.append('vr')
         elif end_of_name in ['MCVR1', 'MCVR']:
             session_names.append('vr_multi_context')

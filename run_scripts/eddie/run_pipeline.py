@@ -70,7 +70,7 @@ def do_zarrs(mouse, day, sorter_name, project_path, pp_for_sorting=None, pp_for_
     if zarr_number is None:
         zarr_for_sorting_paths = [f"{zarr_folder}/zarr_for_sorting_{a}" for a in range(num_recordings)]
     else:
-        zarr_for_sorting_paths = f"{zarr_folder}/zarr_for_sorting_{zarr_number}"
+        zarr_for_sorting_paths = [f"{zarr_folder}/zarr_for_sorting_{zarr_number}"]
 
     if pp_for_sorting is None:
         pp_for_sorting = pp_pipelines_dict[sorter_name]["sort"]
@@ -83,7 +83,7 @@ def do_zarrs(mouse, day, sorter_name, project_path, pp_for_sorting=None, pp_for_
         if zarr_number is None:
             zarr_for_post_paths = [f"{zarr_folder}/zarr_for_post_{a}" for a in range(num_recordings)]
         else:
-            zarr_for_post_paths = f"{zarr_folder}/zarr_for_post_{zarr_number}"
+            zarr_for_post_paths = [f"{zarr_folder}/zarr_for_post_{zarr_number}"]
 
     si.set_global_job_kwargs(n_jobs=8)
     make_zarrs(recording_paths, zarr_for_sorting_paths, zarr_for_post_paths, pp_for_sorting, pp_for_post)
@@ -191,9 +191,6 @@ def do_sorting_pipeline(mouse, day, sorter_name, project_path, pp_for_sorting=No
     if report_path is None:
         report_path = deriv_path + f"full/{sorter_name}/" + sorter_name + "_report/"
 
-    do_zarrs(mouse, day, sorter_name, project_path, pp_for_sorting, pp_for_post, data_path, deriv_path, zarr_folder, recording_paths, sorter_path, sa_path, report_path, session_names)
-    do_just_sorting(mouse, day, sorter_name, project_path, pp_for_sorting, pp_for_post, data_path, deriv_path, zarr_folder, recording_paths, sorter_path, sa_path, report_path, session_names)
-    do_spikesort_postprocessing(mouse, day, sorter_name, project_path, pp_for_sorting, pp_for_post, data_path, deriv_path, zarr_folder, recording_paths, sorter_path, sa_path, report_path, session_names)
 
     return 
     
@@ -289,6 +286,7 @@ if __name__ == "__main__":
 
     raw_recording_paths = get_chronologized_recording_paths(project_path, mouse, day)
     session_names = get_session_names(raw_recording_paths)
+    
     do_sorting_pipeline(mouse, day, sorter_name, project_path, recording_paths = raw_recording_paths, session_names=session_names)
-    do_dlc_pipeline(mouse, day, project_path, dlc_of_model_path = project_path + "derivatives/dlc_models/of_cohort12-krs-2024-10-30/", recording_paths = raw_recording_paths, session_names=session_names)
+    do_dlc_pipeline(mouse, day, project_path, dlc_of_model_path = project_path + "derivatives/dlc/of_cohort12-krs-2024-10-30/", recording_paths = raw_recording_paths, session_names=session_names)
     do_behavioural_postprocessing(mouse, day, sorter_name, project_path, recording_paths = raw_recording_paths, session_names=session_names)
