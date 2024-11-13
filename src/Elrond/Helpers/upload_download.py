@@ -40,6 +40,8 @@ def get_recording_folders(cohort_folder, mouse, day):
         recording_folders = list(Path(cohort_folder).glob(f"of/M{mouse}_D{day}*"))
         recording_folders += list(Path(cohort_folder).glob(f'vr/M{mouse}_D{day}*'))
         recording_folders += list(Path(cohort_folder).glob(f'vr_multi_context/M{mouse}_D{day}*'))
+        recording_folders += list(Path(cohort_folder).glob(f'allen_brain_observatory_visual_sequences/M{mouse}_D{day}*'))
+        recording_folders += list(Path(cohort_folder).glob(f'allen_brain_observatory_visual_coding/M{mouse}_D{day}*'))
 
     elif len(list(Path(data_path).glob(f"*M{mouse}_D{day}"))) > 0:
         recording_folders = list(Path(data_path + f"M{mouse}_D{day}/").glob("*/"))

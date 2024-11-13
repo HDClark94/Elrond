@@ -18,7 +18,7 @@ abo_paths = [data_path + "allen_brain_observatory_visual_coding/" + s for s in o
 vs_paths = [data_path + "allen_brain_observatory_visual_sequences/" + s for s in os.listdir(data_path + "allen_brain_observatory_visual_sequences/") if str(mouse)+"_D"+str(day) in s]
 
 
-recording_paths = of_paths + vr_paths + vr_multi_context_paths + abo_paths
+recording_paths = of_paths + vr_paths + vr_multi_context_paths + abo_paths + vs_paths
 data_path_on_eddie = project_path + "data/M" + mouse + "_D" + day + "/"
 Path(data_path_on_eddie).mkdir(exist_ok=True)
 
