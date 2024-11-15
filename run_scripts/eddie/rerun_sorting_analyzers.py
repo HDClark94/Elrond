@@ -77,7 +77,7 @@ else:
 
 run_python_script(
     elrond_path + "/../../run_scripts/eddie/sspp.py " + mouse + " " + day + " " + sorter_name + " " + project_path, 
-    hold_jid = sort_job_name,
+    hold_jid = zarr_job_name,
     job_name = sspp_job_name,
     h_rt = "1:59:00"
 )
