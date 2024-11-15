@@ -1,6 +1,7 @@
 import sys
 import os
 from Elrond.Helpers.create_eddie_scripts import stagein_data, run_python_script, run_stageout_script, run_gpu_python_script
+from Elrond.Helpers.upload_download import get_chronologized_recording_paths, get_session_names
 from pathlib import Path
 import Elrond
 
@@ -37,13 +38,17 @@ mouseday_string = "M" + mouse + "_" + day + "_"
 theta_job_name = mouseday_string + "theta"
 out_job_name = mouseday_string + "out"
 
-# Run theta phase
-run_python_script(
-    elrond_path + "/../../run_scripts/eddie/run_theta_phase.py " + mouse + " " + day + " " + project_path,
-    hold_jid = stagein_job_name + "_0,"+stagein_job_name + "_1,"+stagein_job_name + "_2",
-    job_name = theta_job_name,
-    cores=3,
-)
+raw_recording_paths = get_chronologized_recording_paths(project_path, mouse, day)
+session_names = get_session_names(raw_recording_paths)
+
+for raw_recording_path, session_name in zip(raw_recording_paths, session_names):
+    # Run theta phase
+    run_python_script(
+        elrond_path + "/../../run_scripts/eddie/run_theta_phase.py " + mouse + " " + day + " " + project_path + " " + raw_recording_path + " " + session_name,
+        hold_jid = stagein_job_name + "_0,"+stagein_job_name + "_1,"+stagein_job_name + "_2",
+        job_name = theta_job_name + session_name,
+        cores=3,
+    )
 
 run_stageout_script({
     project_path + "derivatives/M"+mouse+"/D"+day+"/": "/exports/cmvm/datastore/sbms/groups/CDBS_SIDB_storage/NolanLab/ActiveProjects/Chris/Cohort12/derivatives/M"+mouse+"/D"+day+"/"
