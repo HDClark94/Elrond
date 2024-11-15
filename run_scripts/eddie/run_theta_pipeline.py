@@ -53,6 +53,6 @@ for raw_recording_path, session_name in zip(raw_recording_paths, session_names):
 run_stageout_script({
     project_path + "derivatives/M"+mouse+"/D"+day+"/": "/exports/cmvm/datastore/sbms/groups/CDBS_SIDB_storage/NolanLab/ActiveProjects/Chris/Cohort12/derivatives/M"+mouse+"/D"+day+"/"
     },
-    hold_jid = theta_job_name,
+    hold_jid = theta_job_name + "vr,"+theta_job_name + "of1,"+theta_job_name + "of2",
     job_name = out_job_name
 )
