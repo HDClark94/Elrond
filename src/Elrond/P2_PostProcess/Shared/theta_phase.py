@@ -35,7 +35,7 @@ def compute_channel_theta_phase(raw_path, save_path, resample_rate=100, parallel
     # Apply in blocks of channels
     processed = []
     for i in range(0, len(channel_ids), parallel_block_size):
-        print(f"Processing channels {i} to {i + parallel_block_size}")
+        print(f"Processing channels {i} to {i + parallel_block_size}", flush=True)
         processed.append(processed_.get_traces(channel_ids=channel_ids[i : i + parallel_block_size]))
     del processed_
     processed = np.concatenate(processed, axis=1)
