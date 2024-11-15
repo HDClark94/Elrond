@@ -51,7 +51,7 @@ for raw_recording_path, session_name in zip(raw_recording_paths, session_names):
         elrond_path + "/../../run_scripts/eddie/run_theta_phase.py " + mouse + " " + day + " " + project_path + " " + raw_recording_path + " " + session_name,
         hold_jid = stagein_job_name + "_0,"+stagein_job_name + "_1,"+stagein_job_name + "_2",
         job_name = theta_job_name + session_name,
-        cores=3,
+        cores=4,
     )
 
 run_stageout_script({

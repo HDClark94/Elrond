@@ -100,7 +100,7 @@ run_python_script(
     elrond_path + "/../../run_scripts/eddie/run_theta_phase.py " + mouse + " " + day + " " + project_path,
     hold_jid = stagein_job_name + "_0",
     job_name = theta_job_name,
-    cores=3,
+    cores=4,
     )
 
 # Run DLC on of1
