@@ -270,7 +270,7 @@ def do_behavioural_postprocessing(mouse, day, sorter_name, project_path, data_pa
 def do_theta_phase(mouse, day, project_path, recording_paths, session_names):
 
     deriv_path = project_path + f"derivatives/M{mouse}/D{day}/"
-    save_paths = [deriv_path + session for session in session_names]
+    save_paths = [deriv_path + session + "/" for session in session_names]
 
     for recording_path, save_path in zip(recording_paths, save_paths):
         Path(save_path).mkdir(exist_ok=True, parents=True)
