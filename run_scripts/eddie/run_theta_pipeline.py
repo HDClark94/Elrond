@@ -38,6 +38,10 @@ mouseday_string = "M" + mouse + "_" + day + "_"
 theta_job_name = mouseday_string + "theta"
 out_job_name = mouseday_string + "out"
 
+import time
+time.sleep(60)
+
+
 raw_recording_paths = get_chronologized_recording_paths(project_path, mouse, day)
 session_names = get_session_names(raw_recording_paths)
 
