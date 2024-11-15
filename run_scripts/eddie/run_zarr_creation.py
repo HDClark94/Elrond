@@ -40,7 +40,7 @@ out_job_name = mouseday_string + "out_" + sorter_name
 # Now run full pipeline on eddie
 
 run_python_script(
-    elrond_path + "/../../run_scripts/eddie/run_raw_zarr.py " + mouse + " " + day + " " + sorter_name + " " + project_path, 
+    elrond_path + "/../../run_scripts/eddie/run_raw_zarr.py " + mouse + " " + day + " " + project_path, 
     hold_jid = stagein_job_name + '_0,'+stagein_job_name + '_1,'+stagein_job_name + '_2',
     job_name = zarr_job_name,
     h_rt = "0:59:00"
