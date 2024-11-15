@@ -137,7 +137,7 @@ def run_stageout_script(stageout_dict, script_file_path=None, hold_jid=None, job
 module load uge"""
 
     for source, dest in stageout_dict.items():
-        script_text = script_text + "\nrsync -r --exclude='*.zarr*' " + str(source) + " " + str(dest)
+        script_text = script_text + "\nrsync -r --no-perms --no-owner --no-group --exclude='*.zarr*' " + str(source) + " " + str(dest)
     
     script_file_path = job_name + ".sh"
 
