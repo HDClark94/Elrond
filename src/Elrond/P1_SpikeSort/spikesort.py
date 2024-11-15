@@ -307,8 +307,9 @@ def read_grouped_sorting(sorter_path, recording_path):
     grouping_property = 'group'
     recording_dict = recording.split_by(grouping_property)
 
-    paths = list(Path(sorter_path).glob('*'))
-
+    all_paths = np.array(list(Path(sorter_path).glob('*')))
+    paths = all_paths[np.argsort([int(str(path).split('/')[-1]) for path in all_paths])]
+    
     sorting_list=[]
     for path in paths:
         sorting = si.read_kilosort(path / Path("sorter_output"))
