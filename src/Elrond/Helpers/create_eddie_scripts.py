@@ -169,10 +169,10 @@ def run_stagein_script(stagein_dict, script_file_path=None, job_name = None, hol
 
     return 
 
-def stagein_data(mouse, day, project_path, job_name=None, which_rec=None, filenames_path=None, dest_on_eddie=None):
+def stagein_data(mouse, day, project_path, job_name=None, which_rec=None):
 
-    if filenames_path is None:
-        filenames_path = project_path + f"data/M{mouse}_D{day}/data_folder_names.txt"
+    filenames_path = project_path + f"data/M{mouse}_D{day}/data_folder_names.txt"
+
 
     if Path(filenames_path).exists() is False:
         get_filepaths_on_datastore(mouse, day, project_path)
@@ -185,17 +185,14 @@ def stagein_data(mouse, day, project_path, job_name=None, which_rec=None, filena
 
     # TODO: delete this comment
     #folder_names = [path_on_datastore.split('/')[-1] + "/" for path_on_datastore in paths_on_datastore]
-    if dest_on_eddie is None:
-        dest_on_eddie = [project_path + f"data/M{mouse}_D{day}/" ]*len(paths_on_datastore)
+    dest_on_eddie = [project_path + f"data/M{mouse}_D{day}/" ]*len(paths_on_datastore)
+
 
     if which_rec == 0 or which_rec == 1 or which_rec == 2:
         paths_on_datastore = [paths_on_datastore[which_rec]]
         dest_on_eddie = [dest_on_eddie[which_rec]]
 
     stagein_dict = dict(zip(paths_on_datastore, dest_on_eddie))
-
-    if Path(dest_on_eddie).exists() is False:
-        Path(dest_on_eddie).mkdir(parents=True, exist_ok=True)
 
     run_stagein_script(stagein_dict, job_name)
 
