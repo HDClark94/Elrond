@@ -41,6 +41,7 @@ def get_recording_folders(cohort_folder, mouse, day):
         recording_folders += list(Path(cohort_folder).glob(f'vr/M{mouse}_D{day}*'))
         recording_folders += list(Path(cohort_folder).glob(f'vr_multi_context/M{mouse}_D{day}*'))
         recording_folders += list(Path(cohort_folder).glob(f'allen_brain_observatory_visual_sequences/M{mouse}_D{day}*'))
+        recording_folders += list(Path(cohort_folder).glob(f'allen_brain_observatory_visual_multi_sequences/M{mouse}_D{day}*'))
         recording_folders += list(Path(cohort_folder).glob(f'allen_brain_observatory_visual_coding/M{mouse}_D{day}*'))
 
     elif len(list(Path(data_path).glob(f"*M{mouse}_D{day}"))) > 0:
@@ -82,6 +83,8 @@ def get_session_names(raw_recording_paths):
             session_names.append('allen_brain_observatory_visual_coding')
         elif end_of_name == 'IMSEQ':
             session_names.append('allen_brain_observatory_visual_sequences')
+        elif end_of_name == 'IMSEQ2':
+            session_names.append('allen_brain_observatory_visual_multi_sequences')
         else:
             raise Exception("Don't know session type")
         
