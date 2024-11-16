@@ -49,7 +49,6 @@ def make_run_python_script(python_arg, venv=None, cores=None, email=None, h_rt=N
 source /etc/profile.d/modules.sh
 module load anaconda
 conda activate {venv}
-module load uge
 python {python_arg}"""
     
     return script_content
@@ -82,7 +81,6 @@ def make_gpu_python_script(python_arg,  job_name=None, h_rt=None, hold_jid=None,
 source /etc/profile.d/modules.sh
 module load anaconda
 conda activate elrond
-module load uge
 python {python_arg}"""
 
     return script_content
@@ -133,8 +131,7 @@ def run_stageout_script(stageout_dict, script_file_path=None, hold_jid=None, job
     script_text=f"""#!/bin/sh
 #$ -cwd
 #$ -q staging
-#$ -l h_rt=00:29:59{hold_script}{name_script}
-module load uge"""
+#$ -l h_rt=00:29:59{hold_script}{name_script}"""
 
     for source, dest in stageout_dict.items():
         script_text = script_text + "\nrsync -r --no-perms --no-owner --no-group --exclude='*.zarr*' " + str(source) + " " + str(dest)
@@ -160,8 +157,7 @@ def run_stagein_script(stagein_dict, script_file_path=None, job_name = None, hol
     script_text=f"""#!/bin/sh
 #$ -cwd
 #$ -q staging
-#$ -l h_rt=00:59:59{hold_script}\n
-module load uge"""
+#$ -l h_rt=00:59:59{hold_script}\n"""
 
     if job_name is not None:
         script_text += "#$ -N " + job_name + "\n" 
@@ -173,9 +169,10 @@ module load uge"""
 
     return 
 
-def stagein_data(mouse, day, project_path, job_name=None, which_rec=None):
+def stagein_data(mouse, day, project_path, job_name=None, which_rec=None, filenames_path=None, dest_on_eddie=None):
 
-    filenames_path = project_path + f"data/M{mouse}_D{day}/data_folder_names.txt"
+    if filenames_path is None:
+        filenames_path = project_path + f"data/M{mouse}_D{day}/data_folder_names.txt"
 
     if Path(filenames_path).exists() is False:
         get_filepaths_on_datastore(mouse, day, project_path)
@@ -188,13 +185,17 @@ def stagein_data(mouse, day, project_path, job_name=None, which_rec=None):
 
     # TODO: delete this comment
     #folder_names = [path_on_datastore.split('/')[-1] + "/" for path_on_datastore in paths_on_datastore]
-    dest_on_eddie = [project_path + f"data/M{mouse}_D{day}/" ]*len(paths_on_datastore)
+    if dest_on_eddie is None:
+        dest_on_eddie = [project_path + f"data/M{mouse}_D{day}/" ]*len(paths_on_datastore)
 
     if which_rec == 0 or which_rec == 1 or which_rec == 2:
         paths_on_datastore = [paths_on_datastore[which_rec]]
         dest_on_eddie = [dest_on_eddie[which_rec]]
 
     stagein_dict = dict(zip(paths_on_datastore, dest_on_eddie))
+
+    if Path(dest_on_eddie).exists() is False:
+        Path(dest_on_eddie).mkdir(parents=True, exist_ok=True)
 
     run_stagein_script(stagein_dict, job_name)
 
