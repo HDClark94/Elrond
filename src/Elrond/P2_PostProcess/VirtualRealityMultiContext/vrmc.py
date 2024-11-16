@@ -5,8 +5,10 @@ from ..VirtualReality.video import *
 from .plotting import *
 
 def process(recording_path, processed_path, **kwargs):
-    track_length = get_track_length(recording_path)
-    stop_threshold = get_stop_threshold(recording_path)
+    #track_length = get_track_length(recording_path)
+    #stop_threshold = get_stop_threshold(recording_path)
+    track_length = 230
+    stop_threshold = 5
     # process and save spatial spike data
     if "sorterName" in kwargs.keys():   
         sorterName = kwargs["sorterName"]
