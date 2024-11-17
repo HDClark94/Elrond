@@ -5,6 +5,7 @@ sorter_kwargs_dict = {
     "herdingspikes": {}, 
     "mountainsort5": {"scheme": "3"},
     "kilosort4": {"do_correction": False},
+    "kilosort4_motion_correction": {"do_correction": True},
     "spykingcircus2": {}
 }
 

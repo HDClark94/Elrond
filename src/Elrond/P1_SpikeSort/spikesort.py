@@ -115,13 +115,15 @@ def do_sorting(recording_paths, sorter_name, sorter_path, deriv_path, sorter_kwa
     if sorter_kwargs is None:
         sorter_kwargs = sorter_kwargs_dict[sorter_name]
 
+    si_sorter_name = sorter_name.split('_')[0]
+
     # sorting time! We assume the preprocessed recording has been saved as a zarr file.
     # If you're using raw data, use si.read_openephys (or similar) and apply a preprocessor.
     recording_for_sort = si.concatenate_recordings( [
         si.load_extractor(recording_path + ".zarr") for recording_path in recording_paths ] )
     sorting = si.run_sorter_by_property(
             recording=recording_for_sort,
-            sorter_name=sorter_name,
+            sorter_name=si_sorter_name,
             folder=sorter_path,
             remove_existing_folder=True,
             verbose=True, **sorter_kwargs,
