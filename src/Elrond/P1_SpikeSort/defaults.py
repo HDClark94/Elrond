@@ -29,6 +29,13 @@ pp_pipelines_dict = {
             "highpass_filter": {},
         }
     },
+    "kilosort4_motion_correction": {
+        "sort": {},
+        "post": {
+            "common_reference": {"operator": "average"},
+            "highpass_filter": {},
+        }
+    },
     "mountainsort5": {
         "sort": {
             "bandpass_filter": {},
