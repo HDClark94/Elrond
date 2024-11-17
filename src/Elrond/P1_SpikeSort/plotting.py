@@ -1,5 +1,19 @@
 import matplotlib.pyplot as plt
 import numpy as np
+from spikeinterface.sortingcomponents.peak_detection import detect_peaks
+from spikeinterface.sortingcomponents.peak_localization import localize_peaks
+
+def plot_locations_over_time(recording, export_path):
+
+    rec_length_mins = recording.get_duration()/60
+
+    peaks = detect_peaks(recording)
+    peak_locations = localize_peaks(recording, peaks, method='center_of_mass')
+
+    fs = recording.get_sampling_frequency()
+    _, ax = plt.subplots(figsize=(rec_length_mins/2, 8))
+    ax.scatter(peaks['sample_index'] / fs, peak_locations['y'], color='k', marker='.',  alpha=0.002)
+    plt.savefig(export_path + 'locations.png')
 
 def plot_simple_np_probe_layout(recording, export_path):
     """
