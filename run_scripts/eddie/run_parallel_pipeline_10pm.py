@@ -17,7 +17,9 @@ def get_filepaths_on_datastore(mouse, day, project_path):
         staging=True, 
         h_rt="0:29:59", 
         cores=1,
-        job_name=f"M{mouse}_{day}_getfilenames")
+        job_name=f"M{mouse}_{day}_getfilenames"),
+        hold_jid = "sleepy_time"
+
     return 
 
 
@@ -36,7 +38,8 @@ run_python_script(
     cores = 1,
 )
 
-for mouse, days in mice_days_string:
+for mouse, days in mice_days.items():
+    mouse = str(mouse)
     for day in days:
 
         data_path = project_path + f"data/M{mouse}_D{day}/"
