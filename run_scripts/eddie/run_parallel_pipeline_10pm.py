@@ -18,7 +18,6 @@ def get_filepaths_on_datastore(mouse, day, project_path):
         h_rt="0:29:59", 
         cores=1,
         job_name=f"M{mouse}_{day}_getfilenames",
-        hold_jid = "sleepy_time"
     )
 
     return 

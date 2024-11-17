@@ -3,7 +3,7 @@ from pathlib import Path
 import pandas as pd
 import spikeinterface.full as si
 
-from Elrond.P1_SpikeSort.plotting import plot_simple_np_probe_layout
+from Elrond.P1_SpikeSort.plotting import plot_simple_np_probe_layout, plot_locations_over_time
 from Elrond.Helpers.upload_download import get_chronologized_recording_paths, get_session_names
 from Elrond.Helpers.zarr import make_zarrs, delete_zarrs
 
@@ -272,9 +272,38 @@ def do_theta_phase(mouse, day, project_path, recording_paths, session_names):
     deriv_path = project_path + f"derivatives/M{mouse}/D{day}/"
     save_paths = [deriv_path + session + "/" for session in session_names]
 
+    
+
     for recording_path, save_path in zip(recording_paths, save_paths):
         Path(save_path).mkdir(exist_ok=True, parents=True)
         compute_channel_theta_phase(recording_path, save_path)
+
+    return
+
+
+def make_location_plot(mouse, day, project_path, num_recordings):
+
+    if zarr_folder is None:
+        zarr_folder = deriv_path + f"full/{sorter_name}/zarr_recordings/"
+
+    if pp_for_sorting is None:
+        pp_for_sorting = pp_pipelines_dict[sorter_name]["sort"]
+    if pp_for_post is None:
+        pp_for_post = pp_pipelines_dict[sorter_name]["post"]
+
+    zarr_for_sorting_paths = [f"{zarr_folder}/zarr_for_sorting_{a}.zarr" for a in range(num_recordings)]
+
+    if pp_for_sorting == pp_for_post:
+        zarr_for_post_paths = zarr_for_sorting_paths
+    else:
+        zarr_for_post_paths = [f"{zarr_folder}/zarr_for_post_{a}.zarr" for a in range(num_recordings)]
+
+    deriv_path = project_path + f"derivatives/M{mouse}/D{day}/"
+
+    recording_for_post = si.concatenate_recordings( [
+        si.load_extractor(zarr_post) for zarr_post in zarr_for_post_paths ] )
+
+    plot_locations_over_time(recording_for_post, deriv_path)
 
     return
 
@@ -290,5 +319,6 @@ if __name__ == "__main__":
     session_names = get_session_names(raw_recording_paths)
     
     do_sorting_pipeline(mouse, day, sorter_name, project_path, recording_paths = raw_recording_paths, session_names=session_names)
+    make_location_plot(mouse, day, project_path, num_recordings=len(session_names) )
     do_dlc_pipeline(mouse, day, project_path, dlc_of_model_path = project_path + "derivatives/dlc/of_cohort12-krs-2024-10-30/", recording_paths = raw_recording_paths, session_names=session_names)
     do_behavioural_postprocessing(mouse, day, sorter_name, project_path, recording_paths = raw_recording_paths, session_names=session_names)
