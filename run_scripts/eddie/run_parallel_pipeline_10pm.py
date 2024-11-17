@@ -42,6 +42,7 @@ run_python_script(
 for mouse, days in mice_days.items():
     mouse = str(mouse)
     for day in days:
+        day = str(day)
 
         data_path = project_path + f"data/M{mouse}_D{day}/"
         Path(data_path).mkdir(exist_ok=True)
