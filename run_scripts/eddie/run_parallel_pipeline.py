@@ -40,6 +40,7 @@ sort_job_name =  mouseday_string + sorter_name
 sspp_job_name =  mouseday_string + "sspp_" + sorter_name
 
 theta_job_name = mouseday_string + "theta"
+location_job_name = mouseday_string + "loc"
 of1_job_name = mouseday_string + "1dlc"
 of2_job_name = mouseday_string + "2dlc"
 behaviour_job_name = mouseday_string + "behave"
@@ -99,7 +100,7 @@ run_python_script(
 run_python_script(
     elrond_path + "/../../run_scripts/eddie/location_plots.py " + mouse + " " + day + " " + sorter_name + " " + project_path,
     hold_jid = zarr_job_name,
-    job_name = theta_job_name,
+    job_name = location_job_name,
     cores=4,
     )
 

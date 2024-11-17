@@ -2,10 +2,13 @@ import matplotlib.pyplot as plt
 import numpy as np
 from spikeinterface.sortingcomponents.peak_detection import detect_peaks
 from spikeinterface.sortingcomponents.peak_localization import localize_peaks
+import spikeinterface.full as si
 
 def plot_locations_over_time(recording, export_path):
 
     rec_length_mins = recording.get_duration()/60
+
+    si.set_global_job_kwargs(n_jobs=4)
 
     peaks = detect_peaks(recording)
     peak_locations = localize_peaks(recording, peaks, method='center_of_mass')
