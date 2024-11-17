@@ -89,11 +89,19 @@ run_python_script(
 )
 
 run_python_script(
-    elrond_path + "/../../run_scripts/eddie/sspp.py " + mouse + " " + day + " " + sorter_name + " " + project_path, 
+    elrond_path + "/../../run_scripts/eddie/sspp.py " + mouse + " " + day + " " + sorter_name + " " + project_path,
     hold_jid = sort_job_name,
     job_name = sspp_job_name,
     h_rt = "1:59:00"
 )
+
+# Run location plots
+run_python_script(
+    elrond_path + "/../../run_scripts/eddie/location_plots.py " + mouse + " " + day + " " + sorter_name + " " + project_path,
+    hold_jid = zarr_job_name,
+    job_name = theta_job_name,
+    cores=4,
+    )
 
 # Run theta phase
 run_python_script(

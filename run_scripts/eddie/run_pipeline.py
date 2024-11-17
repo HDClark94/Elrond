@@ -281,15 +281,13 @@ def do_theta_phase(mouse, day, project_path, recording_paths, session_names):
     return
 
 
-def make_location_plot(mouse, day, project_path, num_recordings):
+def make_location_plot(mouse, day, sorter_name, project_path, num_recordings):
 
-    if zarr_folder is None:
-        zarr_folder = deriv_path + f"full/{sorter_name}/zarr_recordings/"
+    deriv_path = project_path + f"derivatives/M{mouse}/D{day}/"
 
-    if pp_for_sorting is None:
-        pp_for_sorting = pp_pipelines_dict[sorter_name]["sort"]
-    if pp_for_post is None:
-        pp_for_post = pp_pipelines_dict[sorter_name]["post"]
+    zarr_folder = deriv_path + f"full/{sorter_name}/zarr_recordings/"
+    pp_for_sorting = pp_pipelines_dict[sorter_name]["sort"]
+    pp_for_post = pp_pipelines_dict[sorter_name]["post"]
 
     zarr_for_sorting_paths = [f"{zarr_folder}/zarr_for_sorting_{a}.zarr" for a in range(num_recordings)]
 
@@ -298,7 +296,6 @@ def make_location_plot(mouse, day, project_path, num_recordings):
     else:
         zarr_for_post_paths = [f"{zarr_folder}/zarr_for_post_{a}.zarr" for a in range(num_recordings)]
 
-    deriv_path = project_path + f"derivatives/M{mouse}/D{day}/"
 
     recording_for_post = si.concatenate_recordings( [
         si.load_extractor(zarr_post) for zarr_post in zarr_for_post_paths ] )
