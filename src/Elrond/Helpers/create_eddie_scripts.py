@@ -169,7 +169,7 @@ def run_stagein_script(stagein_dict, script_file_path=None, job_name = None, hol
 
     return 
 
-def stagein_data(mouse, day, project_path, job_name=None, which_rec=None):
+def stagein_data(mouse, day, project_path, job_name=None, which_rec=None, hold_jid=None):
 
     filenames_path = project_path + f"data/M{mouse}_D{day}/data_folder_names.txt"
 
@@ -194,7 +194,7 @@ def stagein_data(mouse, day, project_path, job_name=None, which_rec=None):
 
     stagein_dict = dict(zip(paths_on_datastore, dest_on_eddie))
 
-    run_stagein_script(stagein_dict, job_name)
+    run_stagein_script(stagein_dict, job_name, hold_jid=hold_jid)
 
     return
 

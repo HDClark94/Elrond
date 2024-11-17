@@ -17,8 +17,9 @@ def get_filepaths_on_datastore(mouse, day, project_path):
         staging=True, 
         h_rt="0:29:59", 
         cores=1,
-        job_name=f"M{mouse}_{day}_getfilenames"),
+        job_name=f"M{mouse}_{day}_getfilenames",
         hold_jid = "sleepy_time"
+    )
 
     return 
 
@@ -54,23 +55,28 @@ for mouse, days in mice_days.items():
 
         while Path(filenames_path).exists() is False:
             time.sleep(5)
+
+        with open(filenames_path) as f:
+            paths_on_datastore = f.read().splitlines()
+
+        session_names = get_session_names(paths_on_datastore)
+        print(f"Sessions for M{mouse} D{day} are: {session_names}")
             
         mouseday_string = "M" + mouse + "_" + day + "_"
         stagein_job_name = mouseday_string + "in"
 
         if len(os.listdir(data_path)) == 1:
-            stagein_data(mouse, day, project_path, job_name = stagein_job_name + "_" + str(0), which_rec=0)
-            with open(filenames_path) as f:
-                paths_on_datastore = f.read().splitlines()
+            stagein_data(mouse, day, project_path, job_name = stagein_job_name + "_" + str(0), which_rec=0, hold_jid="sleepy_time")
+            
 
             for a, path in enumerate(paths_on_datastore):
                 if a == 0:
                     continue
                 else:
-                    stagein_data(mouse, day, project_path, job_name = stagein_job_name + "_" + str(a), which_rec=a)
+                    stagein_data(mouse, day, project_path, job_name = stagein_job_name + "_" + str(a), which_rec=a, hold_jid="sleepy_time")
 
-        session_names = get_session_names(paths_on_datastore)
-        print(f"Sessions are: {session_names}")
+        
+
 
         zarr_job_name =  mouseday_string + "z_" + sorter_name
         sort_job_name =  mouseday_string + sorter_name
