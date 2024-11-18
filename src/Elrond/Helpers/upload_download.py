@@ -86,7 +86,7 @@ def get_session_names(raw_recording_paths):
             session_names.append('allen_brain_observatory_visual_sequences')
         elif end_of_name == 'IMSEQ2':
             session_names.append('allen_brain_observatory_visual_multi_sequences')
-        elif end_of_name == 'HDDVD':
+        elif end_of_name in ['DVD', 'HDDVD']:
             session_names.append('dvd_waitscreen')
         else:
             raise Exception("Don't know session type")
