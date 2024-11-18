@@ -115,7 +115,12 @@ def run_gpu_python_script(python_arg, venv=None, cores=None, email=None, h_rt=No
 
     return
 
-def run_stageout_script(stageout_dict, script_file_path=None, hold_jid=None, job_name=None):
+def run_stageout_script(stageout_dict, script_file_path=None, hold_jid=None, job_name=None, move_zarrs=False):
+
+    if move_zarrs is False:
+        zarr_script = " --exclude='*.zarr*"
+    else:
+        zarr_script = ""
 
     if hold_jid is not None:
         hold_script = f" -hold_jid {hold_jid}"
@@ -134,7 +139,7 @@ def run_stageout_script(stageout_dict, script_file_path=None, hold_jid=None, job
 #$ -l h_rt=00:29:59{hold_script}{name_script}"""
 
     for source, dest in stageout_dict.items():
-        script_text = script_text + "\nrsync -r --no-perms --no-owner --no-group --exclude='*.zarr*' " + str(source) + " " + str(dest)
+        script_text = script_text + f"\nrsync -r --no-perms --no-owner --no-group{zarr_script} " + str(source) + " " + str(dest)
     
     script_file_path = job_name + ".sh"
 

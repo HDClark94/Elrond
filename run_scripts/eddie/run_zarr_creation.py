@@ -46,9 +46,14 @@ run_python_script(
     h_rt = "0:59:00"
     )
 
-run_stageout_script({
-    project_path + "derivatives/M"+mouse+"/D"+day+"/": "/exports/cmvm/datastore/sbms/groups/CDBS_SIDB_storage/NolanLab/ActiveProjects/Chris/Cohort12/derivatives/M"+mouse+"/D"+day+"/"
-    },
+
+folder_names = [path_on_datastore.split('/')[-1] for path_on_datastore in paths_on_datastore]
+paths_on_eddie = [f"{project_path}data/{folder_name}" for folder_name in folder_names]
+stageout_dict = dict(zip(paths_on_eddie, paths_on_datastore))
+
+run_stageout_script(
+    stageout_dict,
     hold_jid = zarr_job_name,
-    job_name = out_job_name
+    job_name = out_job_name,
+    move_zarrs=True
     )
