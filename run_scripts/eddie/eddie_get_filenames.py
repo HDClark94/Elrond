@@ -20,7 +20,7 @@ vs2_paths = [data_path + "allen_brain_observatory_visual_multi_sequences/" + s f
 dvd_paths = [data_path + "dvd_waitscreen/" + s for s in os.listdir(data_path + "dvd_waitscreen/") if str(mouse)+"_D"+str(day) in s]
 
 
-recording_paths = of_paths + vr_paths + vr_multi_context_paths + abo_paths + vs_paths + vs2_paths
+recording_paths = of_paths + vr_paths + vr_multi_context_paths + abo_paths + vs_paths + vs2_paths + dvd_paths
 data_path_on_eddie = project_path + "data/M" + mouse + "_D" + day + "/"
 Path(data_path_on_eddie).mkdir(exist_ok=True)
 
