@@ -160,7 +160,7 @@ def style_track_plot_no_cue(ax, track_length, alpha=0.25):
     ax.axvspan(0, 30, facecolor='k', linewidth =0, alpha=.25) # black box
     ax.axvspan(track_length-30, track_length, facecolor='k', linewidth =0, alpha=alpha)# black box
 
- def style_track_plot_only_black_boxes(ax, track_length, alpha=0.25):
+def style_track_plot_only_black_boxes(ax, track_length, alpha=0.25):
     ax.axvspan(0, 30, facecolor='k', linewidth =0, alpha=.25) # black box
     ax.axvspan(track_length-30, track_length, facecolor='k', linewidth =0, alpha=alpha)# black box
     
