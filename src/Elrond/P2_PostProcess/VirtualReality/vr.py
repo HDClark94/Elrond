@@ -1,4 +1,4 @@
-from .behaviour_from_blender import *
+from Elrond.P2_PostProcess.Shared.behaviour_from_blender import *
 from .behaviour_from_ADC_channels import *
 from .spatial_firing import *
 from .plotting import *

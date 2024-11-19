@@ -1,4 +1,4 @@
-from .behaviour_from_blender import *
+from Elrond.P2_PostProcess.Shared.behaviour_from_blender import *
 from ..VirtualReality.spatial_firing import *
 from ..VirtualReality.video import synchronise_position_data_via_ADC_ttl_pulses
 
