@@ -6,8 +6,7 @@ import Elrond
 
 mouse = sys.argv[1]
 day = sys.argv[2]
-sorter_name = sys.argv[3]
-project_path = sys.argv[4]
+project_path = sys.argv[3]
 
 elrond_path = Elrond.__path__[0]
 
@@ -34,8 +33,8 @@ if len(os.listdir(data_path)) < 2:
             stagein_data(mouse, day, project_path, job_name = stagein_job_name + "_" + str(a), which_rec=a)
 
 mouseday_string = "M" + mouse + "_" + day + "_"
-zarr_job_name =  mouseday_string + "z_" + sorter_name
-out_job_name = mouseday_string + "out_" + sorter_name
+zarr_job_name =  mouseday_string + "z_"
+out_job_name = mouseday_string + "out_"
 
 # Now run full pipeline on eddie
 
