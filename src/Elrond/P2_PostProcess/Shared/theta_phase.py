@@ -38,10 +38,7 @@ def compute_channel_theta_phase(raw_path, save_path, resample_rate=100, parallel
         print(f"Processing channels {i} to {i + parallel_block_size}", flush=True)
         processed.append(processed_.get_traces(channel_ids=channel_ids[i : i + parallel_block_size]))
     del processed_
-    processed = np.concatenate(processed, axis=1)
-
-    # Hilbert transform
-    theta_phase = np.angle(hilbert(processed, axis=0)) + np.pi
+    theta_phase = np.concatenate(processed, axis=1)
 
     # Save
     pd.DataFrame(theta_phase, index=pd.to_datetime(timepoints, unit="s")).to_pickle(save_path + "theta_phase.pkl")
