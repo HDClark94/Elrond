@@ -80,7 +80,7 @@ for mouse, days in mice_days.items():
             out_job_name = mouseday_string + "out_" + sorter_name + session_name
 
             run_python_script(
-                elrond_path + "/../../run_scripts/eddie/sort_a_session.py " + mouse + " " + day + " " + sorter_name + " " + project_path + " " + session_id, 
+                elrond_path + "/../../run_scripts/eddie/sort_a_session.py " + mouse + " " + day + " " + sorter_name + " " + project_path + " " + str(session_id), 
                 hold_jid = stagein_job_name + '_0,'+stagein_job_name + '_1,'+stagein_job_name + '_2',
                 job_name = sort_job_name,
                 h_rt = "11:59:59"
