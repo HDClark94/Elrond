@@ -67,10 +67,7 @@ def do_zarrs(mouse, day, sorter_name, project_path, pp_for_sorting=None, pp_for_
     if zarr_folder is None:
         zarr_folder = deriv_path + f"full/{sorter_name}/zarr_recordings"
 
-    if zarr_number is None:
-        zarr_for_sorting_paths = [f"{zarr_folder}/zarr_for_sorting_{a}" for a in range(num_recordings)]
-    else:
-        zarr_for_sorting_paths = [f"{zarr_folder}/zarr_for_sorting_{zarr_number}"]
+    zarr_for_sorting_paths = [f"{zarr_folder}/zarr_for_sorting_{a}" for a in session_names]
 
     if pp_for_sorting is None:
         pp_for_sorting = pp_pipelines_dict[sorter_name]["sort"]
@@ -80,10 +77,8 @@ def do_zarrs(mouse, day, sorter_name, project_path, pp_for_sorting=None, pp_for_
     if pp_for_sorting == pp_for_post:
         zarr_for_post_paths = zarr_for_sorting_paths
     else:
-        if zarr_number is None:
-            zarr_for_post_paths = [f"{zarr_folder}/zarr_for_post_{a}" for a in range(num_recordings)]
-        else:
-            zarr_for_post_paths = [f"{zarr_folder}/zarr_for_post_{zarr_number}"]
+        zarr_for_post_paths = [f"{zarr_folder}/zarr_for_post_{a}" for a in session_names]
+
 
     si.set_global_job_kwargs(n_jobs=8)
     make_zarrs(recording_paths, zarr_for_sorting_paths, zarr_for_post_paths, pp_for_sorting, pp_for_post)
@@ -105,7 +100,7 @@ def do_just_sorting(mouse, day, sorter_name, project_path, pp_for_sorting=None, 
     if zarr_folder is None:
         zarr_folder = deriv_path + f"full/{sorter_name}/zarr_recordings/"
 
-    zarr_for_sorting_paths = [f"{zarr_folder}/zarr_for_sorting_{a}" for a in range(num_recordings)]
+    zarr_for_sorting_paths = [f"{zarr_folder}/zarr_for_sorting_{a}" for a in session_names]
 
     if sorter_path is None:
         sorter_path = deriv_path + f"full/{sorter_name}/" + sorter_name + "_sorting/"
@@ -128,7 +123,7 @@ def do_spikesort_postprocessing(mouse, day, sorter_name, project_path, pp_for_so
     Path(deriv_path).mkdir(exist_ok=True, parents=True)
     if zarr_folder is None:
         zarr_folder = deriv_path + f"full/{sorter_name}/zarr_recordings/"
-    zarr_for_sorting_paths = [f"{zarr_folder}/zarr_for_sorting_{a}.zarr" for a in range(num_recordings)]
+    zarr_for_sorting_paths = [f"{zarr_folder}/zarr_for_sorting_{a}.zarr" for a in session_names]
 
     if pp_for_sorting is None:
         pp_for_sorting = pp_pipelines_dict[sorter_name]["sort"]
@@ -138,7 +133,7 @@ def do_spikesort_postprocessing(mouse, day, sorter_name, project_path, pp_for_so
     if pp_for_sorting == pp_for_post:
         zarr_for_post_paths = zarr_for_sorting_paths
     else:
-        zarr_for_post_paths = [f"{zarr_folder}/zarr_for_post_{a}.zarr" for a in range(num_recordings)]
+        zarr_for_post_paths = [f"{zarr_folder}/zarr_for_post_{a}.zarr" for a in session_names]
     if sorter_path is None:
         sorter_path = deriv_path + f"full/{sorter_name}/" + sorter_name + "_sorting/"
     if sa_path is None:
@@ -155,7 +150,7 @@ def do_spikesort_postprocessing(mouse, day, sorter_name, project_path, pp_for_so
     delete_zarrs(zarr_for_sorting_paths, zarr_for_post_paths)
 
 
-def do_sorting_pipeline(mouse, day, sorter_name, project_path, pp_for_sorting=None, pp_for_post=None, data_path=None, deriv_path=None, zarr_folder=None, recording_paths=None, sorter_path=None, sa_path=None, report_path=None, session_names=None):
+def do_sorting_pipeline(mouse, day, sorter_name, project_path, pp_for_sorting=None, pp_for_post=None, data_path=None, deriv_path=None, zarr_folder=None, recording_paths=None, sorter_path=None, sa_path=None, report_path=None, session_names=None, session_id=None):
     """
     Do everything related to sorting.
     Start with raw data, end with a sorting_analyzer.
@@ -166,14 +161,12 @@ def do_sorting_pipeline(mouse, day, sorter_name, project_path, pp_for_sorting=No
     if recording_paths is None:
         recording_paths = [data_path + f"{session_name}/" for session_name in session_names]
 
-    num_recordings = len(recording_paths)
-
     if deriv_path is None:
         deriv_path = project_path + f"derivatives/M{mouse}/D{day}/"
     Path(deriv_path).mkdir(exist_ok=True, parents=True)
     if zarr_folder is None:
         zarr_folder = deriv_path + f"full/{sorter_name}/zarr_recordings/"
-    zarr_for_sorting_paths = [f"{zarr_folder}/zarr_for_sorting_{a}" for a in range(num_recordings)]
+    zarr_for_sorting_paths = [f"{zarr_folder}/zarr_for_sorting_{a}" for a in session_names]
 
     if pp_for_sorting is None:
         pp_for_sorting = pp_pipelines_dict[sorter_name]["sort"]
@@ -183,7 +176,7 @@ def do_sorting_pipeline(mouse, day, sorter_name, project_path, pp_for_sorting=No
     if pp_for_sorting == pp_for_post:
         zarr_for_post_paths = zarr_for_sorting_paths
     else:
-        zarr_for_post_paths = [f"{zarr_folder}/zarr_for_post_{a}" for a in range(num_recordings)]
+        zarr_for_post_paths = [f"{zarr_folder}/zarr_for_post_{a}" for a in session_names]
     if sorter_path is None:
         sorter_path = deriv_path + f"full/{sorter_name}/" + sorter_name + "_sorting/"
     if sa_path is None:
@@ -191,6 +184,9 @@ def do_sorting_pipeline(mouse, day, sorter_name, project_path, pp_for_sorting=No
     if report_path is None:
         report_path = deriv_path + f"full/{sorter_name}/" + sorter_name + "_report/"
 
+    do_zarrs(mouse, day, sorter_name, project_path, pp_for_sorting, pp_for_post, data_path, deriv_path, zarr_folder, recording_paths, sorter_path, sa_path, report_path, zarr_number=session_id, session_names=session_names)
+    do_just_sorting(mouse, day, sorter_name, project_path, pp_for_sorting, pp_for_post, data_path, deriv_path, zarr_folder, recording_paths, sorter_path, sa_path, report_path, session_names)
+    do_spikesort_postprocessing(mouse, day, sorter_name, project_path, pp_for_sorting, pp_for_post, data_path, deriv_path, zarr_folder, recording_paths, sorter_path, sa_path, report_path, session_names)
 
     return 
     
@@ -291,12 +287,12 @@ def make_location_plot(mouse, day, sorter_name, project_path, num_recordings):
     pp_for_sorting = pp_pipelines_dict[sorter_name]["sort"]
     pp_for_post = pp_pipelines_dict[sorter_name]["post"]
 
-    zarr_for_sorting_paths = [f"{zarr_folder}/zarr_for_sorting_{a}.zarr" for a in range(num_recordings)]
+    zarr_for_sorting_paths = [f"{zarr_folder}/zarr_for_sorting_{a}.zarr" for a in session_names]
 
     if pp_for_sorting == pp_for_post:
         zarr_for_post_paths = zarr_for_sorting_paths
     else:
-        zarr_for_post_paths = [f"{zarr_folder}/zarr_for_post_{a}.zarr" for a in range(num_recordings)]
+        zarr_for_post_paths = [f"{zarr_folder}/zarr_for_post_{a}.zarr" for a in session_names]
 
 
     recording_for_post = si.concatenate_recordings( [
