@@ -330,6 +330,8 @@ def get_trial_color(trial_type):
         return "red"
     elif trial_type == 2:
         return "blue"
+    elif trial_type == 3:
+        return "green"
     else:
         print("invalid trial-type passed to get_trial_color()")
 
