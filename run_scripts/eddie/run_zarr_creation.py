@@ -48,7 +48,7 @@ run_python_script(
 
 
 folder_names = [path_on_datastore.split('/')[-1] for path_on_datastore in paths_on_datastore]
-paths_on_eddie = [f"{project_path}data/{folder_name}" for folder_name in folder_names]
+paths_on_eddie = [f"{project_path}data/M{mouse}_D{day}/{folder_name}" for folder_name in folder_names]
 stageout_dict = dict(zip(paths_on_eddie, paths_on_datastore))
 
 run_stageout_script(
