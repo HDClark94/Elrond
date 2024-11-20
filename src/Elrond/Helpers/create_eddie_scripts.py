@@ -118,7 +118,7 @@ def run_gpu_python_script(python_arg, venv=None, cores=None, email=None, h_rt=No
 def run_stageout_script(stageout_dict, script_file_path=None, hold_jid=None, job_name=None, move_zarrs=False):
 
     if move_zarrs is False:
-        zarr_script = " --exclude='*.zarr*"
+        zarr_script = " --exclude='*.zarr*'"
     else:
         zarr_script = ""
 

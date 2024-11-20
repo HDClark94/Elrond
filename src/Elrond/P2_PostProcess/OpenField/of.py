@@ -3,7 +3,7 @@ from .spatial_data import *
 from .spatial_firing import *
 from .plotting import *
 
-def process(recording_path, processed_path, dlc_position_data, **kwargs):
+def process(recording_path, processed_path, dlc_position_data, spike_data_path=None,**kwargs):
 
     # process and save position data
     position_data = process_position_data(recording_path, dlc_position_data, **kwargs)
@@ -18,7 +18,8 @@ def process(recording_path, processed_path, dlc_position_data, **kwargs):
     else:
         sorterName = settings.sorterName
 
-    spike_data_path = processed_path + sorterName+"/spikes.pkl"
+    if spike_data_path is None:
+        spike_data_path = processed_path + sorterName+"/spikes.pkl"
     if os.path.exists(spike_data_path):
 
         output_path = processed_path + sorterName + "/"

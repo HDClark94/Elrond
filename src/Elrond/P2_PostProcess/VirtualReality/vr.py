@@ -6,7 +6,7 @@ from .video import *
 from Elrond.P3_CurrentAnalysis.basic_lomb_scargle_estimator import lomb_scargle
 from Elrond.P3_CurrentAnalysis.ramp_score import calculate_ramp_scores, calculate_ramp_scores_parallel
 
-def process(recording_path, processed_path, dlc_data=None, **kwargs):
+def process(recording_path, processed_path, dlc_data=None, spike_data_path=None, **kwargs):
     track_length = get_track_length(recording_path)
     stop_threshold = get_stop_threshold(recording_path)
 
@@ -36,7 +36,8 @@ def process(recording_path, processed_path, dlc_data=None, **kwargs):
   
     position_data_path = processed_path + "position_data.csv"
     processed_position_data_path = processed_path + "processed_position_data.pkl"
-    spike_data_path = processed_path + sorterName + "/spikes.pkl"
+    if spike_data_path is None:
+        spike_data_path = processed_path + sorterName + "/spikes.pkl"
 
     # save position data
     position_data.to_csv(position_data_path, index=False)

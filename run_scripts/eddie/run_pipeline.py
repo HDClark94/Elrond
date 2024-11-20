@@ -224,7 +224,7 @@ def do_dlc_pipeline(mouse, day, project_path, dlc_of_model_path=None, dlc_vr_mod
 
 def do_behavioural_postprocessing(mouse, day, sorter_name, project_path, data_path=None,
                       recording_paths=None, deriv_path=None, of1_dlc_folder=None,
-                      of2_dlc_folder=None, session_names=None):
+                      of2_dlc_folder=None, session_names=None, spike_data_path=None):
     """
     Do everything related to behaviour, including combining spike and behaviour data.
     Start with the output of do_sorting_pipeline and do_dlc_pipeline, end with Figures and scores.
@@ -247,13 +247,13 @@ def do_behavioural_postprocessing(mouse, day, sorter_name, project_path, data_pa
         if session_name == 'of1':
             of1_dlc_csv_path = list(Path(of1_dlc_folder).glob("*200_filtered.csv"))[0]
             of1_dlc_data = pd.read_csv(of1_dlc_csv_path, header=[1, 2], index_col=0) 
-            of.process(recording_path, save_path , of1_dlc_data, **{"sorterName": sorter_name})
+            of.process(recording_path, save_path , of1_dlc_data, spike_data_path=spike_data_path, **{"sorterName": sorter_name})
         elif session_name == 'of2':
             of2_dlc_csv_path = list(Path(of2_dlc_folder).glob("*200_filtered.csv"))[0]
             of2_dlc_data = pd.read_csv(of2_dlc_csv_path, header=[1, 2], index_col=0) 
-            of.process(recording_path, save_path , of2_dlc_data, **{"sorterName": sorter_name})
+            of.process(recording_path, save_path , of2_dlc_data, spike_data_path=spike_data_path, **{"sorterName": sorter_name})
         elif session_name == 'vr':
-            vr.process(recording_path, save_path, **{"sorterName": sorter_name})
+            vr.process(recording_path, save_path, spike_data_path=spike_data_path, **{"sorterName": sorter_name})
         elif session_name == 'vr_multi_context':
             vrmc.process(recording_path, save_path, **{"sorterName": sorter_name})
         elif session_name == 'allen_brain_observatory_visual_coding':
@@ -263,7 +263,7 @@ def do_behavioural_postprocessing(mouse, day, sorter_name, project_path, data_pa
         elif session_name in ['allen_brain_observatory_visual_sequences', 'dvd_waitscreen']:
             vc.process(recording_path, save_path, **{"sorterName": sorter_name})
 
-        return
+    return
 
 def do_theta_phase(mouse, day, project_path, recording_paths, session_names):
 

@@ -104,7 +104,7 @@ for mouse, days in mice_days.items():
 
             # Run behaviour, once everything else is done
             run_python_script(
-                elrond_path + "/../../run_scripts/eddie/behaviour.py " + mouse + " " + day + " " + sorter_name + " " + project_path, 
+                elrond_path + "/../../run_scripts/eddie/behaviour_per_session.py " + mouse + " " + day + " " + sorter_name + " " + project_path + " " + str(session_id), 
                 hold_jid = sort_job_name + "," + of1_job_name + "," + of2_job_name,
                 job_name = behaviour_job_name,
                 cores=3,
