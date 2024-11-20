@@ -2,6 +2,7 @@ README.md
 pyproject.toml
 src/Elrond/__init__.py
 src/Elrond/full.py
+src/Elrond/settings.py
 src/Elrond.egg-info/PKG-INFO
 src/Elrond.egg-info/SOURCES.txt
 src/Elrond.egg-info/dependency_links.txt

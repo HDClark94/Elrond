@@ -7,49 +7,9 @@ import pandas as pd
 import csv
 import shutil
 import math
-
-from Elrond.P2_PostProcess.Shared.dlc import extract_from_dlc
 from pathlib import Path
 from scipy.interpolate import interp1d
 from Elrond.Helpers import math_utility
-
-def read_bonsai_file(recording_folder):
-    if os.path.isdir(recording_folder) is False:
-        print('I could not find a bonsai file in', recording_folder)
-    path_to_bonsai_file = ''
-    for name in glob.glob(recording_folder + '/*.csv'):
-        if os.path.exists(name):
-            with open(name, newline='') as file:
-                try:
-                    reader = csv.reader(file)
-                    row1 = next(reader)
-                    if "T" not in row1[0]:
-                        continue
-                    else:
-                        if len(row1[0].split('T')[0]) == 10:
-                            path_to_bonsai_file = name
-                except Exception as ex:
-                    print('Could not read csv file:')
-                    print(name)
-                    print(ex)
-
-    return pd.read_csv(path_to_bonsai_file, sep=' ', header=None)
-
-
-
-''' 
-Read raw position data and sync LED intensity from Bonsai file amd convert time to seconds
-'''
-
-def convert_time_to_seconds(position_data):
-    position_data[['hours','minutes','seconds']] = position_data['time'].str.split(':', n=2,expand=True)
-    position_data['hours'] = position_data['hours'].astype(int)
-    position_data['minutes'] = position_data['minutes'].astype(int)
-    position_data['seconds'] = position_data['seconds'].astype(float)
-    position_data['time_seconds'] = position_data['hours'] * 3600 + position_data['minutes']*60 + position_data['seconds']
-    position_data['time_seconds'] = position_data['time_seconds'] - position_data['time_seconds'][0]
-    return position_data
-
 
 def resample_position_data(position_data, fs):
     '''
@@ -73,18 +33,6 @@ def resample_position_data(position_data, fs):
     df['time_seconds'] = t2
     df2return = pd.DataFrame(df)
     return df2return
-
-
-def proces_bonsai_position(position_data):
-    if len(list(position_data)) > 6:
-        position_data = position_data.drop([6], axis=1)  # remove column of NaNs due to extra space at end of lines
-    position_data[['date','time']] = position_data[0].str.split('T', n=1,expand=True)
-    position_data[['time','str_to_remove']] = position_data['time'].str.split('+', n=1,expand=True)
-    position_data = position_data.drop([0, 'str_to_remove'], axis=1)  # remove first column that got split into date and time
-    position_data.columns = ['x_left', 'y_left', 'x_right', 'y_right', 'syncLED', 'date', 'time']
-    position_data = convert_time_to_seconds(position_data)
-    position_data = position_data.drop(['date', 'time', 'hours', 'minutes', 'seconds'], axis=1)
-    return position_data
 
 
 def calculate_speed(position_data):
@@ -231,36 +179,6 @@ def get_position_heatmap(spatial_data,
                 position_heat_map[x, y] = np.nan
     return position_heat_map
 
-# TODO: delete this
-def extract_position_from_dlc(recording_path, processed_path, model_path):
-    
-    import deeplabcut as dlc
-    
-    dlc_position_data = pd.DataFrame()
-    avi_paths = [os.path.abspath(os.path.join(recording_path, filename)) for filename in os.listdir(recording_path) if filename.endswith(".avi")]
-    if (len(avi_paths) == 1):
-        video_path = avi_paths[0]
-        config_path = model_path + "config.yaml"
-
-        save_path = processed_path + "video/"
-        if not os.path.exists(save_path):
-            os.mkdir(save_path)
-
-        # add columns to position_data using markers as set in the dlc model
-        video_filename = video_path.split("/")[-1]
-        new_videopath = save_path + video_filename
-
-        _ = shutil.copyfile(video_path, new_videopath)
-        dlc.analyze_videos(config_path, [new_videopath], save_as_csv=True, destfolder=save_path)
-        dlc.filterpredictions(config_path, [new_videopath])
-        dlc.create_labeled_video(config_path, [new_videopath], save_frames=False)
-        dlc.plot_trajectories(config_path, [new_videopath])
-        csv_path = [os.path.abspath(os.path.join(save_path, filename)) for filename in os.listdir(save_path) if filename.endswith(".csv")]
-        dlc_position_data = pd.read_csv(csv_path[0], header=[1, 2], index_col=0)  # ignore the scorer column
-        os.remove(new_videopath)
-
-        return dlc_position_data
-    return dlc_position_data
 
 def calculate_left_and_right_coordinates(head, shoulders, length_from_midline=3):
     # length from midline has units of pixels, so set this low
@@ -290,11 +208,16 @@ def calculate_left_and_right_coordinates(head, shoulders, length_from_midline=3)
     right = (mid_x - perp_x, mid_y - perp_y)
     return left, right
 
-def add_dlc_markers(position_data, dlc_position_data):
+def add_pseudo_dlc_markers(position_data): 
+    position_data["x_left"] = 0
+    position_data["y_left"] = 0
+    position_data["x_right"] = 0 
+    position_data["y_right"] = 0   
+
     position_data.reset_index(drop=True)
     for i in range(len(position_data)):
-        head = (dlc_position_data[('head', 'x')][i], dlc_position_data[('head', 'y')][i])
-        shoulders = (dlc_position_data[('shoulder', 'x')][i], dlc_position_data[('shoulder', 'y')][i])
+        head = (position_data["position_x"].iloc[i], position_data["position_y"].iloc[i])
+        shoulders = (position_data["position_x"].iloc[i-1], position_data["position_y"].iloc[i-1])
         left, right = calculate_left_and_right_coordinates(head, shoulders)
         position_data["x_left"].iloc[i] = left[0]
         position_data["y_left"].iloc[i] = left[1]
@@ -303,26 +226,8 @@ def add_dlc_markers(position_data, dlc_position_data):
     return position_data 
 
 
-def run_dlc_of(recording_path, save_path, **kwargs):
-
-    avi_paths = [os.path.abspath(os.path.join(recording_path, filename)) for filename in os.listdir(recording_path) if filename.endswith(".avi")]
-    if len(avi_paths)==1 and settings.use_dlc_for_open_field:
-        dlc_position_data = extract_from_dlc(avi_paths[0], save_path, 
-                                                    model_path=kwargs["deeplabcut_of_model_path"])
-    else:
-        dlc_position_data = pd.DataFrame()
-
-    return dlc_position_data
-
-
-def process_position_data(recording_path, dlc_position_data, **kwargs):
-    
-    bonsai_position_data = read_bonsai_file(recording_path)
-    position_data = proces_bonsai_position(bonsai_position_data)
-
-    shortest_length = min(len(dlc_position_data), len(position_data))
-    position_data = add_dlc_markers(position_data[:shortest_length], 
-                                        dlc_position_data[:shortest_length])
+def process_position_data(position_data, **kwargs): 
+    position_data = add_pseudo_dlc_markers(position_data)
 
     position_data = resample_position_data(position_data, 30) 
     position_data = calculate_speed(position_data)

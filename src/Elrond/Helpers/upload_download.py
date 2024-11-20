@@ -4,7 +4,79 @@ import yaml
 import numpy as np
 from pathlib import Path
 import spikeinterface.full as si
-from neuroconv.utils.dict import load_dict_from_file, dict_deep_update
+
+def get_recording_folders(cohort_folder, mouse, day):
+    """
+    We (currently) use two folder structures. Either
+    data_path/
+        of/
+            M??_D??_date-time/
+                (which might contain openephys, or `recording.zarr` files)
+            M??_D??_date-time/
+        vr/
+            M??_D??_date-time/
+            maybe_more/
+
+    or:
+    data_path/
+        M??_D??/
+            a_bunch/
+            of_recordings/
+
+    The second follows the BIDS data structure (pretty much)
+
+    This function checks which type we're using, and exports
+    the recording folders. It also deals with the case if you
+    have a extra /data directory. This is often not used for 
+    the raw data but is used when processing.
+    """
+
+    recording_folders = []
+    data_path = cohort_folder
+    if len(list(Path(cohort_folder).glob('data/')))>0:
+        data_path += 'data/'
+
+    if len(list(Path(data_path).glob('of/'))) > 0:
+        recording_folders = list(Path(cohort_folder).glob(f"of/M{mouse}_D{day}*"))
+        recording_folders += list(Path(cohort_folder).glob(f'vr/M{mouse}_D{day}*'))
+        recording_folders += list(Path(cohort_folder).glob(f'vr_multi_context/M{mouse}_D{day}*'))
+
+    elif len(list(Path(data_path).glob(f"*M{mouse}_D{day}"))) > 0:
+        recording_folders = list(Path(data_path + f"M{mouse}_D{day}/").glob("*/"))
+
+    return recording_folders
+
+
+def this_is_zarr(recording_folder):
+    """
+    Checks if a recording_folder is zarr or not.
+    Zarr and open_ephys recording are loaded in different ways
+    in spikeinterface.
+    """
+
+    zarr_recording = False
+    if '.zarr' in str(recording_folder) or len(list(Path(recording_folder).rglob('*.zarr/')))>0:
+        zarr_recording = True
+
+    return zarr_recording
+
+def get_recording_from(recording_folder):
+
+    if this_is_zarr(recording_folder):
+        recording = si.load_extractor(recording_folder)
+    else:
+        recording = si.read_openephys(recording_folder)
+
+    return recording
+
+def get_raw_recordings_from(recording_paths):
+    recordings = []
+    for recording_path in recording_paths:
+        if list(Path(recording_path).glob('*recording.zarr')):
+            recordings.append(si.read_zarr(recording_path / Path("recording.zarr")))
+        else:
+            recordings.append(si.read_openephys(recording_path))
+    return recordings
 
 def get_processed_paths(base_processed_path, recording_paths):
 
@@ -18,6 +90,10 @@ def get_processed_paths(base_processed_path, recording_paths):
 
     return processed_paths
 
+def get_chronologized_recording_paths(data_path, mouse, day):
+    recording_paths = get_recording_folders(data_path, mouse, day)
+    return chronologize_paths(recording_paths)
+
 def get_recording_paths(data_path, mouse, day):
     """
     Get recording paths based on mouse and day.
@@ -26,9 +102,8 @@ def get_recording_paths(data_path, mouse, day):
     """
     mouse_day = "M"+str(mouse)+"_D"+str(day)
     recording_paths = os.listdir(data_path)
-    recording_paths = [s for s in recording_paths if mouse_day in s]
+    recording_paths = [data_path + s + "/" for s in recording_paths if mouse_day in s]
 
-    print(recording_paths)
     return recording_paths
 
 def chronologize_paths(recording_paths):
@@ -77,7 +152,7 @@ def get_recording_types(recording_paths):
     recording_types = []
     for i in range(len(recording_paths)):
         if os.path.exists(recording_paths[i]+"/params.yml"):
-            params = load_dict_from_file(recording_paths[i]+"/params.yml")
+            params = yaml.safe_load(Path(recording_paths[i]+"/params.yml").read_text())
             if 'recording_type' in params:
                 recording_types.append(params['recording_type'])
         else:
@@ -88,7 +163,7 @@ def get_recording_types(recording_paths):
 
 def get_recording_type(recording_path):
     if os.path.exists(recording_path+"/params.yml"):
-        params = load_dict_from_file(recording_path+"/params.yml")
+        params = yaml.safe_load(Path(recording_path+"/params.yml").read_text())
         if 'recording_type' in params:
             return params['recording_type']
     else:
@@ -110,7 +185,7 @@ def get_recording_formats(recording_paths):
     recording_formats = []
     for i in range(len(recording_paths)):
         if os.path.exists(recording_paths[i]+"/params.yml"):
-            params = load_dict_from_file(recording_paths[i]+"/params.yml")
+            params = yaml.safe_load(Path(recording_paths[i]+"/params.yml").read_text())
             if 'recording_format' in params:
                 recording_formats.append(params['recording_format'])
         else:

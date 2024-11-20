@@ -127,13 +127,13 @@ def add_synced_videodata_to_position_data(position_data, video_data):
     position_data["eye_centroid_y"] = eye_centroids_y
     return position_data
 
-def process_video(recording_path, processed_path, position_data, pupil_model_path, licks_model_path):
+def process_video(recording_path, processed_path, pupil_model_path, licks_model_path):
     # run checks  
     avi_paths = [os.path.abspath(os.path.join(recording_path, filename)) for filename in os.listdir(recording_path) if filename.endswith("_capture.avi")]
     bonsai_csv_paths = [os.path.abspath(os.path.join(recording_path, filename)) for filename in os.listdir(recording_path) if filename.endswith("_capture.csv")]
     if (len(avi_paths) != 1) or (len(bonsai_csv_paths) != 1):
         print("I couldn't process video because I need exactly 1 .avi file and 1 .csv file in the recording folder")
-        return position_data
+        return
     # else continue on with the video analysis 
 
     # use bonsai csv to sync the video_markers_df with position_data and the sync pulse signal in that
@@ -148,12 +148,7 @@ def process_video(recording_path, processed_path, position_data, pupil_model_pat
     video_data = add_eye_stats(video_data) 
     video_data = add_lick_stats(video_data)
 
-    # syncrhonise position data and video data
-    position_data, video_data = synchronise_position_data_via_column_ttl_pulses(position_data, video_data, processed_path, recording_path)
-    # now video data contains a synced_time column which is relative to the start of the time column in position_data
-    position_data = add_synced_videodata_to_position_data(position_data, video_data)
-
-    return position_data
+    return video_data
 
 #  for testing
 def main():

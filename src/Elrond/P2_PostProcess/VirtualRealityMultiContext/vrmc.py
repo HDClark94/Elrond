@@ -21,20 +21,25 @@ def process(recording_path, processed_path, **kwargs):
         print("I couldn't find any source of position data")
         return
     print("I am using position data with an avg sampling rate of ", str(1/np.nanmean(np.diff(position_data["time_seconds"]))), "Hz")
+    
     # process video
     #position_data = process_video(recording_path, processed_path, position_data, 
     #                              pupil_model_path=kwargs["deeplabcut_vr_pupil_model_path"],
-    #                              licks_model_path=kwargs["deeplabcut_vr_licks_model_path"])  
+    #                              licks_model_path=kwargs["deeplabcut_vr_licks_model_path"]) 
+    
     position_data_path = processed_path + "position_data.csv"
     processed_position_data_path = processed_path + "processed_position_data.pkl"
     spike_data_path = processed_path + sorterName + "/spikes.pkl"
+
     # save position data
     position_data.to_csv(position_data_path, index=False)
     position_data["syncLED"] = position_data["sync_pulse"]
+
     # process and plot position data
     processed_position_data = process_position_data(position_data, track_length, stop_threshold)
     processed_position_data.to_pickle(processed_position_data_path)
     plot_behaviour(position_data, processed_position_data, output_path=processed_path, track_length=track_length)
+
     # process and save spatial spike data
     if os.path.exists(spike_data_path):
         spike_data = pd.read_pickle(spike_data_path)
@@ -46,9 +51,11 @@ def process(recording_path, processed_path, **kwargs):
     else: 
         print("I couldn't find spike data at ", spike_data_path)
     return
+
 #  this is here for testing 
 def main():
     print('-------------------------------------------------------------')
     print('-------------------------------------------------------------')
+     
 if __name__ == '__main__':
     main()
