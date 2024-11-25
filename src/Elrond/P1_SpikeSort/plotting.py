@@ -6,6 +6,8 @@ import spikeinterface.full as si
 
 def plot_locations_over_time(recording, export_path):
 
+    recording = recording.astype('float32')
+
     rec_length_mins = recording.get_duration()/60
 
     si.set_global_job_kwargs(n_jobs=4)
