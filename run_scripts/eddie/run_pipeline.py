@@ -143,7 +143,7 @@ def do_spikesort_postprocessing(mouse, day, sorter_name, project_path, pp_for_so
 
     
     si.set_global_job_kwargs(n_jobs=8)
-    sorting = read_grouped_sorting(sorter_path, zarr_for_sorting_paths[0])
+    sorting = read_grouped_sorting(sorter_path, zarr_for_sorting_paths)
     sorting_analyzer = compute_sorting_analyzer(sorting, zarr_for_post_paths, sa_path)
     plot_simple_np_probe_layout(sorting_analyzer.recording,  deriv_path)
     si.export_report(sorting_analyzer, report_path)

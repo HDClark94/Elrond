@@ -302,9 +302,11 @@ def make_recording_from_paths_and_get_times(recording_paths):
 
     return mono_recording, rec_times
 
-def read_grouped_sorting(sorter_path, recording_path):
+def read_grouped_sorting(sorter_path, recording_paths):
 
-    recording = get_recording_from(recording_path)
+    recording = si.concatenate_recordings([
+        get_recording_from(recording_path)
+        for recording_path in recording_paths ])
 
     grouping_property = 'group'
     recording_dict = recording.split_by(grouping_property)
@@ -325,5 +327,7 @@ def read_grouped_sorting(sorter_path, recording_path):
 
     aggregate_sorting = si.aggregate_units(sorting_list)
     aggregate_sorting.set_property(key='group', values=unit_groups)
+
+    aggregate_sorting = si.remove_excess_spikes(recording=recording, sorting=aggregate_sorting)
 
     return aggregate_sorting
