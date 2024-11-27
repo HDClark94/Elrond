@@ -30,13 +30,19 @@ def add_kinematics(spike_data, position_data):
     return spike_data
 
 
-def bin_fr_in_time(spike_data, position_data, track_length, smoothen=True):
+def bin_fr_in_time(spike_data, position_data, track_length, smoothen=True,
+                   time_bin_size=None, guassian_std_for_smoothing_in_time_seconds=None):
     if smoothen:
         suffix="_smoothed"
     else:
         suffix=""
 
-    gauss_kernel = Gaussian1DKernel(settings.guassian_std_for_smoothing_in_time_seconds/settings.time_bin_size)
+    if time_bin_size is not None:
+        time_bin_size = settings.time_bin_size
+    if guassian_std_for_smoothing_in_time_seconds is not None:
+        guassian_std_for_smoothing_in_time_seconds = settings.guassian_std_for_smoothing_in_time_seconds
+
+    gauss_kernel = Gaussian1DKernel(guassian_std_for_smoothing_in_time_seconds/time_bin_size)
     n_trials = max(position_data["trial_number"])
 
     # make an empty list of list for all firing rates binned in time for each cluster
@@ -49,7 +55,7 @@ def bin_fr_in_time(spike_data, position_data, track_length, smoothen=True):
     x_position_elapsed_cm = (track_length*(trial_numbers_raw-1))+np.array(position_data['x_position_cm'], dtype="float64")
 
     # calculate the average fr in each 100ms time bin
-    time_bins = np.arange(min(times), max(times), settings.time_bin_size) # 100ms time bins
+    time_bins = np.arange(min(times), max(times), time_bin_size) # 100ms time bins
     tn_time_bin_means = (np.histogram(times, time_bins, weights = trial_numbers_raw)[0] / np.histogram(times, time_bins)[0]).astype(np.int64)
     x_elapsed_bin_means = (np.histogram(times, time_bins, weights = x_position_elapsed_cm)[0] / np.histogram(times, time_bins)[0])
     x_bin_means = x_elapsed_bin_means%track_length
@@ -83,14 +89,20 @@ def bin_fr_in_time(spike_data, position_data, track_length, smoothen=True):
     return spike_data
 
 
-def bin_fr_in_space(spike_data, position_data, track_length, smoothen=True):
+def bin_fr_in_space(spike_data, position_data, track_length, smoothen=True,
+                    vr_bin_size_cm=None, guassian_std_for_smoothing_in_space_cm=None):
     if smoothen:
         suffix="_smoothed"
     else:
         suffix=""
+    
+    if vr_bin_size_cm is not None:
+        vr_bin_size_cm = settings.vr_bin_size_cm
+    if guassian_std_for_smoothing_in_space_cm is not None:
+        guassian_std_for_smoothing_in_space_cm = settings.guassian_std_for_smoothing_in_space_cm
 
     vr_bin_size_cm = settings.vr_bin_size_cm
-    gauss_kernel = Gaussian1DKernel(settings.guassian_std_for_smoothing_in_space_cm/vr_bin_size_cm)
+    gauss_kernel = Gaussian1DKernel(guassian_std_for_smoothing_in_space_cm/vr_bin_size_cm)
 
     # make an empty list of list for all firing rates binned in time for each cluster
     fr_binned_in_space = [[] for x in range(len(spike_data))]
@@ -132,7 +144,7 @@ def bin_fr_in_space(spike_data, position_data, track_length, smoothen=True):
             fr_binned_in_space_bin_centres[i] = fr_binned_in_space_bin_centres_cluster
         else:
             fr_binned_in_space[i] = []
-            fr_binned_in_space_bin_centres[i] = []
+            fr_binned_in_space_bin_centres[i] = [] 
 
     spike_data["fr_binned_in_space"+suffix] = fr_binned_in_space
     spike_data["fr_binned_in_space_bin_centres"] = fr_binned_in_space_bin_centres
