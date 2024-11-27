@@ -1,6 +1,7 @@
 import sys
 import os
 from Elrond.Helpers.create_eddie_scripts import stagein_data, run_python_script, run_stageout_script, run_gpu_python_script
+from Elrond.Helpers.upload_download import get_session_names, chronologize_paths
 from pathlib import Path
 import Elrond
 
@@ -19,7 +20,7 @@ paths_on_datastore = []
 stagein_job_name = None
 
 filenames_path = project_path + f"data/M{mouse}_D{day}/data_folder_names.txt"
-if Path(filenames_path).exists()
+if Path(filenames_path).exists():
     with open(filenames_path) as f:
         paths_on_datastore = f.read().splitlines()
     
@@ -113,7 +114,7 @@ run_python_script(
 for a, session_name in enumerate(session_names):
     # Run theta phase
     run_python_script(
-        elrond_path + "/../../run_scripts/eddie/run_theta_phase.py " + mouse + " " + day + " " + project_path + " " + a,
+        elrond_path + "/../../run_scripts/eddie/run_theta_phase.py " + mouse + " " + day + " " + project_path + " " + str(a),
         hold_jid = stagein_job_name + "_0,"+stagein_job_name + "_1,"+stagein_job_name + "_2"+stagein_job_name + "_3",
         job_name = theta_job_name + session_name,
         cores=4,
