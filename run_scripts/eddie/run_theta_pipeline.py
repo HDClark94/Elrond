@@ -45,10 +45,10 @@ time.sleep(60)
 raw_recording_paths = get_chronologized_recording_paths(project_path, mouse, day)
 session_names = get_session_names(raw_recording_paths)
 
-for raw_recording_path, session_name in zip(raw_recording_paths, session_names):
+for a, session_name in enumerate(session_names):
     # Run theta phase
     run_python_script(
-        elrond_path + "/../../run_scripts/eddie/run_theta_phase.py " + mouse + " " + day + " " + project_path + " " + raw_recording_path + " " + session_name,
+        elrond_path + "/../../run_scripts/eddie/run_theta_phase.py " + mouse + " " + day + " " + project_path + " " + a,
         hold_jid = stagein_job_name + "_0,"+stagein_job_name + "_1,"+stagein_job_name + "_2",
         job_name = theta_job_name + session_name,
         cores=4,

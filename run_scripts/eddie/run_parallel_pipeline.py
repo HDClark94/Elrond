@@ -19,6 +19,9 @@ paths_on_datastore = []
 stagein_job_name = None
 
 filenames_path = project_path + f"data/M{mouse}_D{day}/data_folder_names.txt"
+if Path(filenames_path).exists()
+    with open(filenames_path) as f:
+        paths_on_datastore = f.read().splitlines()
     
 stagein_job_name = f"stagein_M{mouse}_D{day}"
 
@@ -32,6 +35,8 @@ if len(os.listdir(data_path)) < 2:
             continue
         else:
             stagein_data(mouse, day, project_path, job_name = stagein_job_name + "_" + str(a), which_rec=a)
+
+session_names = get_session_names(chronologize_paths(paths_on_datastore))
 
 mouseday_string = "M" + mouse + "_" + day + "_"
 
@@ -51,26 +56,26 @@ out_job_name = mouseday_string + "out_" + sorter_name
 if len(paths_on_datastore) == 3:
         run_python_script(
         elrond_path + "/../../run_scripts/eddie/zarr_of1.py " + mouse + " " + day + " " + sorter_name + " " + project_path, 
-        hold_jid = stagein_job_name + '_0,'+stagein_job_name + '_1,'+stagein_job_name + '_2',
+        hold_jid = stagein_job_name + '_0,'+stagein_job_name + '_1,'+stagein_job_name + '_2'+stagein_job_name + "_3",
         job_name = zarr_job_name + "of1",
         h_rt = "0:59:00"
         )
         run_python_script(
         elrond_path + "/../../run_scripts/eddie/zarr_of2.py " + mouse + " " + day + " " + sorter_name + " " + project_path, 
-        hold_jid = stagein_job_name + '_0,'+stagein_job_name + '_1,'+stagein_job_name + '_2',
+        hold_jid = stagein_job_name + '_0,'+stagein_job_name + '_1,'+stagein_job_name + '_2'+stagein_job_name + "_3",
         job_name = zarr_job_name + "of2",
         h_rt = "0:59:00"
         )
         run_python_script(
         elrond_path + "/../../run_scripts/eddie/zarr_vr.py " + mouse + " " + day + " " + sorter_name + " " + project_path, 
-        hold_jid = stagein_job_name + '_0,'+stagein_job_name + '_1,'+stagein_job_name + '_2',
+        hold_jid = stagein_job_name + '_0,'+stagein_job_name + '_1,'+stagein_job_name + '_2'+stagein_job_name + "_3",
         job_name = zarr_job_name,
         h_rt = "0:59:00"
         )
 else:
     run_python_script(
         elrond_path + "/../../run_scripts/eddie/zarr_time.py " + mouse + " " + day + " " + sorter_name + " " + project_path, 
-        hold_jid = stagein_job_name + '_0,'+stagein_job_name + '_1,'+stagein_job_name + '_2',
+        hold_jid = stagein_job_name + '_0,'+stagein_job_name + '_1,'+stagein_job_name + '_2'+stagein_job_name + "_3",
         job_name = zarr_job_name,
         h_rt = "0:59:00"
         )
@@ -105,11 +110,13 @@ run_python_script(
     )
 
 # Run theta phase
-run_python_script(
-    elrond_path + "/../../run_scripts/eddie/run_theta_phase.py " + mouse + " " + day + " " + project_path,
-    hold_jid = stagein_job_name + "_0",
-    job_name = theta_job_name,
-    cores=4,
+for a, session_name in enumerate(session_names):
+    # Run theta phase
+    run_python_script(
+        elrond_path + "/../../run_scripts/eddie/run_theta_phase.py " + mouse + " " + day + " " + project_path + " " + a,
+        hold_jid = stagein_job_name + "_0,"+stagein_job_name + "_1,"+stagein_job_name + "_2"+stagein_job_name + "_3",
+        job_name = theta_job_name + session_name,
+        cores=4,
     )
 
 # Run DLC on of1

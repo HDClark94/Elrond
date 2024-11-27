@@ -5,8 +5,9 @@ from .plotting import *
 from .video import *
 from Elrond.P3_CurrentAnalysis.basic_lomb_scargle_estimator import lomb_scargle
 from Elrond.P3_CurrentAnalysis.ramp_score import calculate_ramp_scores, calculate_ramp_scores_parallel
+from Elrond.P2_PostProcess.Shared.time_sync import synchronise_position_data_via_column_ttl_pulses
 
-def process(recording_path, processed_path, dlc_data=None, spike_data_path=None, **kwargs):
+def process(recording_path, processed_path, spike_data_path=None, **kwargs):
     track_length = get_track_length(recording_path)
     stop_threshold = get_stop_threshold(recording_path)
 
@@ -26,10 +27,10 @@ def process(recording_path, processed_path, dlc_data=None, spike_data_path=None,
         print("I couldn't find any source of position data")
         return
     
-    # syncrhonise position data and video data
-    position_data, video_data = synchronise_position_data_via_column_ttl_pulses(position_data, video_data, processed_path, recording_path)
-    # now video data contains a synced_time column which is relative to the start of the time column in position_data
-    position_data = add_synced_videodata_to_position_data(position_data, video_data)
+    # # syncrhonise position data and video data
+    # position_data, video_data = synchronise_position_data_via_column_ttl_pulses(position_data, video_data, processed_path, recording_path)
+    # # now video data contains a synced_time column which is relative to the start of the time column in position_data
+    # position_data = add_synced_videodata_to_position_data(position_data, video_data)
 
     print("I am using position data with an avg sampling rate of ", str(1/np.nanmean(np.diff(position_data["time_seconds"]))), "Hz")
   

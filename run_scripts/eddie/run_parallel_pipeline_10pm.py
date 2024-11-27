@@ -68,15 +68,11 @@ for mouse, days in mice_days.items():
         if len(os.listdir(data_path)) == 1:
             stagein_data(mouse, day, project_path, job_name = stagein_job_name + "_" + str(0), which_rec=0, hold_jid="sleepy_time")
             
-
             for a, path in enumerate(paths_on_datastore):
                 if a == 0:
                     continue
                 else:
                     stagein_data(mouse, day, project_path, job_name = stagein_job_name + "_" + str(a), which_rec=a, hold_jid="sleepy_time")
-
-        
-
 
         zarr_job_name =  mouseday_string + "z_" + sorter_name
         sort_job_name =  mouseday_string + sorter_name
