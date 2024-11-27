@@ -169,9 +169,9 @@ def bin_in_space(position_data, processed_position_data, track_length, smoothen=
     else:
         suffix=""
     
-    if vr_bin_size_cm is not None:
+    if vr_bin_size_cm is None:
         vr_bin_size_cm = settings.vr_bin_size_cm
-    if guassian_std_for_smoothing_in_space_cm is not None:
+    if guassian_std_for_smoothing_in_space_cm is None:
         guassian_std_for_smoothing_in_space_cm = settings.guassian_std_for_smoothing_in_space_cm
 
     gauss_kernel = Gaussian1DKernel(guassian_std_for_smoothing_in_space_cm/vr_bin_size_cm)
@@ -247,9 +247,9 @@ def bin_in_time(position_data, processed_position_data, track_length, smoothen=T
     else:
         suffix=""
 
-    if time_bin_size is not None:
+    if time_bin_size is None:
         time_bin_size = settings.time_bin_size
-    if guassian_std_for_smoothing_in_time_seconds is not None:
+    if guassian_std_for_smoothing_in_time_seconds is None:
         guassian_std_for_smoothing_in_time_seconds = settings.guassian_std_for_smoothing_in_time_seconds
 
     gauss_kernel = Gaussian1DKernel(guassian_std_for_smoothing_in_time_seconds/time_bin_size)
