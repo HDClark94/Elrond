@@ -153,7 +153,11 @@ def compute_sorting_analyzer(sorting, zarr_for_post_paths, sa_path, extension_di
     sa = si.create_sorting_analyzer(recording = recording_for_post, 
                                     sorting=sorting, format="binary_folder",
                                 folder=sa_path, overwrite=True)
-    sa.compute(extension_dict)
+    try:
+        sa.compute(extension_dict)
+    except:
+        print("something went wrong computing extensions...")
+        
     return sa
 
 # TODO: delete!!
