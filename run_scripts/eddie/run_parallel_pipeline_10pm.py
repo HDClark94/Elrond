@@ -92,16 +92,9 @@ for mouse, days in mice_days.items():
             h_rt = "0:59:00"
             )
 
-        # if sorter_name == "kilosort4":
-        #     run_gpu_python_script(
-        #         elrond_path + "/../../run_scripts/eddie/sort.py " + mouse + " " + day + " " + sorter_name + " " + project_path, 
-        #         hold_jid = zarr_job_name,
-        #         job_name = sort_job_name,
-        #         )
-        # else:
         run_python_script(
             elrond_path + "/../../run_scripts/eddie/sort.py " + mouse + " " + day + " " + sorter_name + " " + project_path, 
-            hold_jid = zarr_job_name,
+            hold_jid = zarr_job_name + "," + zarr_job_name + "of2" + "," + zarr_job_name + "of1" + "," + zarr_job_name + "vr",
             job_name = sort_job_name,
             h_rt = "23:59:59"
         )
@@ -110,7 +103,8 @@ for mouse, days in mice_days.items():
             elrond_path + "/../../run_scripts/eddie/sspp.py " + mouse + " " + day + " " + sorter_name + " " + project_path, 
             hold_jid = sort_job_name,
             job_name = sspp_job_name,
-            h_rt = "1:59:00"
+            h_rt = "3:59:00",
+            cores=1
         )
 
         if 'of1' in session_names:
@@ -128,6 +122,17 @@ for mouse, days in mice_days.items():
                 job_name = of2_job_name,
                 h_rt = "1:59:00"
             )
+
+        # Run theta phase
+        for a, session_name in enumerate(session_names):
+            # Run theta phase
+            run_python_script(
+                elrond_path + "/../../run_scripts/eddie/run_theta_phase.py " + mouse + " " + day + " " + project_path + " " + str(a),
+                hold_jid = stagein_job_name + "_0,"+stagein_job_name + "_1,"+stagein_job_name + "_2"+stagein_job_name + "_3",
+                job_name = theta_job_name + "_" + session_name,
+                cores=4,
+            )
+
 
         # Run behaviour, once everything else is done
         run_python_script(
