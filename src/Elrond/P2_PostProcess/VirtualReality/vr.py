@@ -70,7 +70,7 @@ def process(recording_path, processed_path, spike_data_path=None, **kwargs):
     try:
         plot_behaviour(position_data, processed_position_data, output_path=processed_path, track_length=track_length)
     except:
-        continue
+        print()
 
     if synced_lick_train is not None:
         plot_licks_on_track(processed_position_data, synced_lick_train, processed_path + "Figures/behaviour/", track_length=track_length)
