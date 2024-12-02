@@ -199,7 +199,7 @@ def stagein_data(mouse, day, project_path, job_name=None, which_rec=None, hold_j
 
     stagein_dict = dict(zip(paths_on_datastore, dest_on_eddie))
 
-    run_stagein_script(stagein_dict, job_name, hold_jid=hold_jid)
+    run_stagein_script(stagein_dict, job_name=job_name, hold_jid=hold_jid)
 
     return
 
