@@ -247,21 +247,42 @@ def do_behavioural_postprocessing(mouse, day, sorter_name, project_path, data_pa
         if session_name == 'of1':
             of1_dlc_csv_path = list(Path(of1_dlc_folder).glob("*200_filtered.csv"))[0]
             of1_dlc_data = pd.read_csv(of1_dlc_csv_path, header=[1, 2], index_col=0) 
-            of.process(recording_path, save_path , of1_dlc_data, spike_data_path=spike_data_path, **{"sorterName": sorter_name})
+            try:
+                of.process(recording_path, save_path , of1_dlc_data, spike_data_path=spike_data_path, **{"sorterName": sorter_name})
+            except:
+                continue
         elif session_name == 'of2':
             of2_dlc_csv_path = list(Path(of2_dlc_folder).glob("*200_filtered.csv"))[0]
             of2_dlc_data = pd.read_csv(of2_dlc_csv_path, header=[1, 2], index_col=0) 
-            of.process(recording_path, save_path , of2_dlc_data, spike_data_path=spike_data_path, **{"sorterName": sorter_name})
+            try:
+                of.process(recording_path, save_path , of2_dlc_data, spike_data_path=spike_data_path, **{"sorterName": sorter_name})
+            except:
+                continue
         elif session_name == 'vr':
-            vr.process(recording_path, save_path, spike_data_path=spike_data_path, **{"sorterName": sorter_name})
+            try:
+                vr.process(recording_path, save_path, spike_data_path=spike_data_path, **{"sorterName": sorter_name})
+            except:
+                continue
         elif session_name == 'vr_multi_context':
-            vrmc.process(recording_path, save_path, **{"sorterName": sorter_name})
+            try:
+                vrmc.process(recording_path, save_path, **{"sorterName": sorter_name})
+            except:
+                continue
         elif session_name == 'allen_brain_observatory_visual_coding':
-            vc.process(recording_path, save_path, **{"sorterName": sorter_name})
+            try:
+                vc.process(recording_path, save_path, **{"sorterName": sorter_name})
+            except:
+                continue
         elif session_name in ['allen_brain_observatory_visual_sequences', 'allen_brain_observatory_visual_multi_sequences']:
-            vc.process(recording_path, save_path, **{"sorterName": sorter_name})
+            try:
+                vc.process(recording_path, save_path, **{"sorterName": sorter_name})
+            except:
+                continue
         elif session_name in ['allen_brain_observatory_visual_sequences', 'dvd_waitscreen']:
-            vc.process(recording_path, save_path, **{"sorterName": sorter_name})
+            try:
+                vc.process(recording_path, save_path, **{"sorterName": sorter_name})
+            except:
+                continue
 
     return
 
@@ -269,8 +290,6 @@ def do_theta_phase(mouse, day, project_path, recording_paths, session_names):
 
     deriv_path = project_path + f"derivatives/M{mouse}/D{day}/"
     save_paths = [deriv_path + session + "/" for session in session_names]
-
-    
 
     for recording_path, save_path in zip(recording_paths, save_paths):
         Path(save_path).mkdir(exist_ok=True, parents=True)

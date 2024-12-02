@@ -67,7 +67,11 @@ def process(recording_path, processed_path, spike_data_path=None, **kwargs):
     # process and plot position data
     processed_position_data = process_position_data(position_data, track_length, stop_threshold)
     processed_position_data.to_pickle(processed_position_data_path)
-    plot_behaviour(position_data, processed_position_data, output_path=processed_path, track_length=track_length)
+    try:
+        plot_behaviour(position_data, processed_position_data, output_path=processed_path, track_length=track_length)
+    except:
+        continue
+
     if synced_lick_train is not None:
         plot_licks_on_track(processed_position_data, synced_lick_train, processed_path + "Figures/behaviour/", track_length=track_length)
 
@@ -75,6 +79,7 @@ def process(recording_path, processed_path, spike_data_path=None, **kwargs):
     if os.path.exists(spike_data_path):
         spike_data = pd.read_pickle(spike_data_path)
         position_data = synchronise_position_data_via_ADC_ttl_pulses(position_data, processed_path, recording_path)
+        position_data.to_csv(position_data_path, index=False)
         spike_data = add_location_and_task_variables(spike_data, position_data, processed_position_data, track_length)
         spike_data = lomb_scargle(spike_data, processed_position_data, track_length)
         position_data.to_csv(position_data_path, index=False)

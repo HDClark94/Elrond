@@ -28,6 +28,7 @@ def process(recording_path, processed_path, dlc_position_data, spike_data_path=N
         spike_data = add_spatial_variables(spike_data, position_data)
         plot_firing_rate_maps(spike_data, output_path)
 
+        spike_data.to_pickle(spike_data_path)
         spike_data = add_scores(spike_data, position_data, position_heat_map)
         spike_data.to_pickle(spike_data_path)
 
@@ -36,7 +37,7 @@ def process(recording_path, processed_path, dlc_position_data, spike_data_path=N
         plot_coverage(position_heat_map, output_path)
         plot_polar_head_direction_histogram(spike_data, position_data, output_path)
         plot_firing_rate_vs_speed(spike_data, position_data, output_path)
-        make_combined_figure(spike_data, output_path)
+        #make_combined_figure(spike_data, output_path)
     else:
         print("I couldn't find spike data at ", spike_data_path)
     return
