@@ -57,26 +57,26 @@ out_job_name = mouseday_string + "out_" + sorter_name
 if len(paths_on_datastore) == 3:
         run_python_script(
         elrond_path + "/../../run_scripts/eddie/zarr_of1.py " + mouse + " " + day + " " + sorter_name + " " + project_path, 
-        hold_jid = stagein_job_name + '_0,'+stagein_job_name + '_1,'+stagein_job_name + '_2'+stagein_job_name + "_3",
+        hold_jid = stagein_job_name + '_0,'+stagein_job_name + '_1,'+stagein_job_name + '_2,'+stagein_job_name + "_3",
         job_name = zarr_job_name + "of1",
         h_rt = "0:59:00"
         )
         run_python_script(
         elrond_path + "/../../run_scripts/eddie/zarr_of2.py " + mouse + " " + day + " " + sorter_name + " " + project_path, 
-        hold_jid = stagein_job_name + '_0,'+stagein_job_name + '_1,'+stagein_job_name + '_2'+stagein_job_name + "_3",
+        hold_jid = stagein_job_name + '_0,'+stagein_job_name + '_1,'+stagein_job_name + '_2,'+stagein_job_name + "_3",
         job_name = zarr_job_name + "of2",
         h_rt = "0:59:00"
         )
         run_python_script(
         elrond_path + "/../../run_scripts/eddie/zarr_vr.py " + mouse + " " + day + " " + sorter_name + " " + project_path, 
-        hold_jid = stagein_job_name + '_0,'+stagein_job_name + '_1,'+stagein_job_name + '_2'+stagein_job_name + "_3",
+        hold_jid = stagein_job_name + '_0,'+stagein_job_name + '_1,'+stagein_job_name + '_2,'+stagein_job_name + "_3",
         job_name = zarr_job_name,
         h_rt = "0:59:00"
         )
 else:
     run_python_script(
         elrond_path + "/../../run_scripts/eddie/zarr_time.py " + mouse + " " + day + " " + sorter_name + " " + project_path, 
-        hold_jid = stagein_job_name + '_0,'+stagein_job_name + '_1,'+stagein_job_name + '_2'+stagein_job_name + "_3",
+        hold_jid = stagein_job_name + '_0,'+stagein_job_name + '_1,'+stagein_job_name + '_2,'+stagein_job_name + "_3",
         job_name = zarr_job_name,
         h_rt = "0:59:00"
         )
