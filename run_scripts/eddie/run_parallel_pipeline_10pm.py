@@ -5,7 +5,7 @@ from pathlib import Path
 import Elrond
 import yaml
 import time
-from Elrond.Helpers.upload_download import get_session_names
+from Elrond.Helpers.upload_download import get_session_names, chronologize_paths
 
 
 def get_filepaths_on_datastore(mouse, day, project_path):
@@ -59,7 +59,7 @@ for mouse, days in mice_days.items():
         with open(filenames_path) as f:
             paths_on_datastore = f.read().splitlines()
 
-        session_names = get_session_names(paths_on_datastore)
+        session_names = get_session_names(chronologize_paths(paths_on_datastore))
         print(f"Sessions for M{mouse} D{day} are: {session_names}")
             
         mouseday_string = "M" + mouse + "_" + day + "_"
