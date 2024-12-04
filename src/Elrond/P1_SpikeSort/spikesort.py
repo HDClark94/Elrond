@@ -306,7 +306,7 @@ def make_recording_from_paths_and_get_times(recording_paths):
 
     return mono_recording, rec_times
 
-def read_grouped_sorting(sorter_path, recording_paths):
+def read_grouped_sorting(sorter_path, recording_paths, sorter_name):
 
     recording = si.concatenate_recordings([
         get_recording_from(recording_path)
@@ -320,7 +320,10 @@ def read_grouped_sorting(sorter_path, recording_paths):
     
     sorting_list=[]
     for path in paths:
-        sorting = si.read_kilosort(path / Path("sorter_output"))
+        if sorter_name == "kilosort4":
+            sorting = si.read_kilosort(path / Path("sorter_output"))
+        elif sorter_name == "herdingspikes":
+            sorting = si.read_herdingspikes(path / Path("sorter_output/HS2_sorted.hdf5"))
         sorting_list.append(sorting)
 
     unit_groups = []
