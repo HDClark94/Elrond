@@ -25,12 +25,12 @@ def process(recording_path, processed_path, spike_data_path=None, **kwargs):
         position_data = generate_position_data_from_ADC_channels(recording_path, processed_path)
     else: 
         print("I couldn't find any source of position data")
-        return
-    
-    # # syncrhonise position data and video data
-    # position_data, video_data = synchronise_position_data_via_column_ttl_pulses(position_data, video_data, processed_path, recording_path)
-    # # now video data contains a synced_time column which is relative to the start of the time column in position_data
-    # position_data = add_synced_videodata_to_position_data(position_data, video_data)
+
+    if dlc_data is not None:
+        # syncrhonise position data and video data
+        position_data, video_data = synchronise_position_data_via_column_ttl_pulses(position_data, video_data, processed_path, recording_path)
+        # now video data contains a synced_time column which is relative to the start of the time column in position_data
+        position_data = add_synced_videodata_to_position_data(position_data, video_data)
 
     print("I am using position data with an avg sampling rate of ", str(1/np.nanmean(np.diff(position_data["time_seconds"]))), "Hz")
   

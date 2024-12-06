@@ -129,20 +129,22 @@ def main():
     if settings.suppress_warnings: 
         warnings.filterwarnings("ignore")
 
-    for mouse in [22, 23, 24]: 
-        for day in np.arange(1, 24):   
+    for mouse in [22, 26]:
+        for day in [50, 26]: 
             try:
                 mouse_day = "M"+str(mouse)+"_D"+str(day)
                 project_path = "/mnt/datastore/Harry/Cohort12_august2024/"
 
                 recording_paths = [] 
-                recording_paths.extend([f.path for f in os.scandir(project_path+"vr") if f.is_dir()])
+                recording_paths.extend([f.path for f in os.scandir(project_path+"dvd_waitscreen") if f.is_dir()]) 
+                #recording_paths.extend([f.path for f in os.scandir(project_path+"vr") if f.is_dir()]) 
                 #recording_paths.extend([f.path for f in os.scandir(project_path+"of") if f.is_dir()])
                 #recording_paths.extend([f.path for f in os.scandir(project_path+"allen_brain_observatory_visual_coding") if f.is_dir()])
-                recording_paths = [s for s in recording_paths if mouse_day+"_" in s]
+                #recording_paths.extend([f.path for f in os.scandir(project_path+"vr_multi_context") if f.is_dir()])
+                recording_paths = [s for s in recording_paths if mouse_day+"_" in s] 
                 ephys_path = project_path + "derivatives/M"+str(mouse)+"/D"+str(day)+"/ephys/"
                 recording_paths = chronologize_paths(recording_paths)  
-
+ 
                 process_recordings(
                     recording_paths,
                     local_path="/home/ubuntu/to_sort/recordings/",
@@ -158,7 +160,7 @@ def main():
                     deeplabcut_vr_pupil_model_path = settings.vr_deeplabcut_pupil_project_path,
                     deeplabcut_vr_licks_model_path = settings.vr_deeplabcut_licks_project_path,
                     sorterName="kilosort4", 
-                    sorter_kwargs={'do_CAR': False, 'do_correction': True} 
+                    sorter_kwargs={'do_CAR': False, 'do_correction': True}  
                 )
             except Exception as ex:
                 print(f"failed mouse {mouse}, day {day}") 
@@ -166,7 +168,7 @@ def main():
                 print(ex)
                 exc_type, exc_value, exc_traceback = sys.exc_info()
                 traceback.print_tb(exc_traceback)
-                
+            
                 
 
 
