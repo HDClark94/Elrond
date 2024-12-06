@@ -32,6 +32,8 @@ def get_recording_type(recording):
         return "allen_brain_observatory_visual_sequences"
     elif sub_folder == "dvd_waitscreen":
         return "dvd" 
+    elif sub_folder == "ephys_test":
+        return "ephys_test"
     else:
         raise AssertionError("Subfolder for the recording should be named in accordance to the recording type")
 
@@ -151,6 +153,7 @@ def main():
     #process_recordings(recording_paths, parameter_helper_path=parameter_helper_path, allow_overwrite=True)
  
     recording_paths = []
+    recording_paths.extend([f.path for f in os.scandir("/mnt/datastore/Harry/cohort12_august2024/ephys_test") if f.is_dir()]) 
     recording_paths.extend([f.path for f in os.scandir("/mnt/datastore/Harry/cohort12_august2024/dvd_waitscreen") if f.is_dir()]) 
     recording_paths.extend([f.path for f in os.scandir("/mnt/datastore/Harry/cohort12_august2024/vr_multi_context") if f.is_dir()])
     recording_paths.extend([f.path for f in os.scandir("/mnt/datastore/Harry/cohort12_august2024/allen_brain_observatory_visual_coding") if f.is_dir()])

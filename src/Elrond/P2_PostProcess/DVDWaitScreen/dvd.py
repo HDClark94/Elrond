@@ -63,3 +63,15 @@ def process(recording_path, processed_path, **kwargs):
     else:
         print("I couldn't find spike data at ", spike_data_path)
     return
+
+
+
+def main():
+    position_data = pd.read_csv("/mnt/datastore/Harry/Cohort12_august2024/derivatives/M22/D50/dvd_waitscreen/M22_D50_2024-11-18_15-25-24_DVD/processed/position_data.csv")
+    spike_data = pd.read_pickle("/mnt/datastore/Harry/Cohort12_august2024/derivatives/M22/D50/dvd_waitscreen/M22_D50_2024-11-18_15-25-24_DVD/processed/kilosort4/spikes.pkl")
+    spike_data = add_spatial_variables(spike_data, position_data)
+    print("hello")
+
+
+if __name__ == '__main__':
+    main()

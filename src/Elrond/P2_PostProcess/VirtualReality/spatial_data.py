@@ -162,13 +162,19 @@ def add_trial_variables(raw_position_data, processed_position_data, track_length
     return processed_position_data
 
 
-def bin_in_space(position_data, processed_position_data, track_length, smoothen=True):
+def bin_in_space(position_data, processed_position_data, track_length, smoothen=True, 
+                 vr_bin_size_cm=None, guassian_std_for_smoothing_in_space_cm=None):
     if smoothen:
         suffix="_smoothed"
     else:
         suffix=""
+    
+    if vr_bin_size_cm is None:
+        vr_bin_size_cm = settings.vr_bin_size_cm
+    if guassian_std_for_smoothing_in_space_cm is None:
+        guassian_std_for_smoothing_in_space_cm = settings.guassian_std_for_smoothing_in_space_cm
 
-    gauss_kernel = Gaussian1DKernel(settings.guassian_std_for_smoothing_in_space_cm/settings.vr_bin_size_cm)
+    gauss_kernel = Gaussian1DKernel(guassian_std_for_smoothing_in_space_cm/vr_bin_size_cm)
     n_trials = max(processed_position_data["trial_number"])
 
     # extract spatial variables from position
@@ -188,8 +194,8 @@ def bin_in_space(position_data, processed_position_data, track_length, smoothen=
         eye_centroids_x = np.array(position_data['time_seconds'], dtype="float64");eye_centroids_x[:] = np.nan
         eye_centroids_y = np.array(position_data['time_seconds'], dtype="float64");eye_centroids_y[:] = np.nan
 
-    # calculate the average speed and position in each 1cm spatial bin
-    spatial_bins = np.arange(0, (n_trials*track_length)+1, settings.vr_bin_size_cm) # 1 cm bins
+    # calculate the average speed and position in each 1cm spatial bin 
+    spatial_bins = np.arange(0, (n_trials*track_length)+1, vr_bin_size_cm) # 1 cm bins
     speed_space_bin_means = (np.histogram(x_position_elapsed_cm, spatial_bins, weights = speeds)[0] / np.histogram(x_position_elapsed_cm, spatial_bins)[0])
     pos_space_bin_means = (np.histogram(x_position_elapsed_cm, spatial_bins, weights = x_position_elapsed_cm)[0] / np.histogram(x_position_elapsed_cm, spatial_bins)[0])
     tn_space_bin_means = (((0.5*(spatial_bins[1:]+spatial_bins[:-1]))//track_length)+1).astype(np.int64) # uncomment to get nan values for portions of first and last trial
@@ -234,13 +240,19 @@ def bin_in_space(position_data, processed_position_data, track_length, smoothen=
     return processed_position_data
 
 
-def bin_in_time(position_data, processed_position_data, track_length, smoothen=True):
+def bin_in_time(position_data, processed_position_data, track_length, smoothen=True,
+                time_bin_size=None, guassian_std_for_smoothing_in_time_seconds=None):
     if smoothen:
         suffix="_smoothed"
     else:
         suffix=""
 
-    gauss_kernel = Gaussian1DKernel(settings.guassian_std_for_smoothing_in_time_seconds/settings.time_bin_size)
+    if time_bin_size is None:
+        time_bin_size = settings.time_bin_size
+    if guassian_std_for_smoothing_in_time_seconds is None:
+        guassian_std_for_smoothing_in_time_seconds = settings.guassian_std_for_smoothing_in_time_seconds
+
+    gauss_kernel = Gaussian1DKernel(guassian_std_for_smoothing_in_time_seconds/time_bin_size)
     n_trials = max(position_data["trial_number"])
 
     # extract spatial variables from position
@@ -261,7 +273,7 @@ def bin_in_time(position_data, processed_position_data, track_length, smoothen=T
         eye_centroids_y = np.array(position_data['time_seconds'], dtype="float64"); eye_centroids_y[:] = np.nan
 
     # calculate the average speed and position in each 100ms time bin
-    time_bins = np.arange(min(times), max(times), settings.time_bin_size) # 100ms time bins
+    time_bins = np.arange(min(times), max(times), time_bin_size) # 100ms time bins
     speed_time_bin_means = (np.histogram(times, time_bins, weights = speeds)[0] / np.histogram(times, time_bins)[0])
     pos_time_bin_means = (np.histogram(times, time_bins, weights = x_position_elapsed_cm)[0] / np.histogram(times, time_bins)[0])
     tn_time_bin_means = (np.histogram(times, time_bins, weights = trial_numbers)[0] / np.histogram(times, time_bins)[0]).astype(np.int64)
