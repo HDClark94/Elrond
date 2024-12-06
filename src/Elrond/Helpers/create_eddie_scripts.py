@@ -53,6 +53,38 @@ python {python_arg}"""
     
     return script_content
 
+
+def make_gpu_python_script(python_arg,  job_name=None, h_rt=None, hold_jid=None, email=None):
+    """
+    Makes a python script, which will run
+    >>  python python_arg
+    """
+    if job_name is not None:
+        name_script = f" -N {job_name}"
+    else:
+        name_script = ""
+
+    if email is not None:
+        email_script = f" -M {email} -m e"
+    else:
+        email_script = ""
+    if hold_jid is not None:
+        hold_script = f" -hold_jid {hold_jid}"
+    else:
+        hold_script = ""
+
+    if h_rt is None:
+        h_rt = "1:59:59"
+
+    script_content = f"""#!/bin/bash
+#$ -cwd -q gpu -pe gpu-a100 1 -l rl9=true,h_vmem=30G,h_rt={h_rt}{hold_script}{email_script}{name_script}
+source /etc/profile.d/modules.sh
+module load anaconda
+conda activate elrond
+python {python_arg}"""
+
+    return script_content
+
 def save_and_run_script(script_content, script_file_path):
 
     if script_file_path is None:
@@ -70,11 +102,25 @@ def run_python_script(python_arg, venv=None, cores=None, email=None, h_rt=None, 
     if job_name is None:
         job_name = "run_python"
     script_content = make_run_python_script(python_arg, venv=venv, cores=cores, email=email, h_rt=h_rt, h_vmem=h_vmem, hold_jid=hold_jid, staging=staging, job_name=job_name)
-    save_and_run_script(script_content, f"{job_name}" + datetime.now().strftime("%Y-%m-%d_%H-%M-%S") + ".sh")
+    save_and_run_script(script_content, f"{job_name}.sh")
 
     return
 
-def run_stageout_script(stageout_dict, script_file_path=None, hold_jid=None, job_name=None):
+def run_gpu_python_script(python_arg, venv=None, cores=None, email=None, h_rt=None, h_vmem=None, hold_jid=None, script_file_path=None, staging=False, job_name=None):
+
+    if job_name is None:
+        job_name = "run_python"
+    script_content = make_gpu_python_script(python_arg, job_name=job_name, hold_jid=hold_jid, h_rt=h_rt)
+    save_and_run_script(script_content, f"{job_name}.sh")
+
+    return
+
+def run_stageout_script(stageout_dict, script_file_path=None, hold_jid=None, job_name=None, move_zarrs=False):
+
+    if move_zarrs is False:
+        zarr_script = " --exclude='*.zarr*'"
+    else:
+        zarr_script = ""
 
     if hold_jid is not None:
         hold_script = f" -hold_jid {hold_jid}"
@@ -93,21 +139,30 @@ def run_stageout_script(stageout_dict, script_file_path=None, hold_jid=None, job
 #$ -l h_rt=00:29:59{hold_script}{name_script}"""
 
     for source, dest in stageout_dict.items():
-        script_text = script_text + "\nrsync -r --exclude='*.zarr*' " + str(source) + " " + str(dest)
+        script_text = script_text + f"\nrsync -r --no-perms --no-owner --no-group{zarr_script} " + str(source) + " " + str(dest)
     
+    script_file_path = job_name + ".sh"
+
     save_and_run_script(script_text, script_file_path)
 
     return 
 
-def run_stagein_script(stagein_dict, script_file_path=None, job_name = None):
+def run_stagein_script(stagein_dict, script_file_path=None, job_name = None, hold_jid=None):
     """
     makes a stage in script from a stageout_dict of the form
     {'path/to/file/on/datastore': 'path/to/destination/on/eddie'}
     """
-    script_text="""#!/bin/sh
+
+    if hold_jid is not None:
+        hold_script = f" -hold_jid {hold_jid}"
+    else:
+        hold_script=""
+
+
+    script_text=f"""#!/bin/sh
 #$ -cwd
 #$ -q staging
-#$ -l h_rt=00:59:59\n"""
+#$ -l h_rt=00:59:59{hold_script}\n"""
 
     if job_name is not None:
         script_text += "#$ -N " + job_name + "\n" 
@@ -119,9 +174,10 @@ def run_stagein_script(stagein_dict, script_file_path=None, job_name = None):
 
     return 
 
-def stagein_data(mouse, day, project_path, job_name=None):
+def stagein_data(mouse, day, project_path, job_name=None, which_rec=None, hold_jid=None):
 
     filenames_path = project_path + f"data/M{mouse}_D{day}/data_folder_names.txt"
+
 
     if Path(filenames_path).exists() is False:
         get_filepaths_on_datastore(mouse, day, project_path)
@@ -136,9 +192,14 @@ def stagein_data(mouse, day, project_path, job_name=None):
     #folder_names = [path_on_datastore.split('/')[-1] + "/" for path_on_datastore in paths_on_datastore]
     dest_on_eddie = [project_path + f"data/M{mouse}_D{day}/" ]*len(paths_on_datastore)
 
+
+    if which_rec == 0 or which_rec == 1 or which_rec == 2:
+        paths_on_datastore = [paths_on_datastore[which_rec]]
+        dest_on_eddie = [dest_on_eddie[which_rec]]
+
     stagein_dict = dict(zip(paths_on_datastore, dest_on_eddie))
 
-    run_stagein_script(stagein_dict, job_name)
+    run_stagein_script(stagein_dict, job_name=job_name, hold_jid=hold_jid)
 
     return
 

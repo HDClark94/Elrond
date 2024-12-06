@@ -1,12 +1,13 @@
-from .behaviour_from_blender import *
+from Elrond.P2_PostProcess.Shared.behaviour_from_blender import *
 from .behaviour_from_ADC_channels import *
 from .spatial_firing import *
 from .plotting import *
 from .video import *
 from Elrond.P3_CurrentAnalysis.basic_lomb_scargle_estimator import lomb_scargle
 from Elrond.P3_CurrentAnalysis.ramp_score import calculate_ramp_scores, calculate_ramp_scores_parallel
+from Elrond.P2_PostProcess.Shared.time_sync import synchronise_position_data_via_column_ttl_pulses
 
-def process(recording_path, processed_path, dlc_data=None, **kwargs):
+def process(recording_path, processed_path, spike_data_path=None, **kwargs):
     track_length = get_track_length(recording_path)
     stop_threshold = get_stop_threshold(recording_path)
 
@@ -35,7 +36,8 @@ def process(recording_path, processed_path, dlc_data=None, **kwargs):
   
     position_data_path = processed_path + "position_data.csv"
     processed_position_data_path = processed_path + "processed_position_data.pkl"
-    spike_data_path = processed_path + sorterName + "/spikes.pkl"
+    if spike_data_path is None:
+        spike_data_path = processed_path + sorterName + "/spikes.pkl"
 
     # save position data
     position_data.to_csv(position_data_path, index=False)
@@ -65,7 +67,11 @@ def process(recording_path, processed_path, dlc_data=None, **kwargs):
     # process and plot position data
     processed_position_data = process_position_data(position_data, track_length, stop_threshold)
     processed_position_data.to_pickle(processed_position_data_path)
-    plot_behaviour(position_data, processed_position_data, output_path=processed_path, track_length=track_length)
+    try:
+        plot_behaviour(position_data, processed_position_data, output_path=processed_path, track_length=track_length)
+    except:
+        print()
+
     if synced_lick_train is not None:
         plot_licks_on_track(processed_position_data, synced_lick_train, processed_path + "Figures/behaviour/", track_length=track_length)
 
@@ -73,6 +79,7 @@ def process(recording_path, processed_path, dlc_data=None, **kwargs):
     if os.path.exists(spike_data_path):
         spike_data = pd.read_pickle(spike_data_path)
         position_data = synchronise_position_data_via_ADC_ttl_pulses(position_data, processed_path, recording_path)
+        position_data.to_csv(position_data_path, index=False)
         spike_data = add_location_and_task_variables(spike_data, position_data, processed_position_data, track_length)
         spike_data = lomb_scargle(spike_data, processed_position_data, track_length)
         position_data.to_csv(position_data_path, index=False)

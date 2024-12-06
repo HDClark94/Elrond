@@ -78,15 +78,15 @@ def save_spikes_to_dataframe(sorters, quality_metrics,
         # new_spike_data = new_spike_data.merge(quality_metrics, on='cluster_id')
 
         pkl_folder = processed_path + sorterName + "/"
-        print(pkl_folder)
         Path(pkl_folder).mkdir(parents=True, exist_ok=True)
         print("I am saving the spike dataframe for ", recording_path, " in ", pkl_folder)
         new_spike_data.to_pickle(pkl_folder + "spikes.pkl")
 
-def save_spikes_per_session(sorting, sorter_name, zarr_for_sorting_paths, deriv_path):
+def save_spikes_per_session(sorting, sorter_name, zarr_for_sorting_paths, deriv_path, session_names=None):
 
-    of1_path, of2_path, vr_path = [deriv_path + ["of1/", "of2/", "vr/"][a] for a in range(3)]
     
+    output_paths = [deriv_path + f"{session_name}/" for session_name in session_names]
+
     recordings = [si.load_extractor(sorting_path +".zarr") for sorting_path in zarr_for_sorting_paths]
     rec_samples = [recording.get_total_samples() for recording in recordings]
     
@@ -98,12 +98,12 @@ def save_spikes_per_session(sorting, sorter_name, zarr_for_sorting_paths, deriv_
     sorters = [sorting.frame_slice(start_frame=cum_rec_samples[a],
                                    end_frame=cum_rec_samples[a+1] ) for a in
                range(len(rec_samples))] # get list of sorters
-    save_spikes_to_dataframe(sorters, None, rec_samples, [deriv_path, deriv_path, deriv_path], [of1_path, vr_path, of2_path], sorter_name)
+    save_spikes_to_dataframe(sorters, None, rec_samples, [deriv_path]*len(zarr_for_sorting_paths), output_paths, sorter_name)
 
     return 
 
 
-def do_sorting(recording_paths, sorter_name, sorter_path, deriv_path, sorter_kwargs=None):
+def do_sorting(recording_paths, sorter_name, sorter_path, deriv_path, sorter_kwargs=None, vr_multi_context=False, session_names = None):
     """
     Does a spike sorting for all paths in `recording_paths`. These recordings should already
     have been preprocessed. The recordings are concatenated together. The spike trains are saved
@@ -115,13 +115,15 @@ def do_sorting(recording_paths, sorter_name, sorter_path, deriv_path, sorter_kwa
     if sorter_kwargs is None:
         sorter_kwargs = sorter_kwargs_dict[sorter_name]
 
+    si_sorter_name = sorter_name.split('_')[0]
+
     # sorting time! We assume the preprocessed recording has been saved as a zarr file.
     # If you're using raw data, use si.read_openephys (or similar) and apply a preprocessor.
     recording_for_sort = si.concatenate_recordings( [
         si.load_extractor(recording_path + ".zarr") for recording_path in recording_paths ] )
     sorting = si.run_sorter_by_property(
             recording=recording_for_sort,
-            sorter_name=sorter_name,
+            sorter_name=si_sorter_name,
             folder=sorter_path,
             remove_existing_folder=True,
             verbose=True, **sorter_kwargs,
@@ -130,9 +132,9 @@ def do_sorting(recording_paths, sorter_name, sorter_path, deriv_path, sorter_kwa
     sorting = si.remove_excess_spikes(recording=recording_for_sort, sorting=sorting)
     
     try:
-        save_spikes_per_session(sorting, sorter_name, recording_paths, deriv_path)
+        save_spikes_per_session(sorting, sorter_name, recording_paths, deriv_path, session_names)
     except:
-        print("Couldn't save spikes.pkl file for of1, vr, of2 experiment.")
+        print("Couldn't save spikes.pkl files.")
     
     return sorting
 
@@ -147,11 +149,15 @@ def compute_sorting_analyzer(sorting, zarr_for_post_paths, sa_path, extension_di
         extension_dict = default_extensions_dict 
 
     recording_for_post = si.concatenate_recordings( [
-        si.load_extractor(zarr_post+".zarr") for zarr_post in zarr_for_post_paths ] )
+        si.load_extractor(zarr_post) for zarr_post in zarr_for_post_paths ] )
     sa = si.create_sorting_analyzer(recording = recording_for_post, 
                                     sorting=sorting, format="binary_folder",
                                 folder=sa_path, overwrite=True)
-    sa.compute(extension_dict)
+    try:
+        sa.compute(extension_dict)
+    except:
+        print("something went wrong computing extensions...")
+        
     return sa
 
 # TODO: delete!!
@@ -299,3 +305,36 @@ def make_recording_from_paths_and_get_times(recording_paths):
     except: mono_recording, _ = add_probe(mono_recording, recording_paths[0])
 
     return mono_recording, rec_times
+
+def read_grouped_sorting(sorter_path, recording_paths, sorter_name):
+
+    recording = si.concatenate_recordings([
+        get_recording_from(recording_path)
+        for recording_path in recording_paths ])
+
+    grouping_property = 'group'
+    recording_dict = recording.split_by(grouping_property)
+
+    all_paths = np.array(list(Path(sorter_path).glob('*')))
+    paths = all_paths[np.argsort([int(str(path).split('/')[-1]) for path in all_paths])]
+    
+    sorting_list=[]
+    for path in paths:
+        if sorter_name == "kilosort4":
+            sorting = si.read_kilosort(path / Path("sorter_output"))
+        elif sorter_name == "herdingspikes":
+            sorting = si.read_herdingspikes(path / Path("sorter_output/HS2_sorted.hdf5"))
+        sorting_list.append(sorting)
+
+    unit_groups = []
+    for sorting, group in zip(sorting_list, recording_dict.keys()):
+        num_units = sorting.get_unit_ids().size
+        unit_groups.extend([group] * num_units)
+    unit_groups = np.array(unit_groups)
+
+    aggregate_sorting = si.aggregate_units(sorting_list)
+    aggregate_sorting.set_property(key='group', values=unit_groups)
+
+    aggregate_sorting = si.remove_excess_spikes(recording=recording, sorting=aggregate_sorting)
+
+    return aggregate_sorting
