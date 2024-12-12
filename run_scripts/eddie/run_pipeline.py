@@ -51,15 +51,13 @@ from Elrond.P2_PostProcess.Shared.theta_phase import compute_channel_theta_phase
 #               behavioural data
 
 
-def do_zarrs(mouse, day, sorter_name, project_path, pp_for_sorting=None, pp_for_post=None, data_path=None, deriv_path=None, zarr_folder=None, recording_paths=None, sorter_path=None, sa_path=None, report_path=None, zarr_number=None, session_names=None):
+
+def do_zarr(mouse, day, sorter_name, project_path, session_name, pp_for_sorting=None, pp_for_post=None, data_path=None, deriv_path=None, zarr_folder=None, recording_paths=None, sorter_path=None, sa_path=None, zarr_number=None):
 
     if data_path is None:
         data_path = project_path + f"data/M{mouse}_D{day}/"
-    if recording_paths is None:
-        recording_paths = [data_path + f"{session_name}/" for session_name in session_names]
 
-    num_recordings = len(recording_paths)
-
+    recording_path = data_path + f"{session_name}/"
 
     if deriv_path is None:
         deriv_path = project_path + f"derivatives/M{mouse}/D{day}/"
@@ -79,9 +77,14 @@ def do_zarrs(mouse, day, sorter_name, project_path, pp_for_sorting=None, pp_for_
     else:
         zarr_for_post_paths = [f"{zarr_folder}/zarr_for_post_{a}" for a in session_names]
 
-
     si.set_global_job_kwargs(n_jobs=8)
-    make_zarrs(recording_paths, zarr_for_sorting_paths, zarr_for_post_paths, pp_for_sorting, pp_for_post)
+    make_zarrs([recording_path], zarr_for_sorting_paths, zarr_for_post_paths, pp_for_sorting, pp_for_post)
+
+
+def do_zarrs(mouse, day, sorter_name, project_path, pp_for_sorting=None, pp_for_post=None, data_path=None, deriv_path=None, zarr_folder=None, recording_paths=None, sorter_path=None, sa_path=None, report_path=None, zarr_number=None, session_names=None):
+
+    for session_name in session_names:
+        make_zarr(mouse, day, sorter_name, project_path, session_name)
 
 
 def do_just_sorting(mouse, day, sorter_name, project_path, pp_for_sorting=None, pp_for_post=None, data_path=None, deriv_path=None, zarr_folder=None, recording_paths=None, sorter_path=None, sa_path=None, report_path=None, session_names=None):

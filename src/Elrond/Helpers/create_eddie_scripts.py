@@ -174,30 +174,11 @@ def run_stagein_script(stagein_dict, script_file_path=None, job_name = None, hol
 
     return 
 
-def stagein_data(mouse, day, project_path, job_name=None, which_rec=None, hold_jid=None):
+def stagein_data(mouse, day, project_path, path_on_datastore, job_name=None, which_rec=None, hold_jid=None):
 
-    filenames_path = project_path + f"data/M{mouse}_D{day}/data_folder_names.txt"
+    dest_on_eddie = [project_path + f"data/M{mouse}_D{day}/" ]
 
-
-    if Path(filenames_path).exists() is False:
-        get_filepaths_on_datastore(mouse, day, project_path)
-
-    while Path(filenames_path).exists() is False:
-        time.sleep(5)
-
-    with open(filenames_path) as f:
-        paths_on_datastore = f.read().splitlines()
-
-    # TODO: delete this comment
-    #folder_names = [path_on_datastore.split('/')[-1] + "/" for path_on_datastore in paths_on_datastore]
-    dest_on_eddie = [project_path + f"data/M{mouse}_D{day}/" ]*len(paths_on_datastore)
-
-
-    if which_rec == 0 or which_rec == 1 or which_rec == 2:
-        paths_on_datastore = [paths_on_datastore[which_rec]]
-        dest_on_eddie = [dest_on_eddie[which_rec]]
-
-    stagein_dict = dict(zip(paths_on_datastore, dest_on_eddie))
+    stagein_dict = dict(zip([path_on_datastore], dest_on_eddie))
 
     run_stagein_script(stagein_dict, job_name=job_name, hold_jid=hold_jid)
 
