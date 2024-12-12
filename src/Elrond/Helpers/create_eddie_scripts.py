@@ -176,17 +176,15 @@ def run_stagein_script(stagein_dict, script_file_path=None, job_name = None, hol
 
 def stagein_data(mouse, day, project_path, path_on_datastore, job_name=None, which_rec=None, hold_jid=None):
 
-    dest_on_eddie = [project_path + f"data/M{mouse}_D{day}/" ]
+    dest_on_eddie = project_path + f"data/M{mouse}_D{day}/" 
 
     folder_name = path_on_datastore.split('/')[-1]
 
-    print(dest_on_eddie + '/' + folder_name)
-
     if Path(dest_on_eddie + '/' + folder_name).exists() == False:
-        stagein_dict = dict(zip([path_on_datastore], dest_on_eddie))
+        stagein_dict = dict(zip([path_on_datastore], [dest_on_eddie]))
         run_stagein_script(stagein_dict, job_name=job_name, hold_jid=hold_jid)
 
-    return
+    return dest_on_eddie + '/' + folder_name
 
 def get_filepaths_on_datastore(mouse, day, project_path):
 

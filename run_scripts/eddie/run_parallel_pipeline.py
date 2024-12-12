@@ -6,6 +6,7 @@ from pathlib import Path
 import Elrond
 import numpy as np
 import argparse
+import time
 
 parser = argparse.ArgumentParser()
 parser.add_argument("mouse", help="Mouse number, e.g. 20", type=int)
@@ -67,8 +68,11 @@ print(f"Doing sessions: {session_names}")
 
 stagein_job_name = f"stagein_M{mouse}_D{day}_"
 
+raw_recording_paths = []
 for a, (session_name, path_on_datastore) in enumerate(zip(session_names,paths_on_datastore)):
-    stagein_data(mouse, day, project_path, path_on_datastore, job_name = stagein_job_name + session_name)
+    raw_recording_paths.append(stagein_data(mouse, day, project_path, path_on_datastore, job_name = stagein_job_name + session_name))
+
+print(raw_recording_paths)
 
 stagein_job_names = ""
 for session_name in session_names:
@@ -77,7 +81,7 @@ stagein_job_names = stagein_job_names[:-1]
 
 mouseday_string = "M" + str(mouse) + "_" + str(day) + "_"
 
-zarr_job_name =  mouseday_string + "z_" + sorter_name
+zarr_job_name =  mouseday_string + "z_" + sorter_name + "_"
 sort_job_name =  mouseday_string + sorter_name
 sspp_job_name =  mouseday_string + "sspp_" + sorter_name
 
@@ -85,15 +89,15 @@ theta_job_name = mouseday_string + "theta"
 location_job_name = mouseday_string + "loc"
 of1_job_name = mouseday_string + "1dlc"
 of2_job_name = mouseday_string + "2dlc"
-behaviour_job_name = mouseday_string + "behave" + sorter_name
+behaviour_job_name = mouseday_string + "behave" + "_" + sorter_name
 out_job_name = mouseday_string + "out_" + sorter_name
 
 # Now run full pipeline on eddie
 
-for session_name in session_names:
+for session_name, raw_recording_path in zip(session_names, raw_recording_paths):
 
     run_python_script(
-        elrond_path + f"/../../run_scripts/eddie/zarr_time.py {mouse} {day} {sorter_name} {project_path}",
+        elrond_path + f"/../../run_scripts/eddie/zarr_time.py {mouse} {day} {sorter_name} {project_path} {session_name} {raw_recording_path}",
         hold_jid = stagein_job_name + session_name,
         job_name = zarr_job_name + session_name,
         h_rt = "0:59:00"

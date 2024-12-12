@@ -7,5 +7,6 @@ day = sys.argv[2]
 sorter_name = sys.argv[3]
 project_path = sys.argv[4]
 session_name = sys.argv[5]
+raw_recording_path = sys.argv[6]
 
-do_zarr(mouse, day, sorter_name, project_path, session_name)
+do_zarr(mouse, day, sorter_name, project_path, session_name, raw_recording_path)
