@@ -178,9 +178,13 @@ def stagein_data(mouse, day, project_path, path_on_datastore, job_name=None, whi
 
     dest_on_eddie = [project_path + f"data/M{mouse}_D{day}/" ]
 
-    stagein_dict = dict(zip([path_on_datastore], dest_on_eddie))
+    folder_name = path_on_datastore.split('/')[-1]
 
-    run_stagein_script(stagein_dict, job_name=job_name, hold_jid=hold_jid)
+    print(dest_on_eddie + '/' + folder_name)
+
+    if Path(dest_on_eddie + '/' + folder_name).exists() == False:
+        stagein_dict = dict(zip([path_on_datastore], dest_on_eddie))
+        run_stagein_script(stagein_dict, job_name=job_name, hold_jid=hold_jid)
 
     return
 

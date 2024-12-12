@@ -87,14 +87,10 @@ def do_zarrs(mouse, day, sorter_name, project_path, pp_for_sorting=None, pp_for_
         make_zarr(mouse, day, sorter_name, project_path, session_name)
 
 
-def do_just_sorting(mouse, day, sorter_name, project_path, pp_for_sorting=None, pp_for_post=None, data_path=None, deriv_path=None, zarr_folder=None, recording_paths=None, sorter_path=None, sa_path=None, report_path=None, session_names=None):
+def do_just_sorting(mouse, day, sorter_name, project_path, pp_for_sorting=None, pp_for_post=None, data_path=None, deriv_path=None, zarr_folder=None, sorter_path=None, session_names=None):
 
     if data_path is None:
         data_path = project_path + f"data/M{mouse}_D{day}/"
-    if recording_paths is None:
-        recording_paths = [data_path + f"{session_name}/" for session_name in session_names]
-
-    num_recordings = len(recording_paths)
 
     if deriv_path is None:
         deriv_path = project_path + f"derivatives/M{mouse}/D{day}/"
@@ -111,15 +107,10 @@ def do_just_sorting(mouse, day, sorter_name, project_path, pp_for_sorting=None, 
     do_sorting(zarr_for_sorting_paths, sorter_name, sorter_path, deriv_path, session_names=session_names)
 
 
-def do_spikesort_postprocessing(mouse, day, sorter_name, project_path, pp_for_sorting=None, pp_for_post=None, data_path=None, deriv_path=None, zarr_folder=None, recording_paths=None, sorter_path=None, sa_path=None, report_path=None, session_names=None):
-
+def do_spikesort_postprocessing(mouse, day, sorter_name, project_path, pp_for_sorting=None, pp_for_post=None, data_path=None, deriv_path=None, zarr_folder=None, sorter_path=None, sa_path=None, report_path=None, session_names=None):
 
     if data_path is None:
         data_path = project_path + f"data/M{mouse}_D{day}/"
-    if recording_paths is None:
-        recording_paths = [data_path + f"{session_name}/" for session_name in session_names]
-
-    num_recordings = len(recording_paths)
 
     if deriv_path is None:
         deriv_path = project_path + f"derivatives/M{mouse}/D{day}/"
@@ -138,13 +129,21 @@ def do_spikesort_postprocessing(mouse, day, sorter_name, project_path, pp_for_so
     else:
         zarr_for_post_paths = [f"{zarr_folder}/zarr_for_post_{a}.zarr" for a in session_names]
     if sorter_path is None:
-        sorter_path = deriv_path + f"full/{sorter_name}/" + sorter_name + "_sorting/"
+        if len(session_names) == 1:
+            sorter_path = deriv_path + f"{session_name}/{sorter_name}/session_sort/" + sorter_name + "_sorting/"
+        else:
+            sorter_path = deriv_path + f"full/{sorter_name}/" + sorter_name + "_sorting/"
     if sa_path is None:
-        sa_path = deriv_path + f"full/{sorter_name}/" + sorter_name + "_sa"
+        if len(session_names) == 1:
+            sa_path = deriv_path + f"{session_name}/{sorter_name}/session_sort/" + sorter_name + "_sa/"
+        else:
+            sa_path = deriv_path + f"full/{sorter_name}/" + sorter_name + "_sa"
     if report_path is None:
-        report_path = deriv_path + f"full/{sorter_name}/" + sorter_name + "_report/"
+        if len(session_names) == 1:
+            report_path = deriv_path + f"{session_name}/{sorter_name}/session_sort/" + sorter_name + "_report/"
+        else:
+            report_path = deriv_path + f"full/{sorter_name}/" + sorter_name + "_report/"
 
-    
     sorting = read_grouped_sorting(sorter_path, zarr_for_sorting_paths, sorter_name)
     sorting_analyzer = compute_sorting_analyzer(sorting, zarr_for_post_paths, sa_path)
     plot_simple_np_probe_layout(sorting_analyzer.recording,  deriv_path)
