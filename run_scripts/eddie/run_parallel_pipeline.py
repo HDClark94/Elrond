@@ -59,6 +59,8 @@ if session_names is not None:
     session_names = all_session_names[which_sessions]
     paths_on_datastore = paths_on_datastore[which_sessions]
     print(session_names)
+else:
+    session_names = all_session_names
 
 print(f"Doing sessions: {session_names}")
 
