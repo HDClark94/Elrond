@@ -15,6 +15,8 @@ parser.add_argument("sorter_name", help="Sorter preset e.g. 'kilosort4' or 'kilo
 parser.add_argument("project_path", help="Folder containing 'data' and 'derivative' folders")
 parser.add_argument("--session_names", help="List of sessions you'd like to process e.g. ['of1', 'vr']. If not given, processes all sessions.")
 parser.add_argument("--just_sort", help="Bool. Just do the sorting stuff: no dlc, no theta phase.", type=bool)
+parser.add_argument("--just_theta", help="Bool. Just do the theta phase.", type=bool)
+
 
 args = parser.parse_args()
 
@@ -32,6 +34,11 @@ if args.just_sort:
     just_sort = args.just_sort
 else:
     just_sort = False
+
+if args.just_theta:
+    just_theta = args.just_theta
+else:
+    just_theta = False
 
 print(f"Using {sorter_name} to sort mouse {mouse}, day {day}")
 
@@ -72,8 +79,6 @@ raw_recording_paths = []
 for a, (session_name, path_on_datastore) in enumerate(zip(session_names,paths_on_datastore)):
     raw_recording_paths.append(stagein_data(mouse, day, project_path, path_on_datastore, job_name = stagein_job_name + session_name))
 
-print(raw_recording_paths)
-
 stagein_job_names = ""
 for session_name in session_names:
     stagein_job_names += stagein_job_name + session_name + ","
@@ -94,6 +99,19 @@ out_job_name = mouseday_string + "out_" + sorter_name
 
 # Now run full pipeline on eddie
 
+# Run theta phase
+for a, session_name in enumerate(session_names):
+    # Run theta phase
+    run_python_script(
+        elrond_path + f"/../../run_scripts/eddie/run_theta_phase.py {mouse} {day} {project_path} {a}",
+        hold_jid = stagein_job_names,
+        job_name = theta_job_name + "_" + session_name,
+        cores=6,
+)
+
+if just_theta is True:
+    quit()
+
 for session_name, raw_recording_path in zip(session_names, raw_recording_paths):
 
     run_python_script(
@@ -107,7 +125,6 @@ zarr_job_names = ""
 for session_name in session_names:
     zarr_job_names += zarr_job_name + session_name + ","
 zarr_job_names = zarr_job_names[:-1]
-
 
 
 # if sorter_name == "kilosort4":
@@ -142,16 +159,6 @@ if just_sort is False:
         cores=4,
     )
 
-    # Run theta phase
-    for a, session_name in enumerate(session_names):
-        # Run theta phase
-        run_python_script(
-            elrond_path + f"/../../run_scripts/eddie/run_theta_phase.py {mouse} {day} {project_path} {a}",
-            hold_jid = stagein_job_names,
-            job_name = theta_job_name + "_" + session_name,
-            cores=4,
-        )
-
     # Run DLC on of1
     if 'of1' in session_names:
         run_python_script(
@@ -185,3 +192,4 @@ run_stageout_script({
     hold_jid = behaviour_job_name,
     job_name = out_job_name
 )
+

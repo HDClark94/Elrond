@@ -16,6 +16,23 @@ from probeinterface.plotting import plot_probe
 from probeinterface import get_probe
 from probeinterface import Probe, ProbeGroup
 from Elrond.Helpers import OpenEphys
+import json
+
+def get_spike_trains_per_session(sorting_analyzer, rec_samples_dict=None):
+
+    sa_folder = sorting_analyzer.folder
+
+    if rec_samples_dict is None:
+        rec_samples_path = sa_folder.parent.parent / 'rec_samples.json'
+        rec_samples_per_session= json.load(open(rec_samples_path))
+
+    cum_samples = 0
+    spikes_per_session = []
+    for session_name, samples in rec_samples_per_session.items():
+        spikes_per_session.append( sorting_analyzer.sorting.frame_slice(cum_samples,cum_samples+samples).to_spike_vector() )
+        cum_samples += samples
+
+    return spikes_per_session
 
 def load_OpenEphysRecording(folder, channel_ids=None):
     number_of_channels, corrected_data_file_suffix = count_files_that_match_in_folder(folder, data_file_prefix=settings.data_file_prefix, data_file_suffix='.continuous')

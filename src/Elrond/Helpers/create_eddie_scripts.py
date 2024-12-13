@@ -184,7 +184,7 @@ def stagein_data(mouse, day, project_path, path_on_datastore, job_name=None, whi
         stagein_dict = dict(zip([path_on_datastore], [dest_on_eddie]))
         run_stagein_script(stagein_dict, job_name=job_name, hold_jid=hold_jid)
 
-    return dest_on_eddie + '/' + folder_name
+    return dest_on_eddie  + folder_name
 
 def get_filepaths_on_datastore(mouse, day, project_path):
 
