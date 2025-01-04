@@ -82,11 +82,10 @@ def get_processed_paths(base_processed_path, recording_paths):
 
     if base_processed_path is None:
         base_processed_path = '/'.join(recording_paths[0].split('/')[:-2]) + '/'
-
+    recording_types = get_recording_types(recording_paths)
     processed_paths = []
-    for recording_path in recording_paths:
-        relative_recording_path = '/'.join(recording_path.split('/')[-2:])
-        processed_paths.append(base_processed_path + relative_recording_path + '/processed/') 
+    for recording_type in recording_types:
+        processed_paths.append(base_processed_path+recording_type+'/') 
 
     return processed_paths
 
