@@ -10,8 +10,8 @@ def save_one_zarr(rec, zarr_path, preprocessing_pipeline):
 
     for group_recording in recordings:
 
-        bad_channels, _ = si.detect_bad_channels(group_recording)
-        group_recording = group_recording.remove_channels(remove_channel_ids=bad_channels)
+        #bad_channels, _ = si.detect_bad_channels(group_recording)
+        #group_recording = group_recording.remove_channels(remove_channel_ids=bad_channels)
         group_recording = apply_pipeline(group_recording, preprocessing_pipeline)
         
         pp_recordings.append(apply_pipeline(group_recording, preprocessing_pipeline))

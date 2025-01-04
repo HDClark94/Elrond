@@ -40,9 +40,16 @@ def get_recording_folders(cohort_folder, mouse, day):
         recording_folders = list(Path(cohort_folder).glob(f"of/M{mouse}_D{day}*"))
         recording_folders += list(Path(cohort_folder).glob(f'vr/M{mouse}_D{day}*'))
         recording_folders += list(Path(cohort_folder).glob(f'vr_multi_context/M{mouse}_D{day}*'))
+        recording_folders += list(Path(cohort_folder).glob(f'allen_brain_observatory_visual_sequences/M{mouse}_D{day}*'))
+        recording_folders += list(Path(cohort_folder).glob(f'allen_brain_observatory_visual_multi_sequences/M{mouse}_D{day}*'))
+        recording_folders += list(Path(cohort_folder).glob(f'allen_brain_observatory_visual_coding/M{mouse}_D{day}*'))
+        recording_folders += list(Path(cohort_folder).glob(f'dvd_waitscreen/M{mouse}_D{day}*'))
 
     elif len(list(Path(data_path).glob(f"*M{mouse}_D{day}"))) > 0:
         recording_folders = list(Path(data_path + f"M{mouse}_D{day}/").glob("*/"))
+    
+    for a, recording_folder in enumerate(recording_folders):
+        recording_folders[a] = str(recording_folder)
 
     return recording_folders
 
@@ -60,9 +67,37 @@ def this_is_zarr(recording_folder):
 
     return zarr_recording
 
+def get_session_names(raw_recording_paths):
+
+    session_names = []
+    for recording_path in raw_recording_paths:
+        end_of_name = str(recording_path).split("_")[-1]
+        if end_of_name == 'OF1':
+            session_names.append('of1')
+        elif end_of_name == 'OF2':
+            session_names.append('of2')
+        elif end_of_name == 'VR1':
+            session_names.append('vr')
+        elif end_of_name in ['MCVR1', 'MCVR', 'VRMC']:
+            session_names.append('vr_multi_context')
+        elif end_of_name in ['IM', 'IM1', 'VID1']:
+            session_names.append('allen_brain_observatory_visual_coding')
+        elif end_of_name == 'IMSEQ':
+            session_names.append('allen_brain_observatory_visual_sequences')
+        elif end_of_name == 'IMSEQ2':
+            session_names.append('allen_brain_observatory_visual_multi_sequences')
+        elif end_of_name in ['DVD', 'HDDVD']:
+            session_names.append('dvd_waitscreen')
+        else:
+            raise Exception("Don't know session type")
+        
+    return session_names
+
 def get_recording_from(recording_folder):
 
     if this_is_zarr(recording_folder):
+        if '.zarr' not in str(recording_folder):
+            recording_folder = Path(recording_folder) / Path('recording.zarr')
         recording = si.load_extractor(recording_folder)
     else:
         recording = si.read_openephys(recording_folder)

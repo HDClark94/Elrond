@@ -3,6 +3,7 @@ from ..VirtualReality.behaviour_from_ADC_channels import *
 from ..VirtualReality.spatial_firing import *
 from ..VirtualReality.video import *
 from .plotting import *
+
 def process(recording_path, processed_path, **kwargs):
     track_length = get_track_length(recording_path)
     stop_threshold = get_stop_threshold(recording_path)
@@ -21,16 +22,14 @@ def process(recording_path, processed_path, **kwargs):
         print("I couldn't find any source of position data")
         return
     print("I am using position data with an avg sampling rate of ", str(1/np.nanmean(np.diff(position_data["time_seconds"]))), "Hz")
-    
     # process video
     #position_data = process_video(recording_path, processed_path, position_data, 
     #                              pupil_model_path=kwargs["deeplabcut_vr_pupil_model_path"],
-    #                              licks_model_path=kwargs["deeplabcut_vr_licks_model_path"]) 
-    
+    #                              licks_model_path=kwargs["deeplabcut_vr_licks_model_path"])  
     position_data_path = processed_path + "position_data.csv"
     processed_position_data_path = processed_path + "processed_position_data.pkl"
     spike_data_path = processed_path + sorterName + "/spikes.pkl"
-
+    
     # save position data
     position_data.to_csv(position_data_path, index=False)
     position_data["syncLED"] = position_data["sync_pulse"]
@@ -56,6 +55,6 @@ def process(recording_path, processed_path, **kwargs):
 def main():
     print('-------------------------------------------------------------')
     print('-------------------------------------------------------------')
-     
+
 if __name__ == '__main__':
     main()

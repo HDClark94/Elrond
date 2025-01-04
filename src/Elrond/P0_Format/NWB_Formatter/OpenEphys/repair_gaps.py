@@ -2,8 +2,8 @@ import traceback
 import sys
 from os import listdir
 from os.path import isfile, join
-from Helpers.OpenEphys import *
-from Helpers.upload_download import get_recording_format
+from Elrond.Helpers.OpenEphys import *
+from Elrond.Helpers.upload_download import get_recording_format
 
 
 def consecutive_zeros_mask(arr, n):

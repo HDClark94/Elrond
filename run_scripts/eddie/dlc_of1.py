@@ -8,4 +8,4 @@ sorter_name = sys.argv[3]
 project_path = sys.argv[4]
 
 raw_recording_paths = get_chronologized_recording_paths(project_path, mouse, day)
-do_dlc_pipeline(mouse, day, project_path, dlc_of_model_path = project_path + "derivatives/dlc_models/of_cohort12-krs-2024-10-30/", do_of2=False, do_vr=False, recording_paths = raw_recording_paths)
+do_dlc_pipeline(mouse, day, project_path, dlc_of_model_path = project_path + "derivatives/dlc/of_cohort12-krs-2024-10-30/", do_of2=False, do_vr=False, recording_paths = raw_recording_paths)

@@ -2,12 +2,10 @@ import pandas as pd
 import os
 import cv2
 import matplotlib.pyplot as plt
-from neuroconv.utils.dict import load_dict_from_file
-import Elrond.settings as settings
 import numpy as np
 import shutil
 import math
-from .spatial_data import *
+from .spatial_data import read_bonsai_file
 from ..Shared.time_sync import *
 
 def get_distance(x1,y1,x2,y2):

@@ -27,7 +27,7 @@ import PostSorting.temporal_firing
 import PostSorting.theta_modulation
 import PostSorting.load_snippet_data_opto
 # import P3_PostProcess.waveforms_pca
-from Helpers import file_utility, open_ephys_IO
+from Elrond.Helpers import file_utility, open_ephys_IO
 import PreClustering.dead_channels
 
 

@@ -4,7 +4,7 @@ import PostSorting.open_field_firing_maps
 import pandas as pd
 import os
 from scipy import signal
-from Helpers import plot_utility, open_ephys_IO
+from Elrond.Helpers import plot_utility, open_ephys_IO
 import PostSorting.parameters
 from PostSorting.load_firing_data import available_ephys_channels
 import re

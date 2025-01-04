@@ -1,6 +1,7 @@
 import sys
 import os
-from Elrond.Helpers.create_eddie_scripts import stagein_data, run_python_script, run_stageout_script
+from Elrond.Helpers.create_eddie_scripts import stagein_data, run_python_script, run_stageout_script, run_gpu_python_script
+from Elrond.Helpers.upload_download import get_session_names, chronologize_paths
 from pathlib import Path
 import Elrond
 
@@ -15,59 +16,141 @@ data_path = project_path + f"data/M{mouse}_D{day}"
 Path(data_path).mkdir(exist_ok=True)
 
 # check if raw recordings are on eddie. If not, stage them
+paths_on_datastore = []
 stagein_job_name = None
-if len(os.listdir(data_path)) < 3:
-    stagein_job_name = f"stagein_M{mouse}_D{day}"
-    stagein_data(mouse, day, project_path, job_name = stagein_job_name)
+
+filenames_path = project_path + f"data/M{mouse}_D{day}/data_folder_names.txt"
+if Path(filenames_path).exists():
+    with open(filenames_path) as f:
+        paths_on_datastore = f.read().splitlines()
+    
+stagein_job_name = f"stagein_M{mouse}_D{day}"
+
+if len(os.listdir(data_path)) < 2:
+    stagein_data(mouse, day, project_path, job_name = stagein_job_name + "_" + str(0), which_rec=0)
+    with open(filenames_path) as f:
+        paths_on_datastore = f.read().splitlines()
+
+    for a, path in enumerate(paths_on_datastore):
+        if a == 0:
+            continue
+        else:
+            stagein_data(mouse, day, project_path, job_name = stagein_job_name + "_" + str(a), which_rec=a)
+
+session_names = get_session_names(chronologize_paths(paths_on_datastore))
 
 mouseday_string = "M" + mouse + "_" + day + "_"
 
-pipeline_job_name = mouseday_string + sorter_name + "_pipe_full"
+zarr_job_name =  mouseday_string + "z_" + sorter_name
+sort_job_name =  mouseday_string + sorter_name
+sspp_job_name =  mouseday_string + "sspp_" + sorter_name
+
 theta_job_name = mouseday_string + "theta"
+location_job_name = mouseday_string + "loc"
 of1_job_name = mouseday_string + "1dlc"
 of2_job_name = mouseday_string + "2dlc"
 behaviour_job_name = mouseday_string + "behave"
+out_job_name = mouseday_string + "out_" + sorter_name
 
 # Now run full pipeline on eddie
+
+if len(paths_on_datastore) == 3:
+        run_python_script(
+        elrond_path + "/../../run_scripts/eddie/zarr_of1.py " + mouse + " " + day + " " + sorter_name + " " + project_path, 
+        hold_jid = stagein_job_name + '_0,'+stagein_job_name + '_1,'+stagein_job_name + '_2,'+stagein_job_name + "_3",
+        job_name = zarr_job_name + "of1",
+        h_rt = "0:59:00"
+        )
+        run_python_script(
+        elrond_path + "/../../run_scripts/eddie/zarr_of2.py " + mouse + " " + day + " " + sorter_name + " " + project_path, 
+        hold_jid = stagein_job_name + '_0,'+stagein_job_name + '_1,'+stagein_job_name + '_2,'+stagein_job_name + "_3",
+        job_name = zarr_job_name + "of2",
+        h_rt = "0:59:00"
+        )
+        run_python_script(
+        elrond_path + "/../../run_scripts/eddie/zarr_vr.py " + mouse + " " + day + " " + sorter_name + " " + project_path, 
+        hold_jid = stagein_job_name + '_0,'+stagein_job_name + '_1,'+stagein_job_name + '_2,'+stagein_job_name + "_3",
+        job_name = zarr_job_name,
+        h_rt = "0:59:00"
+        )
+else:
+    run_python_script(
+        elrond_path + "/../../run_scripts/eddie/zarr_time.py " + mouse + " " + day + " " + sorter_name + " " + project_path, 
+        hold_jid = stagein_job_name + '_0,'+stagein_job_name + '_1,'+stagein_job_name + '_2,'+stagein_job_name + "_3",
+        job_name = zarr_job_name,
+        h_rt = "0:59:00"
+        )
+
+# if sorter_name == "kilosort4":
+#     run_gpu_python_script(
+#         elrond_path + "/../../run_scripts/eddie/sort.py " + mouse + " " + day + " " + sorter_name + " " + project_path, 
+#         hold_jid = zarr_job_name,
+#         job_name = sort_job_name,
+#         )
+# else:
 run_python_script(
-    elrond_path + "/../../run_scripts/eddie/sorting.py " + mouse + " " + day + " " + sorter_name + " " + project_path, 
-    hold_jid = stagein_job_name,
-    job_name = pipeline_job_name,
+    elrond_path + "/../../run_scripts/eddie/sort.py " + mouse + " " + day + " " + sorter_name + " " + project_path, 
+    hold_jid = zarr_job_name + "," + zarr_job_name + "of2" + "," + zarr_job_name + "of1" + "," + zarr_job_name + "vr",
+    job_name = sort_job_name,
+    h_rt = "23:59:59"
+)
+
+run_python_script(
+    elrond_path + "/../../run_scripts/eddie/sspp.py " + mouse + " " + day + " " + sorter_name + " " + project_path,
+    hold_jid = sort_job_name,
+    job_name = sspp_job_name,
+    h_rt = "3:59:00",
+    cores=1
+)
+
+# Run location plots
+run_python_script(
+    elrond_path + "/../../run_scripts/eddie/location_plots.py " + mouse + " " + day + " " + sorter_name + " " + project_path,
+    hold_jid = zarr_job_name,
+    job_name = location_job_name,
+    cores=4,
     )
 
 # Run theta phase
-run_python_script(
-    elrond_path + "/../../run_scripts/eddie/run_theta_phase.py " + mouse + " " + day + " " + project_path,
-    hold_jid = stagein_job_name,
-    job_name = theta_job_name,
-    cores=3,
+for a, session_name in enumerate(session_names):
+    # Run theta phase
+    run_python_script(
+        elrond_path + "/../../run_scripts/eddie/run_theta_phase.py " + mouse + " " + day + " " + project_path + " " + str(a),
+        hold_jid = stagein_job_name + "_0,"+stagein_job_name + "_1,"+stagein_job_name + "_2"+stagein_job_name + "_3",
+        job_name = theta_job_name + "_" + session_name,
+        cores=4,
     )
 
 # Run DLC on of1
-run_python_script(
-    elrond_path + "/../../run_scripts/eddie/dlc_of1.py " + mouse + " " + day + " " + sorter_name + " " + project_path, 
-    hold_jid = stagein_job_name,
-    job_name = of1_job_name,
-    )
+if 'of1' in session_names:
+    run_python_script(
+        elrond_path + "/../../run_scripts/eddie/dlc_of1.py " + mouse + " " + day + " " + sorter_name + " " + project_path, 
+        hold_jid = stagein_job_name + "_0",
+        job_name = of1_job_name,
+        h_rt = "1:59:00"
+        )
 
 # Run DLC on of2
-run_python_script(
-    elrond_path + "/../../run_scripts/eddie/dlc_of2.py " + mouse + " " + day + " " + sorter_name + " " + project_path, 
-    hold_jid = stagein_job_name,
-    job_name = of2_job_name,
-    )
+if 'of2' in session_names:
+    run_python_script(
+        elrond_path + "/../../run_scripts/eddie/dlc_of2.py " + mouse + " " + day + " " + sorter_name + " " + project_path, 
+        hold_jid = stagein_job_name+ "_2",
+        job_name = of2_job_name,
+        h_rt = "1:59:00"
+        )
 
 # Run behaviour, once everything else is done
 run_python_script(
     elrond_path + "/../../run_scripts/eddie/behaviour.py " + mouse + " " + day + " " + sorter_name + " " + project_path, 
-    hold_jid = pipeline_job_name + "," + of1_job_name + "," + of2_job_name,
+    hold_jid = sspp_job_name + "," + of1_job_name + "," + of2_job_name,
     job_name = behaviour_job_name,
     cores=3,
+    h_rt = "1:59:00"
 )
 
 run_stageout_script({
     project_path + "derivatives/M"+mouse+"/D"+day+"/": "/exports/cmvm/datastore/sbms/groups/CDBS_SIDB_storage/NolanLab/ActiveProjects/Chris/Cohort12/derivatives/M"+mouse+"/D"+day+"/"
     },
     hold_jid = behaviour_job_name,
-    job_name = mouseday_string + "out_" + sorter_name
+    job_name = out_job_name
     )

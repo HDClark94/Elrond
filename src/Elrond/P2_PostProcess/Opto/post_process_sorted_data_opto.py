@@ -26,7 +26,7 @@ import PostSorting.speed
 import PostSorting.temporal_firing
 import PostSorting.theta_modulation
 import PostSorting.load_snippet_data_opto
-from Helpers import file_utility, open_ephys_IO
+from Elrond. import file_utility, open_ephys_IO
 import sys
 import traceback
 prm = PostSorting.parameters.Parameters()
