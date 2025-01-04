@@ -44,29 +44,7 @@ def process_recordings(recording_paths,
 
     :return: processed recording returned to origin
     """
-    for recording_path in recording_paths:
-        try:
-            recording_name = os.path.basename(recording_path)
-            print("I will process recording ", recording_path)
-
-            working_recording_path = recording_path # set as default
-            if copy_locally:
-                print("I will attempt to copy the recording locally")
-                copy_to_local(recording_path, local_path, **kwargs)
-                working_recording_path = local_path+recording_name
-            if copy_locally:
-
-                 print("I will copy the recording from local and remove the recording from local")
-                 copy_from_local(recording_path, local_path, processed_folder_name, **kwargs)
-                 empty_recording_folder_from_local(local_path) # clear folder from local
-
-        except Exception as ex:
-            print('There was a problem! This is what Python says happened:')
-            print(ex)
-            exc_type, exc_value, exc_traceback = sys.exc_info()
-            traceback.print_tb(exc_traceback)
-            print("")
-
+ 
     processed_paths = get_processed_paths(base_processed_path, recording_paths)
     for processed_path in processed_paths: Path(processed_path).mkdir(parents=True, exist_ok=True)
     print(recording_paths, processed_paths)
@@ -96,22 +74,6 @@ def process_recordings(recording_paths,
         print("I will now try to postprocess")
         postprocess(processed_folder_name, processed_paths, recording_paths=recording_paths, **kwargs)
 
-    for recording_path in recording_paths:
-        try:
-            if copy_locally:
-                print("I will copy the recording from local and remove the recording from local")
-                copy_from_local(recording_path, local_path, processed_folder_name, **kwargs)
-                empty_recording_folder_from_local(local_path) # clear folder from local
-
-        except Exception as ex:
-            print('There was a problem! This is what Python says happened:')
-            print(ex)
-            exc_type, exc_value, exc_traceback = sys.exc_info()
-            traceback.print_tb(exc_traceback)
-            print("")
-    return
- 
-
 
 def get_recording_paths(project_path, mouse, day):
     """
@@ -129,19 +91,19 @@ def main():
     if settings.suppress_warnings: 
         warnings.filterwarnings("ignore")
 
-    for mouse in [22, 26]:
-        for day in [50, 26]: 
+    for mouse in [28, 29]:  
+        for day in np.arange(24, 28):    
             try:
-                mouse_day = "M"+str(mouse)+"_D"+str(day)
-                project_path = "/mnt/datastore/Harry/Cohort12_august2024/"
-
+                mouse_day = "M"+str(mouse)+"_D"+str(day) 
+                project_path = "/mnt/datastore/Chris/Cohort12/"
+                og_project_path = "/mnt/datastore/Harry/Cohort12_august2024/"
                 recording_paths = [] 
-                recording_paths.extend([f.path for f in os.scandir(project_path+"dvd_waitscreen") if f.is_dir()]) 
-                #recording_paths.extend([f.path for f in os.scandir(project_path+"vr") if f.is_dir()]) 
+                #recording_paths.extend([f.path for f in os.scandir(project_path+"dvd_waitscreen") if f.is_dir()]) 
+                recording_paths.extend([f.path for f in os.scandir(og_project_path+"vr") if f.is_dir()]) 
                 #recording_paths.extend([f.path for f in os.scandir(project_path+"of") if f.is_dir()])
                 #recording_paths.extend([f.path for f in os.scandir(project_path+"allen_brain_observatory_visual_coding") if f.is_dir()])
-                #recording_paths.extend([f.path for f in os.scandir(project_path+"vr_multi_context") if f.is_dir()])
-                recording_paths = [s for s in recording_paths if mouse_day+"_" in s] 
+                recording_paths.extend([f.path for f in os.scandir(og_project_path+"vr_multi_context") if f.is_dir()])
+                recording_paths = [s for s in recording_paths if mouse_day+"_" in s]
                 ephys_path = project_path + "derivatives/M"+str(mouse)+"/D"+str(day)+"/ephys/"
                 recording_paths = chronologize_paths(recording_paths)  
  
