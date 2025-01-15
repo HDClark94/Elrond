@@ -26,7 +26,7 @@ def postprocess(processed_folder_name, processed_paths, recording_paths, **kwarg
         elif type == "dvd":
             dvd.process(recording_path, processed_path,  **kwargs)
         elif type == "openfield": 
-            dlc_position_data = run_dlc_of(recording_path, save_path = processed_path+"video/", **kwargs)
+            dlc_position_data = run_dlc_of(recording_path, save_path = processed_path, **kwargs)
             of.process(recording_path, processed_path, dlc_position_data, **kwargs)
         elif type == "opto":
             opto.process(recording_path, processed_path, **kwargs)
