@@ -26,10 +26,14 @@ Requires-Dist: statsmodels
 Requires-Dist: scikit-image
 Requires-Dist: cmocean
 Requires-Dist: pydantic>2.4.2
+Requires-Dist: neo@ git+https://github.com/NeuralEnsemble/python-neo.git
 Provides-Extra: sorting
 Provides-Extra: postprocessing
 Provides-Extra: full
 Requires-Dist: neo@ git+https://github.com/NeuralEnsemble/python-neo.git ; extra == "full"
+Requires-Dist: torch==2.5.0; extra == "full"
+Requires-Dist: torchvision==0.20.0; extra == "full"
+Requires-Dist: deeplabcut@ git+https://github.com/DeepLabCut/DeepLabCut.git@pytorch_dlc#egg=deeplabcut[wandb] ; extra == "full"
 Requires-Dist: pyyaml; extra == "full"
 Requires-Dist: numpy; extra == "full"
 Requires-Dist: spikeinterface; extra == "full"
@@ -42,7 +46,7 @@ Requires-Dist: statsmodels; extra == "full"
 Requires-Dist: scikit-image; extra == "full"
 Requires-Dist: cmocean; extra == "full"
 Requires-Dist: herdingspikes; extra == "full"
-Requires-Dist: kilosort; extra == "full"
+Requires-Dist: kilosort==4.0.16; extra == "full"
 Requires-Dist: numba; extra == "full"
 
 # Elrond: 

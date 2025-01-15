@@ -304,13 +304,24 @@ def add_dlc_markers(position_data, dlc_position_data):
 
 
 def run_dlc_of(recording_path, save_path, **kwargs):
+    try:   # look for completed dlc first
+        if os.path.basename(recording_path).endswith("OF1"):
+            save_path = save_path+"of1/dlc/"
+
+        elif os.path.basename(recording_path).endswith("OF2"):
+            save_path = save_path+"of2/dlc/"
+
+        dlc_csv_path = list(Path(save_path).glob("*200_filtered.csv"))[0]
+        dlc_position_data = pd.read_csv(dlc_csv_path, header=[1, 2], index_col=0) 
+        return dlc_position_data
+    except:
+        pass
 
     avi_paths = [os.path.abspath(os.path.join(recording_path, filename)) for filename in os.listdir(recording_path) if filename.endswith(".avi")]
-    if len(avi_paths)==1 and settings.use_dlc_for_open_field:
-        dlc_position_data = extract_from_dlc(avi_paths[0], save_path, 
-                                                    model_path=kwargs["deeplabcut_of_model_path"])
+    if settings.use_dlc_for_open_field:
+        dlc_position_data = extract_from_dlc(avi_paths[0], save_path, model_path=kwargs["deeplabcut_of_model_path"])
     else:
-        dlc_position_data = pd.DataFrame()
+        dlc_position_data = pd.DataFrame() #TODO Sort this out.
 
     return dlc_position_data
 

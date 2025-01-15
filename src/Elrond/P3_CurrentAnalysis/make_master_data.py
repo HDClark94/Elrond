@@ -6,11 +6,58 @@ import numpy as np
 import spikeinterface.full as si
 from Elrond.P2_PostProcess.VirtualReality.spatial_firing import bin_fr_in_space, bin_fr_in_time, add_kinematics
 
+
+def pull_of_data(mouse_ids=[], sorter="kilosort4", project_path="", of_path_identifier="of"):
+
+    data = pd.DataFrame()
+    for mouse in mouse_ids:
+        day_paths = [f.path for f in os.scandir(f"{project_path}{mouse}/") if f.is_dir()]
+        day_paths.sort(key=lambda x: int(os.path.basename(x).split('D')[1]))
+
+        for day_path in day_paths:
+            day = os.path.basename(day_path)
+            sorting_analyzer_path = f"{day_path}/full/kilosort4/kilosort4_sa"
+            of_spikes_path = f"{day_path}/{of_path_identifier}/kilosort4/spikes.pkl"
+
+            if os.path.isdir(sorting_analyzer_path) and os.path.exists(of_spikes_path):
+                '''sorting_analyzer = si.load_sorting_analyzer(sorting_analyzer_path) # load curation stats
+                ulc = sorting_analyzer.get_extension("unit_locations")
+                qms = sorting_analyzer.get_extension("quality_metrics")
+                unit_locations = ulc.get_data(outputs="by_unit")
+                quality_metrics = qms.get_data()
+                quality_metrics["cluster_id"] = quality_metrics.index
+                print(f"sorting analyzer loaded from {sorting_analyzer_path}")'''
+                spikes_df = pd.read_pickle(of_spikes_path) # load spikes
+                #print(f"spikes.pkl loaded from {of_spikes_path}")
+                #spikes_df = pd.merge(spikes_df, quality_metrics, on="cluster_id")
+                #spikes_df = spikes_df[(spikes_df["snr"] > 1) & 
+                #                      (spikes_df["mean_firing_rate"] > 0.5) & 
+                #                      (spikes_df["rp_contamination"] < 0.9)]
+                if 'grid_score' not in list(spikes_df):
+                    print(f'no grid score for {of_spikes_path}')
+                data = pd.concat([data, spikes_df], ignore_index=True) # concat
+            else:
+                a=0
+                '''print("couldn't find sorting analyzer or spikes.pkl for recording", day_path)
+                if os.path.isdir(sorting_analyzer_path): print("sorting analyzer path is valid")
+                else: print("sorting analyzer path isn't valid")
+                if os.path.isdir(f"{day_path}/{of_path_identifier}"): print("session type path is valid")
+                else: print("session type path isn't valid, Does it have open field sessions anyway?")
+                if os.path.exists(of_spikes_path): print("spikes.pkl is valid")
+                else: print("spikes.pkl isn't valid")'''
+
+
+    return data
+
+
+
 def pull_vr_data(mouse_ids=[], sorter="kilosort4", project_path=""):
 
     data = pd.DataFrame()
     for mouse in mouse_ids:
         day_paths = [f.path for f in os.scandir(f"{project_path}{mouse}/") if f.is_dir()]
+        day_paths.sort(key=lambda x: int(os.path.basename(x).split('D')[1]))
+
 
         for day_path in day_paths:
             day = os.path.basename(day_path)
@@ -35,7 +82,9 @@ def pull_vr_data(mouse_ids=[], sorter="kilosort4", project_path=""):
                 spikes_df = add_kinematics(spikes_df, position_data_df)
                 spikes_df = bin_fr_in_space(spikes_df, position_data_df, track_length=200)
                 spikes_df = bin_fr_in_time(spikes_df, position_data_df, track_length=200) 
-                spikes_df = spikes_df[(spikes_df["snr"] > 1) & (spikes_df["mean_firing_rate"] > 0.5) & (spikes_df["rp_contamination"] < 0.9)]
+                spikes_df = spikes_df[(spikes_df["snr"] > 1) & 
+                                      (spikes_df["mean_firing_rate"] > 0.5) & 
+                                      (spikes_df["rp_contamination"] < 0.9)]
 
                 data = pd.concat([data, spikes_df], ignore_index=True) # concat
             else:
