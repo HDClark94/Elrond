@@ -201,7 +201,8 @@ def calculate_grid_scores(spatial_firing):
             field_sizes.append(field_size)
             grid_scores.append(grid_score)
         else:
-            grid_spacings.append(np.nan)
+            grid_score = np.nan
+            grid_spacings.append(np.nan) 
             field_sizes.append(np.nan)
             grid_scores.append(np.nan)
         print("Grid score for cluster", str(cluster.cluster_id), ":", str(np.round(grid_score, decimals=2)))
