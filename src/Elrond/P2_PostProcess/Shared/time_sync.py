@@ -186,7 +186,7 @@ def adjust_for_lag_ephys(sync_data_ephys_downsampled, spatial_data, recording_pa
     matches = search_for_file(recording_path, "lag.npy")
     if len(matches)==1:
         print("I have found a lag.npy file and will use the offset specified here")
-        lag = np.load(matches[0])[0]
+        lag = float(np.load(matches[0]))
         spatial_data['synced_time_estimate'] = spatial_data.time_seconds - lag
         spatial_data['synced_time'] = spatial_data.synced_time_estimate
         return spatial_data
