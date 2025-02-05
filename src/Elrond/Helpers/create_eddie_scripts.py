@@ -174,7 +174,7 @@ def run_stagein_script(stagein_dict, script_file_path=None, job_name = None, hol
 
     return 
 
-def stagein_data(mouse, day, project_path, path_on_datastore, job_name=None, which_rec=None, hold_jid=None):
+def stagein_data(mouse, day, project_path, path_on_datastore, job_name=None, which_rec=None, hold_jid=None,script_file_path=script_file_path):
 
     dest_on_eddie = project_path + f"data/M{mouse}_D{day}/" 
 
@@ -182,7 +182,7 @@ def stagein_data(mouse, day, project_path, path_on_datastore, job_name=None, whi
 
     if Path(dest_on_eddie + '/' + folder_name).exists() == False:
         stagein_dict = dict(zip([path_on_datastore], [dest_on_eddie]))
-        run_stagein_script(stagein_dict, job_name=job_name, hold_jid=hold_jid)
+        run_stagein_script(stagein_dict, job_name=job_name, hold_jid=hold_jid,script_file_path=script_file_path)
 
     return dest_on_eddie  + folder_name
 
