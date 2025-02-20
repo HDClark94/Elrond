@@ -306,10 +306,9 @@ def add_dlc_markers(position_data, dlc_position_data):
 def run_dlc_of(recording_path, save_path, **kwargs):
     try:   # look for completed dlc first
         if os.path.basename(recording_path).endswith("OF1"):
-            save_path = save_path+"of1/dlc/"
-
+            save_path = save_path.split("openfield")[0]+"of1/dlc/"
         elif os.path.basename(recording_path).endswith("OF2"):
-            save_path = save_path+"of2/dlc/"
+            save_path = save_path.split("openfield")[0]+"of2/dlc/"
 
         dlc_csv_path = list(Path(save_path).glob("*200_filtered.csv"))[0]
         dlc_position_data = pd.read_csv(dlc_csv_path, header=[1, 2], index_col=0) 

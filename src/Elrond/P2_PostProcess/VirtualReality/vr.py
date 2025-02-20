@@ -16,7 +16,7 @@ def process(recording_path, processed_path, spike_data_path=None, **kwargs):
         sorterName = kwargs["sorterName"]
     else:
         sorterName = settings.sorterName
-
+ 
     # look for position_data
     files = [f for f in Path(recording_path).iterdir()]
     if np.any(["blender.csv" in f.name and f.is_file() for f in files]):
@@ -26,6 +26,7 @@ def process(recording_path, processed_path, spike_data_path=None, **kwargs):
     else: 
         print("I couldn't find any source of position data")
 
+    dlc_data = None
     if dlc_data is not None:
         # syncrhonise position data and video data
         position_data, video_data = synchronise_position_data_via_column_ttl_pulses(position_data, video_data, processed_path, recording_path)
@@ -84,7 +85,7 @@ def process(recording_path, processed_path, spike_data_path=None, **kwargs):
         spike_data = lomb_scargle(spike_data, processed_position_data, track_length)
         position_data.to_csv(position_data_path, index=False)
         spike_data.to_pickle(spike_data_path)    
-        _ = calculate_ramp_scores_parallel(spike_data, processed_position_data, position_data, track_length,save_path=processed_path+sorterName+"/", save=True)
+        #_ = calculate_ramp_scores_parallel(spike_data, processed_position_data, position_data, track_length,save_path=processed_path+sorterName+"/", save=True)
         plot_track_firing(spike_data, processed_position_data, output_path=processed_path + sorterName+"/", track_length=track_length)
     else: 
         print("I couldn't find spike data at ", spike_data_path)

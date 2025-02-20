@@ -91,10 +91,13 @@ def main():
     if settings.suppress_warnings: 
         warnings.filterwarnings("ignore")
 
-    for mouse in [20,21,22,25,26,27,28,29]:  
-        for day in np.arange(14, 42):    
+    # m20 d20 doesn't work because of some grid score issue?
+
+    for mouse in [25]:     
+        for day in [25]:       
             try:
-                mouse_day = "M"+str(mouse)+"_D"+str(day) 
+                print(f'running pipeline for Mouse {mouse}, day {day}')
+                mouse_day = "M"+str(mouse)+"_D"+str(day)  
                 project_path = "/mnt/datastore/Chris/Cohort12/"
                 og_project_path = "/mnt/datastore/Harry/Cohort12_august2024/"
                 og_project_path2 = "/mnt/datastore/Harry/Cohort11_april2024/"
@@ -109,7 +112,7 @@ def main():
                 recording_paths = [s for s in recording_paths if mouse_day+"_" in s] 
                 ephys_path = project_path + "derivatives/M"+str(mouse)+"/D"+str(day)+"/ephys/"
                 recording_paths = chronologize_paths(recording_paths)   
- 
+
                 process_recordings(
                     recording_paths,
                     local_path="/home/ubuntu/to_sort/recordings/",
@@ -119,14 +122,14 @@ def main():
                     run_postprocessing=True,
                     sorting_analyzer_path= ephys_path + "sorting_analyzer/",
                     phy_path = ephys_path + "phy/",
-                    report_path = ephys_path + "report/",
+                    report_path = ephys_path + "report/", 
                     base_processed_path = project_path + "derivatives/M"+str(mouse)+"/D"+str(day)+"/",
                     deeplabcut_of_model_path = settings.of_deeplabcut_project_path,
                     deeplabcut_vr_pupil_model_path = settings.vr_deeplabcut_pupil_project_path,
                     deeplabcut_vr_licks_model_path = settings.vr_deeplabcut_licks_project_path,
                     sorterName="kilosort4", 
                     sorter_kwargs={'do_CAR': False, 'do_correction': True}  
-                )
+                ) 
             except Exception as ex:
                 print(f"failed mouse {mouse}, day {day}") 
                 print('There was a problem! This is what Python says happened:') 

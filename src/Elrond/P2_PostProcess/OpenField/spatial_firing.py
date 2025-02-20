@@ -79,7 +79,7 @@ def add_scores(spike_data, spatial_data, position_heat_map):
     """
     spike_data = calculate_spatial_information_scores(spike_data, position_heat_map)
     spike_data = calculate_head_direction_scores(spike_data, spatial_data)
-    spike_data = calculate_border_scores(spike_data)
+    #spike_data = calculate_border_scores(spike_data)
     spike_data = calculate_grid_scores(spike_data)
     #spike_data = calculate_half_session_stability_scores(spike_data, spatial_data)
     spike_data = calculate_speed_scores(spike_data, spatial_data)

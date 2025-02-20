@@ -4,7 +4,12 @@ from .spatial_firing import *
 from .plotting import *
 
 def process(recording_path, processed_path, dlc_position_data, spike_data_path=None,**kwargs):
-
+    # TODO fix this ugliness
+    if os.path.basename(recording_path).endswith("OF1"):
+        processed_path = processed_path.split("openfield")[0]+"of1/"
+    elif os.path.basename(recording_path).endswith("OF2"):
+        processed_path = processed_path.split("openfield")[0]+"of2/"
+ 
     # process and save position data
     position_data = process_position_data(recording_path, dlc_position_data, **kwargs)
     position_data = synchronise_position_data_via_ADC_ttl_pulses(position_data, processed_path, recording_path)
@@ -20,24 +25,22 @@ def process(recording_path, processed_path, dlc_position_data, spike_data_path=N
 
     if spike_data_path is None:
         spike_data_path = processed_path + sorterName+"/spikes.pkl"
-    if os.path.exists(spike_data_path):
 
+    if os.path.exists(spike_data_path):
         output_path = processed_path + sorterName + "/"
         spike_data = pd.read_pickle(spike_data_path)
-
         spike_data = add_spatial_variables(spike_data, position_data)
-        plot_firing_rate_maps(spike_data, output_path)
-
-        spike_data.to_pickle(spike_data_path)
         spike_data = add_scores(spike_data, position_data, position_heat_map)
         spike_data.to_pickle(spike_data_path)
 
+        plot_firing_rate_maps(spike_data, output_path)
+        '''
         plot_rate_map_autocorrelogram(spike_data, output_path)
         plot_spikes_on_trajectory(spike_data, position_data, output_path)
         plot_coverage(position_heat_map, output_path)
         plot_polar_head_direction_histogram(spike_data, position_data, output_path)
         plot_firing_rate_vs_speed(spike_data, position_data, output_path)
-        #make_combined_figure(spike_data, output_path)
+        make_combined_figure(spike_data, output_path)'''
     else:
         print("I couldn't find spike data at ", spike_data_path)
     return
