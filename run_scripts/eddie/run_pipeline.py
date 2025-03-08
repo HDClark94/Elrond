@@ -331,7 +331,7 @@ if __name__ == "__main__":
     raw_recording_paths = get_chronologized_recording_paths(project_path, mouse, day)
     session_names = get_session_names(raw_recording_paths)
     
-    do_sorting_pipeline(mouse, day, sorter_name, project_path, recording_paths = raw_recording_paths, session_names=session_names)
-    make_location_plot(mouse, day, project_path, num_recordings=len(session_names) )
-    do_dlc_pipeline(mouse, day, project_path, dlc_of_model_path = project_path + "derivatives/dlc/of_cohort12-krs-2024-10-30/", recording_paths = raw_recording_paths, session_names=session_names)
+    #do_sorting_pipeline(mouse, day, sorter_name, project_path, recording_paths = raw_recording_paths, session_names=session_names)
+    #make_location_plot(mouse, day, project_path, num_recordings=len(session_names) )
+    #do_dlc_pipeline(mouse, day, project_path, dlc_of_model_path = project_path + "derivatives/dlc/of_cohort12-krs-2024-10-30/", recording_paths = raw_recording_paths, session_names=session_names)
     do_behavioural_postprocessing(mouse, day, sorter_name, project_path, recording_paths = raw_recording_paths, session_names=session_names)
