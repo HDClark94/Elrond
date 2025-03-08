@@ -7,8 +7,7 @@ import Elrond.settings as settings
 from pathlib import Path
 from os.path import expanduser
 import numpy as np
-from Elrond.Helpers.upload_download import copy_from_local, copy_to_local, \
-    empty_recording_folder_from_local, get_processed_paths, chronologize_paths
+from Elrond.Helpers.upload_download import get_processed_paths, chronologize_paths
 from Elrond.P1_SpikeSort.spikesort import spikesort
 from Elrond.P2_PostProcess.postprocess import postprocess
 
@@ -93,22 +92,24 @@ def main():
 
     # m20 d20 doesn't work because of some grid score issue?
 
-    for mouse in [25]:     
-        for day in [25]:       
+    for mouse in [29]:     
+        for day in [29]:       
             try:
+                prepath='/Volumes/cmvm/sbms/groups/CDBS_SIDB_storage/NolanLab/ActiveProjects/'
+                #prepath='/mnt/datastore/'
                 print(f'running pipeline for Mouse {mouse}, day {day}')
                 mouse_day = "M"+str(mouse)+"_D"+str(day)  
-                project_path = "/mnt/datastore/Chris/Cohort12/"
-                og_project_path = "/mnt/datastore/Harry/Cohort12_august2024/"
-                og_project_path2 = "/mnt/datastore/Harry/Cohort11_april2024/"
+                project_path = f"{prepath}Chris/Cohort12/"
+                og_project_path = f"{prepath}Harry/Cohort12_august2024/"
+                og_project_path2 = f"{prepath}Harry/Cohort11_april2024/"
 
                 recording_paths = [] 
                 #recording_paths.extend([f.path for f in os.scandir(project_path+"dvd_waitscreen") if f.is_dir()]) 
                 #recording_paths.extend([f.path for f in os.scandir(og_project_path+"vr") if f.is_dir()]) 
-                recording_paths.extend([f.path for f in os.scandir(og_project_path+"of") if f.is_dir()])
-                recording_paths.extend([f.path for f in os.scandir(og_project_path2+"of") if f.is_dir()])
+                #recording_paths.extend([f.path for f in os.scandir(og_project_path+"of") if f.is_dir()])
+                #recording_paths.extend([f.path for f in os.scandir(og_project_path2+"of") if f.is_dir()])
                 #recording_paths.extend([f.path for f in os.scandir(project_path+"allen_brain_observatory_visual_coding") if f.is_dir()])
-                #recording_paths.extend([f.path for f in os.scandir(og_project_path+"vr_multi_context") if f.is_dir()])
+                recording_paths.extend([f.path for f in os.scandir(og_project_path+"vr_multi_context") if f.is_dir()])
                 recording_paths = [s for s in recording_paths if mouse_day+"_" in s] 
                 ephys_path = project_path + "derivatives/M"+str(mouse)+"/D"+str(day)+"/ephys/"
                 recording_paths = chronologize_paths(recording_paths)   
