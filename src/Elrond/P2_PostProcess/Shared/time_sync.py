@@ -303,11 +303,12 @@ def get_downsampled_ttl_pulse_array(recording_path, spatial_data, ephys_sampling
     sampling_rate_rate = avg_sampling_rate_open_ephys/avg_sampling_rate_bonsai
     length = int(len(raw_sync_data) / sampling_rate_rate)
     indices = (np.arange(length) * sampling_rate_rate).astype(int)
-    sync_data_ephys_downsampled = pd.DataFrame()
     print(indices)
-    sync_pulse = np.zeros(len(indices))  
-    for i, index in enumerate(indices):
-        sync_pulse[i] = raw_sync_data[index,0]
+
+    sync_pulse = raw_sync_data.T[0][::int(np.round(sampling_rate_rate))]
+    #sync_pulse = np.zeros(len(indices))  
+    #for i, index in enumerate(indices):
+    #    sync_pulse[i] = raw_sync_data[index,0]
 
     sync_data_ephys_downsampled = pd.DataFrame()
     sync_data_ephys_downsampled['sync_pulse'] = sync_pulse

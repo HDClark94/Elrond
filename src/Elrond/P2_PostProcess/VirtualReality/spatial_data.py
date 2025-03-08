@@ -191,9 +191,9 @@ def bin_in_space(position_data, processed_position_data, track_length, smoothen=
         eye_centroids_x = np.array(position_data['eye_centroid_x'], dtype="float64")
         eye_centroids_y = np.array(position_data['eye_centroid_y'], dtype="float64")
     else:  # add nan values if not present
-        eye_radi = np.array(position_data['time_seconds'], dtype="float64");eye_radi[:] = np.nan
-        eye_centroids_x = np.array(position_data['time_seconds'], dtype="float64");eye_centroids_x[:] = np.nan
-        eye_centroids_y = np.array(position_data['time_seconds'], dtype="float64");eye_centroids_y[:] = np.nan
+        eye_radi = np.zeros(len(speeds));eye_radi[:] = np.nan
+        eye_centroids_x = np.zeros(len(speeds));eye_centroids_x[:] = np.nan
+        eye_centroids_y = np.zeros(len(speeds));eye_centroids_y[:] = np.nan
 
     # calculate the average speed and position in each 1cm spatial bin 
     spatial_bins = np.arange(0, (n_trials*track_length)+1, vr_bin_size_cm) # 1 cm bins
@@ -269,9 +269,9 @@ def bin_in_time(position_data, processed_position_data, track_length, smoothen=T
         eye_centroids_x = np.array(position_data['eye_centroid_x'], dtype="float64")
         eye_centroids_y = np.array(position_data['eye_centroid_y'], dtype="float64")
     else: # add nan values if not present
-        eye_radi = np.array(position_data['time_seconds'], dtype="float64"); eye_radi[:] = np.nan
-        eye_centroids_x = np.array(position_data['time_seconds'], dtype="float64"); eye_centroids_x[:] = np.nan
-        eye_centroids_y = np.array(position_data['time_seconds'], dtype="float64"); eye_centroids_y[:] = np.nan
+        eye_radi = np.zeros(len(speeds)); eye_radi[:] = np.nan
+        eye_centroids_x = np.zeros(len(speeds)); eye_centroids_x[:] = np.nan
+        eye_centroids_y = np.zeros(len(speeds)); eye_centroids_y[:] = np.nan
 
     # calculate the average speed and position in each 100ms time bin
     time_bins = np.arange(min(times), max(times), time_bin_size) # 100ms time bins

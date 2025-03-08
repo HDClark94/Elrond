@@ -178,10 +178,11 @@ def add_stops(spike_data, processed_position_data, track_length):
 def add_location_and_task_variables(spike_data, position_data, processed_position_data, track_length):
     spike_data = add_kinematics(spike_data, position_data)
     spike_data = add_stops(spike_data, processed_position_data, track_length)
-    spike_data = bin_fr_in_time(spike_data, position_data, track_length, smoothen=True)
-    spike_data = bin_fr_in_time(spike_data, position_data, track_length, smoothen=False)
+    #spike_data = bin_fr_in_time(spike_data, position_data, track_length, smoothen=True)
+    #spike_data = bin_fr_in_time(spike_data, position_data, track_length, smoothen=False)
+    print('binning in space') 
     spike_data = bin_fr_in_space(spike_data, position_data, track_length, smoothen=True)
-    spike_data = bin_fr_in_space(spike_data, position_data, track_length, smoothen=False)
+    #spike_data = bin_fr_in_space(spike_data, position_data, track_length, smoothen=False)
     return spike_data
 
 #  for testing

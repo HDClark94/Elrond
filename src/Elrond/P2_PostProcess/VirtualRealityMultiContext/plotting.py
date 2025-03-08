@@ -312,7 +312,7 @@ def plot_variables(position_data, output_path): # can be raw or downsampled
     if os.path.exists(save_path) is False:
         os.makedirs(save_path) 
     for column in list(position_data):
-        variables = np.asarray(position_data[column], dtype=np.float128)
+        variables = np.asarray(position_data[column], dtype=np.float64)
         fig = plt.figure(figsize=(6,6))
         ax = fig.add_subplot(1, 1, 1)  # specify (nrows, ncols, axnum)
         ax.plot(variables, color="black")
